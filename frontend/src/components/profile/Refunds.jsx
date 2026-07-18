@@ -3,12 +3,14 @@ import { userContext } from "../../context/UserContext"
 import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
+import { useSelector } from "react-redux";
+import { getUserOrdersAction } from "../../redux/actions/user";
 
 function Refunds() {
-    const { getUserOrders, orders } = useContext(userContext)
-    useEffect(() => { getUserOrders() }, [])
+    const orders = useSelector(state=>state.user.orders)
+    useEffect(() => { getUserOrdersAction() }, [])
     const refundOrders = orders && orders.filter((order) => order.status === 'Processing refund')
-    const rows = refundOrders.map((item) => ({
+    const rows = refundOrders&&refundOrders.map((item) => ({
         id: item._id,
         status: item.status,
         itemsQty: item.cart.length,

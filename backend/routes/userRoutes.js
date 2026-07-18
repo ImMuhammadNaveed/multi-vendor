@@ -1,7 +1,7 @@
 const express = require("express")
 const userRouter = express.Router()
 const {upload} = require("../middlewares/multer")
-const {register, verifyEmail, login, info, updateUser, addAddress, deleteAddress, changePassword, anyUserInfo} = require("../controllers/userControllers")
+const {register, verifyEmail, login, info, updateUser, addAddress, deleteAddress, changePassword, anyUserInfo, logout} = require("../controllers/userControllers")
 const { userLoginCheck } = require("../middlewares/auth")
 
 userRouter.post("/register", upload.single("image"), register)
@@ -13,6 +13,7 @@ userRouter.post("/update", userLoginCheck, upload.single("image"), updateUser)
 userRouter.post("/add-address", userLoginCheck, addAddress)
 userRouter.delete("/delete-address/:id", userLoginCheck, deleteAddress)
 userRouter.put("/change-password", userLoginCheck, changePassword)
+userRouter.post("/logout", userLoginCheck, logout)
 
 module.exports = {
     userRouter

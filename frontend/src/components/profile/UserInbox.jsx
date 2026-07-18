@@ -6,11 +6,13 @@ import axios from "axios"
 import { Link } from "react-router-dom"
 import { useLocation } from "react-router-dom"
 import { socket } from "../../socket/Socket"
+import { backend_url } from "../../server"
+import { useSelector } from "react-redux"
 
 function UserInbox() {
-    // const [openMessage, setOpenMessage] = useState(false)
-    const { conversations, onlineUsers, userData} = useContext(userContext)
-    const { backend_url } = useContext(generalContext)
+    const conversations = useSelector(state=> state.user.userConversations)
+    const onlineUsers = useSelector(state=> state.user.onlineUsers)
+    const userData = useSelector(state=> state.user.user)
     const [selectedConversation, setSelectedConversation] = useState(null)
     const location = useLocation()
     
@@ -58,7 +60,6 @@ function UserInbox() {
 export default UserInbox
 
 function Conversation({ conversation, setSelectedConversation, online }) {
-    const { backend_url } = useContext(generalContext)
     const [shop, setShop] = useState(null)
     async function getShop() {
         try {

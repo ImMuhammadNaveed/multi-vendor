@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import {useContext, useState } from 'react'
 import {FaRegHeart } from 'react-icons/fa'
 import { GoHeart, GoHeartFill } from 'react-icons/go'
 import { FiEye } from 'react-icons/fi'
@@ -7,15 +7,22 @@ import ProductDetails from './ProductDetails'
 import { Link } from 'react-router-dom'
 import { generalContext } from '../../context/Context'
 import { cartContext } from '../../context/CartContext'
-import { wishlistContext } from '../../context/WishlistContext'
+// import { wishlistContext } from '../../context/WishlistContext'
+import {userContext} from '../../context/UserContext'
 import Ratings from '../ratings/Ratings'
+import {useDispatch, useSelector} from 'react-redux'
+import {isInWishlistAction, addToWishlistAction} from '../../redux/actions/wishlist'
+import { addToCartAction } from '../../redux/actions/cart'
+import { backend_url } from '../../server'
 
 function Product({ item }) {
     const [imageError, setImageError] = useState(false)
     const [showProductDetails, setShowProductDetails] = useState(false)
-    const { backend_url } = useContext(generalContext)
-    const { addToCart } = useContext(cartContext)
-    const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(wishlistContext)
+    const userData = useSelector(state=>state.user.user)
+    const dispatch = useDispatch()
+    const wishlist = useSelector(state=> state.wishlist.wishlist)
+    // const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(wishlistContext)
+    
 
     
 
@@ -37,24 +44,26 @@ function Product({ item }) {
                         }
                         <div className='mt-2'>
                             {
-                                isInWishlist(item)
+                                // isInWishlist(item)
+                                isInWishlistAction(wishlist, item._id)
                                     ? <GoHeartFill
                                         color='red'
                                         className='mb-2'
                                         size={20}
                                         onClick={(e)=>{
-                                            removeFromWishlist(item)
                                             e.preventDefault()
                                             e.stopPropagation()
+                                            removeFromWishlist(item)
                                         }}
                                     />
                                     : <GoHeart
                                         className='mb-2'
                                         size={20}
                                         onClick={(e)=>{
-                                            addToWishlist(item)
+                                            // addToWishlist(item)
                                             e.preventDefault()
                                             e.stopPropagation()
+                                            dispatch(addToWishlistAction(item, userData))
                                         }}
                                     />
                             }
@@ -63,9 +72,9 @@ function Product({ item }) {
                                 className='mb-2'
                                 size={20}
                                 onClick={(e) => {
-                                    setShowProductDetails(true)
                                     e.preventDefault()
                                     e.stopPropagation()
+                                    setShowProductDetails(true)
                                 }}
 
                             />
@@ -73,9 +82,9 @@ function Product({ item }) {
                                 className='mb-2'
                                 size={20}
                                 onClick={(e) => {
-                                    addToCart(item)
                                     e.preventDefault()
                                     e.stopPropagation()
+                                    dispatch(addToCartAction(item, userData))
                                 }}
                             />
                         </div>
@@ -108,7 +117,7 @@ function Product({ item }) {
                     </div>
                 </div>
             </Link>
-            {showProductDetails && <ProductDetails key={item._id} item={item} setShowProductDetails={setShowProductDetails} addToWishlist={addToWishlist} handleAddToWishList={handleAddToWishList} />}
+            {showProductDetails && <ProductDetails key={item._id} item={item} setShowProductDetails={setShowProductDetails} addToWishlist={addToWishlistAction}/>}
         </div>
     )
 }

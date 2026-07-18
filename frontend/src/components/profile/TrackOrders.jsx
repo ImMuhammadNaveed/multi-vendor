@@ -3,11 +3,13 @@ import { useContext, useEffect } from "react"
 import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { MdOutlineTrackChanges } from "react-icons/md";
+import { useSelector, useDispatch } from "react-redux";
+import { getUserOrdersAction } from "../../redux/actions/user";
 
 function TrackOrders() {
-    const { getUserOrders, orders } = useContext(userContext)
-    useEffect(() => { getUserOrders() }, [])
-    const rows = orders.map((item) => ({
+    const orders  = useSelector(state=> state.user.userOrders)
+    const dispatch = useDispatch()
+    const rows = orders.length!==0&&orders.map((item) => ({
         id: item._id,
         status: item.status,
         itemsQty: item.cart.length,

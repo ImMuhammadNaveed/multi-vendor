@@ -41,9 +41,10 @@ function shopLoginCheck(req, res, next) {
 
 function userLoginCheck(req, res, next) {
     try {
-        // console.log("cookies: ", req.cookies)
+        // console.log("cookies: ", req)
+        // console.log("user auth middleware triggered")
         const uToken = req.cookies.uToken
-        // console.log(sToken)
+        console.log(uToken)
         if(!uToken){
             return res.status(400).json({success: false, message: "user token not found!"})
         }

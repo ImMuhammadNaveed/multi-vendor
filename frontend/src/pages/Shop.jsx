@@ -4,25 +4,29 @@ import ShopSideBar from "../components/shop/ShopSideBar"
 import { useContext, useEffect, useState } from "react"
 import { shopContext } from "../context/ShopContext"
 import { useParams } from "react-router-dom"
-import { productContext } from "../context/ProductContext"
+import { getShopProductsAction } from "../redux/actions/product"
+import { useDispatch, useSelector } from "react-redux"
+import { backend_url } from "../server"
+import { getEventsAction, getShopAction } from "../redux/actions/shop"
 
 function Shop() {
-    const { backend_url } = useContext(shopContext)
-    const { sellerData, getShopInfo, shopData, getEventsOfShop, shopEvents } = useContext(shopContext)
     const { shopId } = useParams()
-    const {shopProducts, getProductsOfShop} = useContext(productContext)
-
+    const dispatch = useDispatch()
+    const shopProducts = useSelector(state=> state.product.shopProducts)
+    const sellerData = useSelector(state=> state.shop.seller)
+    const shopData = useSelector(state=> state.shop.shop)
+    const shopEvents = useSelector(state=> state.shop.events)
     
     useEffect(() => {
-        getProductsOfShop(shopId)
+        dispatch(getShopProductsAction(shopId))
     }, [shopId])
 
     useEffect(()=>{
-        getShopInfo(shopId)
+        dispatch(getShopAction(shopId))
     },[shopId])
 
     useEffect(()=>{
-        getEventsOfShop(shopId)
+        dispatch(getEventsAction(shopId))
     },[shopId])
 
     const owner =

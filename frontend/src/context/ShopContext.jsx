@@ -24,68 +24,68 @@ export function ShopContextProvider({ children }) {
         }
     }
 
-    async function getSellerOrders() {
-        try {
-            const {data} = await axios.get(backend_url+"/api/order/seller-orders", {withCredentials: true})
-            if(data.success){
-                setOrders(data.data)
-            }
-        } catch (error) {
-            console.log(error.response?.data?.message)
-        }
-    }
-    useEffect(()=>{getSellerOrders()}, [])
+    // async function getSellerOrders() {
+    //     try {
+    //         const { data } = await axios.get(backend_url + "/api/order/seller-orders", { withCredentials: true })
+    //         if (data.success) {
+    //             setOrders(data.data)
+    //         }
+    //     } catch (error) {
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // useEffect(() => { getSellerOrders() }, [])
     // const [shopToken, setShopToken] = useState(false)
-    async function fetchSellerData() {
-        try {
-            const { data } = await axios.get(backend_url + '/api/shop/get-seller', { withCredentials: true })
-            if (data.success) {
-                setSellerData(data.shopData)
-                setSLoggedIn(true)
-            }
-        } catch (error) {
-            setSLoggedIn(false)
-            console.log(error.response?.data?.message)
-        }
-    }
-    useEffect(() => {
-        fetchSellerData()
-    }, [])
+    // async function fetchSellerData() {
+    //     try {
+    //         const { data } = await axios.get(backend_url + '/api/shop/get-seller', { withCredentials: true })
+    //         if (data.success) {
+    //             setSellerData(data.shopData)
+    //             setSLoggedIn(true)
+    //         }
+    //     } catch (error) {
+    //         setSLoggedIn(false)
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // useEffect(() => {
+    //     fetchSellerData()
+    // }, [])
 
     const [shopEvents, setShopEvents] = useState(null)
     async function getEventsOfShop(id) {
-            try {
-                const { data } = await axios.get(backend_url + `/api/event/events-of-shop/${id}`, { withCredentials: true })
-                console.log(data)
-                if (data.success) {
-                    setShopEvents(data.data)
-                }
-            } catch (error) {
-                console.log(error.response?.data?.message)
-            }
-        }
-
-        async function getSellerConversations() {
         try {
-            const { data } = await axios.get(backend_url + "/api/conversation/get-seller-conversations", { withCredentials: true })
+            const { data } = await axios.get(backend_url + `/api/event/events-of-shop/${id}`, { withCredentials: true })
+            console.log(data)
             if (data.success) {
-                setConversations(data.conversationsData)
+                setShopEvents(data.data)
             }
         } catch (error) {
             console.log(error.response?.data?.message)
         }
     }
-    useEffect(() => {
-        getSellerConversations()
-    }, [])
 
-    useEffect(() => {
-        if (!sellerData) return
-        socket.emit("addUser", sellerData._id)
-        const handleGetUsers = (data)=>setOnlineUsers(data)
-        socket.on('getUsers', handleGetUsers)
-        return ()=>socket.off("getUsers", handleGetUsers)
-    }, [sellerData])
+    // async function getSellerConversations() {
+    //     try {
+    //         const { data } = await axios.get(backend_url + "/api/conversation/get-seller-conversations", { withCredentials: true })
+    //         if (data.success) {
+    //             setConversations(data.conversationsData)
+    //         }
+    //     } catch (error) {
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // useEffect(() => {
+    //     getSellerConversations()
+    // }, [])
+
+    // useEffect(() => {
+    //     if (!sellerData) return
+    //     socket.emit("addUser", sellerData._id)
+    //     const handleGetUsers = (data) => setOnlineUsers(data)
+    //     socket.on('getUsers', handleGetUsers)
+    //     return () => socket.off("getUsers", handleGetUsers)
+    // }, [sellerData])
 
     const values = {
         backend_url,

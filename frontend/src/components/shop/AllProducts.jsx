@@ -4,16 +4,18 @@ import { generalContext } from "../../context/Context"
 import { AiOutlineEye } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
-import { productContext } from "../../context/ProductContext";
 import { shopContext } from "../../context/ShopContext";
+import { backend_url } from "../../server";
+import { getShopProductsAction } from "../../redux/actions/product";
+import { useDispatch, useSelector } from "react-redux";
 
 function AllProducts() {
-    const {shopProducts, getProductsOfShop, backend_url} = useContext(productContext)
-    const {sellerData} = useContext(shopContext)
+    const shopProducts = useSelector(state=> state.product.shopProducts)
+    const sellerData = useSelector(state=> state.shop.seller)
+    const dispatch = useDispatch()
 
     useEffect(() => { 
-        console.log("seller data in all products of shop", sellerData)
-        getProductsOfShop(sellerData._id) 
+        dispatch(getShopProductsAction(sellerData._id))
     }, [sellerData])
 
 

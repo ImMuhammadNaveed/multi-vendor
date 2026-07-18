@@ -5,13 +5,22 @@ import { useState } from "react";
 import { AiOutlineShoppingCart } from 'react-icons/ai'
 import { useContext } from "react";
 import { productContext } from "../../context/ProductContext";
+import { userContext } from '../../context/UserContext'
 import { Link } from "react-router-dom";
-import { cartContext } from "../../context/CartContext";
+import { addToCartAction } from '../../redux/actions/cart'
+import { useDispatch, useSelector } from 'react-redux'
+import { addToWishlistAction, isInWishlistAction, removeFromWishlistAction } from "../../redux/actions/wishlist";
+import { sendMessageAction } from "../../redux/actions/user";
+import { backend_url } from "../../server";
+import { useNavigate } from "react-router-dom";
 
-function ProductDetails({ item, setShowProductDetails, addToWishlist, handleAddToWishList }) {
+function ProductDetails({ item, setShowProductDetails, addToWishlist }) {
     const [quantity, setQuantity] = useState(1)
-    const { backend_url } = useContext(productContext)
-    const { addToCart } = useContext(cartContext)
+    const userData = useSelector(state => state.user.user)
+    const wishlist = useSelector(state => state.wishlist.wishlist)
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    // const { addToCart } = useContext(cartContext)
 
     return item && (
         <>
@@ -40,7 +49,15 @@ function ProductDetails({ item, setShowProductDetails, addToWishlist, handleAddT
                                     <p className="text-sm">({item.shop?.ratings}) Ratings</p>
                                 </div>
                             </div>
-                            <button className="text-white bg-black px-7 py-3 rounded-md flex items-center mt-5">Send Message <AiFillMessage size={20} className="ml-1" /></button>
+                            <button
+                                onClick={()=>dispatch(sendMessageAction(userData, item, navigate))}
+                                className="text-white bg-black px-7 py-3 rounded-md flex items-center mt-5 cursor-pointer"
+                            >Send Message
+                                <AiFillMessage
+                                    size={20}
+                                    className="ml-1"
+                                />
+                            </button>
                             <p className="text-red-500 mt-10">({item.soldOut}) Sold out</p>
                         </div>
                         <div className="w-[50%]">
@@ -67,14 +84,14 @@ function ProductDetails({ item, setShowProductDetails, addToWishlist, handleAddT
                                     >+</button>
                                 </div>
                                 {
-                                    addToWishlist
-                                        ? <GoHeartFill color='red' className='mb-2' size={25} onClick={handleAddToWishList} />
-                                        : <GoHeart className='mb-2' size={25} onClick={handleAddToWishList} />
+                                    isInWishlistAction(wishlist, item._id)
+                                        ? <GoHeartFill color='red' className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(removeFromWishlistAction(item, userData))} />
+                                        : <GoHeart className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(addToWishlistAction(item, userData))} />
                                 }
                             </div>
                             <button
                                 className="bg-black text-white flex items-center px-7 py-3 rounded-md mt-5 cursor-pointer"
-                                onClick={() => addToCart(item)}
+                                onClick={() => dispatch(addToCartAction(item, userData, quantity))}
                             >Add to cart
                                 <AiOutlineShoppingCart
                                     className='ml-1'

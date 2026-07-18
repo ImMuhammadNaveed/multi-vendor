@@ -3,14 +3,19 @@ import { useNavigate } from "react-router-dom"
 import { generalContext } from "../context/Context"
 import axios from "axios"
 import { userContext } from "../context/UserContext"
+import { useDispatch } from "react-redux"
+import { loadWishlistAction } from "../redux/actions/wishlist"
+import { getUserAction } from "../redux/actions/user"
+import { userLogin } from "../redux/slices/user"
+import { backend_url } from "../server"
 
 function Login() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(true)
-    const {backend_url} = useContext(generalContext)
-    const {setUserData, getUserData, setULoggedIn} = useContext(userContext)
+
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -18,8 +23,9 @@ function Login() {
             const {data} = await axios.post(backend_url+"/api/user/login", {email, password}, {withCredentials: true})
             console.log(data)
             if(data.success){
-                await getUserData()
-                setULoggedIn(true)
+                dispatch(getUserAction())
+                dispatch(loadWishlistAction(data.userData))
+                dispatch(userLogin(true))
                 navigate("/")
             }else{
                 alert(data.message)

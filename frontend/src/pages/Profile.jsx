@@ -7,7 +7,7 @@ import { MdOutlineTrackChanges } from "react-icons/md";
 import { MdPayment } from "react-icons/md";
 import { PiAddressBook } from "react-icons/pi";
 import { AiOutlineLogout } from "react-icons/ai";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 function Profile() {
     const [active, setActive] = useState(1)
@@ -26,8 +26,30 @@ export default Profile
 
 
 import { RiLockPasswordLine } from "react-icons/ri";
+import axios from "axios";
+import { userContext } from "../context/UserContext";
+import { cartContext } from "../context/CartContext";
+import { wishlistContext } from "../context/WishlistContext";
+import { backend_url } from "../server";
+import { setWishlistReducer } from "../redux/reducers/wishlist";
+
 function ProfileComponents({ setActive, active }) {
     const linkClass = ({isActive})=>`flex items-center ml-4 transition-colors ${isActive? "text-red-500 font-semibold" : "text-gray-700 hover:text-red-500"}`
+    
+    async function logout() {
+        try {
+            const {data} = await axios.post(backend_url+'/api/user/logout', {}, {withCredentials: true})
+            alert(data.message)
+            setUserReducer([])
+            setUserLoginReduer(false)
+            setUserConversationReducer([])
+            setCartReducer([])
+            setWishlistReducer([])
+        } catch (error) {
+            alert(error.response?.data?.message)
+        }
+        
+    }
     return (
         <div className="bg-white w-70 flex flex-col gap-6 py-6 rounded-md">
             <NavLink to='/profile' end className={linkClass}>
@@ -51,7 +73,7 @@ function ProfileComponents({ setActive, active }) {
             <NavLink to='/profile/address' className={linkClass}>
                 <PiAddressBook className="mr-2" size={18} /> Address
             </NavLink>
-            <NavLink to='/profile' end className={linkClass}>
+            <NavLink end className={linkClass} onClick={logout}>
                 <AiOutlineLogout className="mr-2" size={18} /> Logout
             </NavLink>
         </div>

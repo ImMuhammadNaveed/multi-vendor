@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from "react"
 import Product from "./ProductCard"
-import { productContext } from "../../context/ProductContext"
+import { useSelector } from "react-redux"
+// import { productContext } from "../../context/ProductContext"
 function BestDeal() {
     const [data, setData] = useState([])
-    const {allProducts} = useContext(productContext)
+    // const {allProducts} = useContext(productContext)
+    const allProducts = useSelector(state=> state.product.allProducts)
 
     useEffect(() => {
         const sortedProducts = [...allProducts].sort((a, b) => b.soldOut - a.soldOut)

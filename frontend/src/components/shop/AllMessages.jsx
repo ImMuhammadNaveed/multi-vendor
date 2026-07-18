@@ -5,12 +5,14 @@ import axios from "axios"
 import { generalContext } from "../../context/Context"
 import { shopContext } from "../../context/ShopContext"
 import { socket } from "../../socket/Socket"
+import { backend_url } from "../../server"
 
 
 function AllConversations() {
     const [openMessage, setOpenMessage] = useState(false)
-    const { conversations, setConversations, onlineUsers, sellerData } = useContext(shopContext)
-    const { backend_url } = useContext(generalContext)
+    const conversations = useSelector(state=> state.shop.sellerConversations)
+    const onlineUsers = useSelector(state=> state.shop.onlineUsers)
+    const sellerData = useSelector(state=> state.shop.seller)
     const [selectedConversation, setSelectedConversation] = useState(null)
 
 
@@ -50,7 +52,6 @@ function AllConversations() {
                         ? <SellerInbox
                             setOpenMessage={setOpenMessage}
                             selectedConversation={selectedConversation}
-                            setConversations={setConversations}
                             sellerData={sellerData}
                             online={checkOnline(selectedConversation)}
                         />
@@ -64,7 +65,7 @@ function AllConversations() {
 
 
 function Conversation({ setOpenMessage, conversation, setSelectedConversation, online }) {
-    const { backend_url } = useContext(userContext)
+    
     const [user, setUser] = useState(null)
     async function getUser() {
         try {
@@ -75,7 +76,7 @@ function Conversation({ setOpenMessage, conversation, setSelectedConversation, o
                 console.log(data.message)
             }
         } catch (error) {
-            console.log(error.response.data.message)
+            console.log(error.response?.data?.message)
         }
     }
     useEffect(() => { getUser() }, [conversation])
@@ -113,7 +114,9 @@ import { GoArrowRight } from "react-icons/go";
 import { LuSendHorizontal } from "react-icons/lu";
 import { TfiGallery } from "react-icons/tfi";
 import { format } from "timeago.js"
-function SellerInbox({ setOpenMessage, selectedConversation, setConversations, sellerData, setOnlineUsers, online }) {
+import { useSelector } from "react-redux"
+import { updateConversationReducer } from "../../redux/reducers/shop"
+function SellerInbox({ setOpenMessage, selectedConversation, sellerData, setOnlineUsers, online }) {
     const isFirstLoad = useRef(true)
     const ref = useRef(null)
     const { backend_url } = useContext(userContext)
@@ -180,13 +183,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, setConversations, s
             const currentSeller = sellerRef.current
             if(data.conversationId !== currentConversation?._id) return
             setMessages(prev => [...prev, data])
-            setConversations(prev=>
-                prev.map(conv=>
-                    conv._id === data.conversationId
-                    ?{...conv, lastMessage: data.text, lastMessageId: data.sender}
-                    :conv
-                )
-            )
+            dispatch(updateConversation({conversationId: data.conversationId, lastMessage: data.text, sender: data.sender}))
             if(currentConversation&&currentUser&&currentSeller){
                 messageSeen()
             }
@@ -250,17 +247,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, setConversations, s
             const { data } = await axios.put(backend_url + "/api/conversation/update-last-message/" + selectedConversation._id,
                 { lastMessage: newMessage, sender: sellerData._id }, { withCredentials: true })
             if (data.success) {
-                setConversations(prev =>
-                    prev.map(conv =>
-                        conv._id === selectedConversation._id
-                            ? {
-                                ...conv,
-                                lastMessage: newMessage,
-                                lastMessageId: sellerData._id
-                            }
-                            : conv
-                    )
-                )
+                dispatch(updateConversation({conversationId: selectedConversation._id, lastMessage: newMessage, sender: sellerData._id}))
             }
         } catch (error) {
             console.log(error)
@@ -365,6 +352,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, setConversations, s
                         <input type="file" id='image' hidden />
                         <input
                             type="text"
+                            required
                             className="border border-gray-300 w-full h-8 rounded-md p-1 focus:outline-none"
                             placeholder="Enter your message..."
                             value={newMessage}

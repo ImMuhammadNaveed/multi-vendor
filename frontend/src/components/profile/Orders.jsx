@@ -3,9 +3,12 @@ import { GoArrowRight } from "react-icons/go";
 import { useContext, useEffect } from 'react';
 import { userContext } from '../../context/UserContext';
 import { Link } from 'react-router-dom';
+import { backend_url } from '../../server';
+import { getUserOrdersAction } from '../../redux/actions/user';
+import { useSelector } from 'react-redux';
 function Orders() {
-    const { backend_url, getUserOrders, orders } = useContext(userContext)
-    useEffect(() => { getUserOrders() }, [])
+    useEffect(() => { getUserOrdersAction() }, [])
+    const orders = useSelector(state=> state.user.userOrders)
 
     const rows = orders && orders.map((item) => ({
         id: item._id,

@@ -1,18 +1,22 @@
 import { AiOutlineMoneyCollect } from "react-icons/ai";
 import { RxBorderSplit } from "react-icons/rx";
 import { useContext, useEffect } from "react";
-import { shopContext } from "../../context/ShopContext";
 import { Link } from "react-router-dom";
+import { shopContext } from '../../context/ShopContext'
+import { backend_url } from "../../server";
+import { getAllProductsAction } from "../../redux/actions/product";
+import { useDispatch, useSelector } from "react-redux";
+
 function Dashboard() {
-    const { backend_url } = useContext(shopContext)
-    const { orders } = useContext(shopContext)
+    const orders = useSelector(state=> state.shop.sellerOrders)
     const topOrders = orders.slice(0, 3).reverse()
 
-    const { sellerData } = useContext(shopContext)
-    const { shopProducts, getProductsOfShop } = useContext(productContext)
+    const sellerData = useSelector(state=> state.shop.seller)
+    const shopProducts = useSelector(state=> state.product.shopProducts)
+    const dispatch = useDispatch()
     useEffect(() => {
         if (sellerData?._id) {
-            getProductsOfShop(sellerData._id)
+            dispatch(getShopProductsAction(sellerData._id))
         }
     }, [sellerData])
 
@@ -76,6 +80,7 @@ function Dashboard() {
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
 import { productContext } from "../../context/ProductContext";
+import { getShopProductsAction } from "../../redux/actions/product";
 function Orders({ topOrders }) {
     const rows = topOrders && topOrders.map((item) => ({
         id: item._id,

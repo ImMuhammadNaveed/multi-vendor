@@ -45,9 +45,76 @@ import CreateCoupon from './components/shop/CreateCoupon'
 import ShopRefunds from './components/shop/ShopRefunds'
 import Settings from './components/shop/Settings'
 
-function App() {
-  const location = useLocation()
 
+
+import { loadWishlistAction } from './redux/actions/wishlist'
+import { setWishlist } from './redux/slices/wishlist'
+import { useContext, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { userContext } from './context/UserContext'
+import { loadCartAction } from './redux/actions/cart'
+import { setCart } from './redux/slices/cart'
+import { getAllProductsAction } from './redux/actions/product'
+import { getSellerConversationsAction, getOnlineUsersAction, getSellerOrderAction, getSellerAction } from './redux/actions/shop'
+import { getUserAction, getUserConversationsAction, getUserOrdersAction} from './redux/actions/user'
+
+function App() {
+
+  const userData = useSelector(state=> state.user.user)
+  const userLogin = useSelector(state=> state.user.userLogin)
+  const dispatch = useDispatch()
+  const sellerData = useSelector(state=> state.shop.seller)
+  const sellerLogin = useSelector(state=> state.shop.sellerLogin)
+
+  useEffect(() => {
+    if (userData) {
+      dispatch(loadWishlistAction(userData));
+      dispatch(loadCartAction(userData))
+    } else {
+      dispatch(setWishlist([]));
+      dispatch(setCart([]))
+    }
+  }, [userData]);
+
+  useEffect(()=>{
+    dispatch(getAllProductsAction())
+  },[])
+
+  useEffect(()=>{
+    dispatch(getSellerAction())
+  },[sellerLogin])
+  useEffect(()=>{
+    dispatch(getSellerOrderAction())
+  },[sellerLogin])
+  useEffect(()=>{
+    dispatch(getSellerConversationsAction())
+  },[sellerLogin])
+  useEffect(()=>{
+    dispatch(getOnlineUsersAction(sellerData._id))
+  },[sellerData])
+
+
+
+  useEffect(()=>{
+    dispatch(getUserAction())
+  },[])
+  useEffect(()=>{
+    dispatch(getUserConversationsAction())
+  },[userLogin])
+  useEffect(()=>{
+    dispatch(getOnlineUsersAction(userData._id))
+  },[userLogin])
+  useEffect(() => { 
+    dispatch(getUserOrdersAction()) 
+  }, [userLogin])
+
+
+
+
+
+
+
+  const location = useLocation()
   const hideLayout =
     location.pathname === '/login' ||
     location.pathname === '/register' ||
@@ -64,7 +131,7 @@ function App() {
     location.pathname === '/shop-dashboard/messages' ||
     location.pathname === '/shop-dashboard/coupons' ||
     location.pathname === '/shop-dashboard/refunds' ||
-    location.pathname === '/shop-dashboard/settings' || 
+    location.pathname === '/shop-dashboard/settings' ||
     location.pathname.startsWith('/user/order/') ||
     location.pathname.startsWith('/conversation')
   return (
@@ -83,26 +150,26 @@ function App() {
         <Route path='/events' element={<Events />} />
         <Route path='/faq' element={<FAQ />} />
         <Route path='/profile' element={<Profile />} >
-          <Route index element={<ChangeProfile/>}/>
-          <Route path='orders' element={<Orders/>}/>
-          <Route path='refunds' element={<Refunds/>}/>
-          <Route path='inbox' element={<UserInbox/>}/>
-          <Route path='track-orders' element={<TrackOrders/>}/>
-          <Route path='change-password' element={<ChangePassword/>}/>
-          <Route path='address' element={<Address/>}/>
+          <Route index element={<ChangeProfile />} />
+          <Route path='orders' element={<Orders />} />
+          <Route path='refunds' element={<Refunds />} />
+          <Route path='inbox' element={<UserInbox />} />
+          <Route path='track-orders' element={<TrackOrders />} />
+          <Route path='change-password' element={<ChangePassword />} />
+          <Route path='address' element={<Address />} />
         </Route>
         <Route path='/create-shop' element={<CreateShop />} />
         <Route path='/inbox' element={<UserInbox />} />
         <Route path='/conversation/:id' element={<UserConversation />} />
         <Route path='/login-shop' element={<LoginShop />} />
-        <Route path='/verify-shop' element={ <VerifyShop />} />
+        <Route path='/verify-shop' element={<VerifyShop />} />
         <Route path='/shop/:shopId' element={<Shop />} />
         <Route path='/shipping' element={<Shipping />} />
         <Route path='/shop/order/:id' element={<ShopOrderDetails />} />
         <Route path='/user/order/:id' element={<UserOrderDetails />} />
-        <Route path='/user/track/order/:id' element={<TrackOrder/>} />
+        <Route path='/user/track/order/:id' element={<TrackOrder />} />
         <Route path='/shop-dashboard' element={<ShopDashboard />}>
-          <Route index element={<Dashboard/>} />
+          <Route index element={<Dashboard />} />
           <Route path='all-orders' element={<ShopOrders />} />
           <Route path='all-products' element={<AllProducts />} />
           <Route path='create-product' element={<CreateProduct />} />

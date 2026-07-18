@@ -78,7 +78,7 @@ async function login(req, res) {
         }
         const uToken = authSign(user._id)
         res.cookie("uToken", uToken)
-        res.status(200).json({ success: true, message: "user successfully logged in!" })
+        res.status(200).json({ success: true, userData: user})
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
@@ -225,6 +225,15 @@ async function changePassword(req, res) {
     }
 }
 
+async function logout(req, res) {
+    try {
+        res.clearCookie("uToken")
+        res.status(200).json({success: true, message: "user successfully logged out!"})
+    } catch (error) {
+        return res.status(500).json({success: false, message: error.message})
+    }
+}
+
 module.exports = {
     register,
     verifyEmail,
@@ -234,5 +243,6 @@ module.exports = {
     updateUser,
     addAddress,
     deleteAddress,
-    changePassword
+    changePassword,
+    logout
 }

@@ -1,8 +1,11 @@
 import { useContext, useState, useEffect } from "react"
 import { userContext } from "../../context/UserContext"
 import { IoCameraOutline } from "react-icons/io5";
+import { useSelector } from "react-redux";
+import { backend_url } from "../../server";
+
 function ChangeProfile() {
-    const { userData, backend_url } = useContext(userContext)
+    const userData = useSelector(state=> state.user.user)
 
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")

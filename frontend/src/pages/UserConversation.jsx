@@ -9,14 +9,20 @@ import { TfiGallery } from "react-icons/tfi";
 import { useParams } from "react-router-dom"
 import { format } from 'timeago.js'
 import { socket } from "../socket/Socket";
+import { backend_url } from "../server";
+import { updateConversationReducer } from "../redux/reducers/user";
+import { useDispatch, useSelector } from "react-redux";
+import { getShopAction } from "../redux/actions/shop";
 
 function UserConversation() {
-    const { backend_url, setConversations, onlineUsers, userData } = useContext(userContext)
+    const dispatch = useDispatch()
+    const onlineUsers = useSelector(state=> state.user.onlineUsers)
+    const userData = useSelector(state=> state.user.user)
     const [newMessage, setNewMessage] = useState("")
     // const { sellerData } = useContext(shopContext)
     const [messages, setMessages] = useState([])
     const [conversation, setConversation] = useState(null)
-    const { getShopInfo, shopData } = useContext(shopContext)
+    const shopData = useSelector(state=> state.shop.shop)
     const { id } = useParams()
     const [shop, setShop] = useState(null)
 
@@ -69,7 +75,7 @@ function UserConversation() {
 
     useEffect(() => {
         if (conversation) {
-            getShopInfo(conversation.members[1])
+            getShopAction(conversation.members[1])
         }
     }, [conversation])
 
@@ -162,13 +168,7 @@ function UserConversation() {
             const currentShop = shopRef.current
             if (data.conversationId !== currentConversation?._id) return
             setMessages(prev => [...prev, data])
-            setConversations(prev =>
-                prev.map(conv =>
-                    conv._id === data.conversationId
-                        ? { ...conv, lastMessage: data.text, lastMessageId: data.sender }
-                        : conv
-                )
-            )
+            dispatch(updateConversation({lastMessage: data.text, lastMessageId: data.sender}))
             if (currentConversation && currentUser && currentShop) {
             messageSeen()
         }
@@ -182,17 +182,7 @@ function UserConversation() {
             const { data } = await axios.put(backend_url + "/api/conversation/update-last-message/" + conversation._id,
                 { lastMessage: newMessage, sender: userData._id }, { withCredentials: true })
             if (data.success) {
-                setConversations(prev =>
-                    prev.map(conv =>
-                        conv._id === conversation._id
-                            ? {
-                                ...conv,
-                                lastMessage: newMessage,
-                                lastMessageId: userData._id
-                            }
-                            : conv
-                    )
-                )
+                dispatch(updateConversation({lastMessage: newMessage, lastMessageId: userData._id}))
             }
         } catch (error) {
             console.log(error)
@@ -303,6 +293,7 @@ function UserConversation() {
                     <input type="file" id='image' hidden />
                     <input
                         type="text"
+                        required
                         className="border border-gray-300 w-full h-8 rounded-md p-1 focus:outline-none"
                         placeholder="Enter your message..."
                         value={newMessage}

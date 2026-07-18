@@ -4,16 +4,18 @@ import { generalContext } from "../../context/Context"
 import { AiOutlineEye } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
-import { shopContext } from "../../context/ShopContext";
+import { backend_url } from "../../server";
+import { useDispatch, useSelector } from "react-redux";
+import { getEventsAction } from "../../redux/actions/shop"; 
 
 function AllEvents() {
-    
-    const { backend_url } = useContext(generalContext)
-    const {shopEvents, getEventsOfShop, sellerData} = useContext(shopContext)
+    const sellerData = useSelector(state=> state.shop.seller)
+    const shopEvents = useSelector(state=> state.shop.events)
+    const dispatch = useDispatch()
 
     useEffect(()=>{
         if(sellerData?._id){
-            getEventsOfShop(sellerData._id)
+            dispatch(getEventsAction(sellerData._id))
         }
     },[sellerData])
 

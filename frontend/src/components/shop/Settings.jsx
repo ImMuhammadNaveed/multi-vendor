@@ -3,8 +3,11 @@ import { shopContext } from "../../context/ShopContext"
 import { useState, useEffect } from "react"
 import { IoCameraOutline } from "react-icons/io5";
 import axios from "axios";
+import { backend_url } from "../../server";
+import { useSelector } from "react-redux";
+
 function Settings() {
-    const { sellerData, backend_url } = useContext(shopContext)
+    const sellerData = useSelector(state=> state.shop.seller)
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")

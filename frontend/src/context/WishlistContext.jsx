@@ -9,7 +9,10 @@ export function WishlistContextProvider({ children }) {
 
     // load wishlist from local storage
     useEffect(()=>{
-        if(!userData) return
+        if(!userData){
+            setWishlist([])
+            return
+        }
         const savedWishlist = localStorage.getItem(`wishlist_${userData._id}`)
         if(savedWishlist){
             setWishlist(JSON.parse(savedWishlist))
@@ -48,7 +51,7 @@ export function WishlistContextProvider({ children }) {
     },[wishlist])
 
     const values = {
-        wishlist,
+        wishlist, setWishlist,
         addToWishlist,
         removeFromWishlist,
         isInWishlist

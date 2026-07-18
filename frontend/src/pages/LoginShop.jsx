@@ -1,21 +1,23 @@
 import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { shopContext } from "../context/ShopContext"
+import { backend_url } from "../server"
 import axios from "axios"
+import { useDispatch } from "react-redux"
+import {getSellerAction} from '../redux/actions/shop'
 
 function LoginShop() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(true)
-    const {backend_url, fetchSellerData} = useContext(shopContext)
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     async function handleSubmit(e) {
         e.preventDefault()
         try {
             const {data} = await axios.post(backend_url+"/api/shop/login-shop", {email, password}, {withCredentials: true})
             if(data.success){
-                await fetchSellerData()
+                dispatch(getSellerAction())
                 navigate("/")
             }else{
                 alert(data.message)

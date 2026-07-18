@@ -3,7 +3,7 @@ import { IoBagHandleOutline } from "react-icons/io5";
 import cart_pic from '../../static/cart-item.png'
 import { GoHeart } from 'react-icons/go'
 import { AiOutlineShoppingCart } from 'react-icons/ai'
-import { wishlistContext } from '../../context/WishlistContext'
+import { addToCartAction } from "../../redux/actions/cart";
 
 function Wishlist({ setOpenWishlist }) {
     // const data = [
@@ -23,7 +23,7 @@ function Wishlist({ setOpenWishlist }) {
     //         price: 245
     //     }
     // ]
-    const { wishlist } = useContext(wishlistContext)
+    const wishlist = useSelector(state=> state.wishlist.wishlist)
 
     return (
         <div className="fixed inset-0 bg-black/40 z-60">
@@ -42,7 +42,7 @@ function Wishlist({ setOpenWishlist }) {
                 <hr className="text-[#E5E7EB]" />
                 {
                     wishlist.map((item) =>
-                        <WishlistItem item={item} />
+                        <WishlistItem item={item} key={item.product._id}/>
                     )
                 }
             </div>
@@ -58,21 +58,22 @@ export default Wishlist
 
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
-import { useContext, useState } from "react";
-import { generalContext } from '../../context/Context'
-import {cartContext} from '../../context/CartContext'
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { removeFromWishlistAction } from "../../redux/actions/wishlist";
+import { useDispatch } from "react-redux";
+import { backend_url } from "../../server";
 
 function WishlistItem({ item }) {
-    const { backend_url } = useContext(generalContext)
-    const { removeFromWishlist } = useContext(wishlistContext)
-    const {addToCart} = useContext(cartContext)
+    const dispatch = useDispatch()
+    const userData = useSelector(state=> state.user.user)
     return (
         <div>
             <div className="flex items-center pt-3 pl-3 pb-3">
                 <RxCross1
                     size={30}
                     className="cursor-pointer"
-                    onClick={() => removeFromWishlist(item.product)}
+                    onClick={() => dispatch(removeFromWishlistAction(item.product))}
                 />
                 <div>
                     <img src={`${backend_url}/uploads/` + item.product.images[0]} className="w-70 object-contain" alt="" />
@@ -84,7 +85,7 @@ function WishlistItem({ item }) {
                 <AiOutlineShoppingCart
                     size={50}
                     className="cursor-pointer"
-                    onClick={()=>addToCart(item.product)}
+                    onClick={()=>dispatch(addToCartAction(item.product, userData))}
                 />
             </div>
             <hr className="text-[#E5E7EB]" />

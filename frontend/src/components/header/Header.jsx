@@ -3,14 +3,17 @@ import logo from '../../static/logo.svg'
 import Navbar from './Navbar'
 
 import { useContext, useEffect, useState } from 'react'
-import { productContext } from '../../context/ProductContext'
+// import { productContext } from '../../context/ProductContext'
 import { shopContext } from '../../context/ShopContext'
+import { generalContext } from '../../context/Context'
+import { useSelector } from 'react-redux'
 
 function Header() {
-    const { allProducts, backend_url } = useContext(productContext)
+    const {backend_url } = useContext(generalContext)
     const [searchTerm, setSearchTerm] = useState("")
     const [searchData, setSearchData] = useState([])
-    const {sLoggedIn} = useContext(shopContext)
+    const sellerLogin = useSelector(state=>state.shop.sellerLogin)
+    const allProducts = useSelector(state=>state.product.allProducts)
 
     useEffect(() => {
         if (searchTerm === "") {
@@ -60,10 +63,10 @@ function Header() {
 
                 </div>
                 <Link
-                    to={sLoggedIn?"/shop-dashboard" :"/create-shop"}
+                    to={sellerLogin?"/shop-dashboard" :"/create-shop"}
                     className='bg-black text-white px-4 py-3 rounded-lg font-semibold cursor-pointer'
                 >
-                    {sLoggedIn?"Go To DashBoard" :"Become Seller"}
+                    {sellerLogin?"Go To DashBoard" :"Become Seller"}
                     <i
                         className="fa-solid fa-angle-right">
                     </i>

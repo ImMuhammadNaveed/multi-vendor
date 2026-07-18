@@ -7,14 +7,17 @@ import { userContext } from "../../context/UserContext"
 import {cartContext} from '../../context/CartContext'
 import { wishlistContext } from "../../context/WishlistContext"
 import { shopContext } from "../../context/ShopContext"
+import { useSelector } from "react-redux"
+import {backend_url} from '../../server'
 
 function Navbar() {
     const [showCategory, setShowCategory] = useState(false)
     const [openCart, setOpenCart] = useState(false)
     const [openWishlist, setOpenWishlist] = useState(false)
-    const { userData, backend_url, uLoggedIn } = useContext(userContext)
-    const {cart} = useContext(cartContext) 
-    const {wishlist} = useContext(wishlistContext)
+    const userData = useSelector(state=> state.user.user)
+    const uLoggedIn = useSelector(state=> state.user.userLogin)
+    const cart = useSelector(state=> state.cart.cart)
+    const wishlist = useSelector(state=>state.wishlist.wishlist)
     
 
     const navigate = useNavigate()

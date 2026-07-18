@@ -3,9 +3,9 @@ import { categoriesData } from "../../static/data"
 import { MdAddCircleOutline } from "react-icons/md";
 import { productContext } from "../../context/ProductContext";
 import axios from 'axios'
+import { backend_url } from "../../server";
 
 function CreateCoupon() {
-    const { backend_url } = useContext(productContext)
 
     const [name, setName] = useState("")
     const [percentage, setPercentage] = useState("")

@@ -1,9 +1,10 @@
 import { useContext } from "react"
 import { shopContext } from "../../context/ShopContext"
 import { Link } from "react-router-dom"
+import { useSelector } from "react-redux"
 
 function WithdrawMoney() {
-    const { orders } = useContext(shopContext)
+    const orders = useSelector(state=> state.shop.sellerOrders)
     const deliveredOrders = orders && orders.filter((order)=>order.status==="Delivered")
     const totalPrice = deliveredOrders && deliveredOrders.reduce((acc, item)=>acc+item.totalPrice,0)
     const serviceCharges = totalPrice&&totalPrice*0.1

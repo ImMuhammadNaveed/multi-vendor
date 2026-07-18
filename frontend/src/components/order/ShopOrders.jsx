@@ -1,13 +1,12 @@
-import { shopContext } from "../../context/ShopContext"
-import { useContext } from "react"
 import { useState, useEffect } from "react"
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
 import { Link } from "react-router-dom";
+import { backend_url } from "../../server";
+import { useSelector } from "react-redux";
 
 function ShopOrders() {
-    const {backend_url} = useContext(shopContext)
-    const {orders} = useContext(shopContext)
+    const orders = useSelector(state=> state.shop.sellerOrders)
     
     const rows = orders && orders.map((item) => ({
         id: item._id,

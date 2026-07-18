@@ -3,9 +3,9 @@ import { categoriesData } from "../../static/data"
 import { MdAddCircleOutline } from "react-icons/md";
 import { productContext } from "../../context/ProductContext";
 import axios from 'axios'
+import { backend_url } from "../../server";
 
 function CreateProduct() {
-    const { backend_url } = useContext(productContext)
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
@@ -100,7 +100,7 @@ function CreateProduct() {
                         onChange={(e) => setCategory(e.target.value)}
                     >
                         {categoriesData.map((item) =>
-                            <option value={item.title}>{item.title}</option>
+                            <option value={item.title} key={item.title}>{item.title}</option>
                         )}
                     </select>
                 </div>

@@ -1,10 +1,11 @@
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import { shopContext } from '../../context/ShopContext'
 import axios from "axios"
 import { Link } from "react-router-dom"
+import { backend_url } from "../../server"
 
 function ShopSideBar({ shopData, shopProducts, owner }) {
-    const { backend_url } = useContext(shopContext)
+    // const { backend_url } = useContext(shopContext)
     async function logout() {
         try {
             const { data } = await axios.post(backend_url + "/api/shop/logout", {}, { withCredentials: true })
@@ -15,7 +16,8 @@ function ShopSideBar({ shopData, shopProducts, owner }) {
             console.log(error.response.data.message)
         }
     }
-    return shopData && shopProducts && (
+    useEffect(()=>{console.log(shopData)},[])
+    return shopProducts && (
         <>
             <div className="h-[100vh]">
                 <div className="w-70 bg-white px-2 overflow-y-scroll h-[90%] ml-10 rounded-md py-4">
@@ -47,7 +49,7 @@ function ShopSideBar({ shopData, shopProducts, owner }) {
                         </div>
                         <div >
                             <p className='font-semibold text-sm'>Joined On</p>
-                            <p className='text-sm'>{shopData.createdAt.split("T")[0]}</p>
+                            <p className='text-sm'>{shopData.createdAt&&shopData.createdAt.split("T")[0]}</p>
                         </div>
                     </div>
                     {

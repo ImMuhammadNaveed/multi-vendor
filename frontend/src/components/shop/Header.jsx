@@ -7,9 +7,12 @@ import { MdOutlineLocalOffer } from "react-icons/md";
 import { FiShoppingBag } from "react-icons/fi";
 import { FiPackage } from "react-icons/fi";
 import { BiMessageSquareDetail } from "react-icons/bi";
+import { backend_url } from "../../server";
+import { useSelector } from "react-redux";
 
 function Header() {
-    const { shopData, backend_url, sellerData } = useContext(shopContext)
+    const shopData = useSelector(state=> state.shop.shop)
+    const sellerData = useSelector(state=> state.shop.seller)
     return (
         <>
             <div>

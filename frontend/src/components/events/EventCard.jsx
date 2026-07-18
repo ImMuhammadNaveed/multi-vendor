@@ -2,13 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 import mobile from '../../static/mobile.jpg'
 import { FaArrowRight } from "react-icons/fa6";
 import { generalContext } from '../../context/Context';
-import { cartContext } from '../../context/CartContext';
+import { addToCartAction } from '../../redux/actions/cart';
 import {Link} from 'react-router-dom'
+import { useDispatch } from 'react-redux';
 
 function EventCard({ event }) {
     const { backend_url } = useContext(generalContext)
     const [timeLeft, setTimeLeft] = useState("")
-    const {addToCart} = useContext(cartContext)
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (!event || !event.endingDate) return
@@ -52,7 +53,7 @@ function EventCard({ event }) {
                         <Link to={`/products/${event._id}?isEvent=true`} className='bg-black text-white px-7 py-3 rounded-lg cursor-pointer mr-10'>See Details</Link>
                         <button 
                         className='bg-black text-white px-7 py-3 rounded-lg cursor-pointer'
-                        onClick={()=>addToCart(event)}
+                        onClick={()=>dispatch(addToCartAction(event))}
                         >Buy Now</button>
                     </div>
                     <div className='flex justify-end mt-5'>

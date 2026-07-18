@@ -1,6 +1,8 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { socket } from "../socket/Socket";
+import { loadWishlistAction } from "../redux/actions/wishlist";
+import { useDispatch } from "react-redux";
 
 export const userContext = createContext()
 
@@ -12,43 +14,43 @@ export function UserContextProvider({children}) {
     const [conversations, setConversations] = useState(null)
     const [onlineUsers, setOnlineUsers] = useState(null)
 
-    async function getUserOrders() {
-        try {
-            const { data } = await axios.get(backend_url + "/api/order/user-orders", { withCredentials: true })
-            if (data.success) {
-                setOrders(data.data)
-            }
-        } catch (error) {
-            console.log(error.response?.data?.message)
-        }
-    }
-    async function getUserData() {
-        try {
-            const {data} = await axios.get(backend_url+"/api/user/info", {withCredentials: true})
-            if(data.success){
-                setUserData(data.userData)
-                setULoggedIn(true)
-            }
-        } catch (error) {
-            console.log(error.response?.data?.message)
-        }
-    }
-    useEffect(()=>{getUserData()}, [])
+    // async function getUserOrders() {
+    //     try {
+    //         const { data } = await axios.get(backend_url + "/api/order/user-orders", { withCredentials: true })
+    //         if (data.success) {
+    //             setOrders(data.data)
+    //         }
+    //     } catch (error) {
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // async function getUserData() {
+    //     try {
+    //         const {data} = await axios.get(backend_url+"/api/user/info", {withCredentials: true})
+    //         if(data.success){
+    //             setUserData(data.userData)
+    //             setULoggedIn(true)
+    //         }
+    //     } catch (error) {
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // useEffect(()=>{getUserData()}, [])
 
-    async function getUserConversations() {
-        try {
-            const { data } = await axios.get(backend_url + "/api/conversation/get-user-conversations", { withCredentials: true })
-            console.log("user conversations: ", data)
-            if (data.success) {
-                setConversations(data.conversationsData)
-            }
-        } catch (error) {
-            console.log(error.response?.data?.message)
-        }
-    }
-    useEffect(() => {
-        getUserConversations()
-    }, [userData])
+    // async function getUserConversations() {
+    //     try {
+    //         const { data } = await axios.get(backend_url + "/api/conversation/get-user-conversations", { withCredentials: true })
+    //         console.log("user conversations: ", data)
+    //         if (data.success) {
+    //             setConversations(data.conversationsData)
+    //         }
+    //     } catch (error) {
+    //         console.log(error.response?.data?.message)
+    //     }
+    // }
+    // useEffect(() => {
+    //     getUserConversations()
+    // }, [userData])
 
     useEffect(() => {
         if (!userData) return

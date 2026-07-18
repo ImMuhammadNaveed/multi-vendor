@@ -7,18 +7,26 @@ import { AiFillMessage } from "react-icons/ai";
 import { AiOutlineShoppingCart } from 'react-icons/ai'
 import Product from "../components/product/ProductCard"
 import { useSearchParams } from "react-router-dom";
+import { addToWishlistAction, isInWishlistAction, removeFromWishlistAction } from "../redux/actions/wishlist";
+import { sendMessageAction } from "../redux/actions/user";
+import { addToCartAction } from "../redux/actions/cart";
+import { useDispatch, useSelector } from "react-redux";
+import { backend_url } from "../server";
 
 
 function ProductFullDetails() {
     const navigate = useNavigate()
-    const {userData} = useContext(userContext)
+    const userData = useSelector(state=> state.user.user)
     const [activeImage, setActiveImage] = useState(0)
     const [data, setData] = useState(null)
     const [quantity, setQuantity] = useState(1)
     const { id } = useParams()
-    const { backend_url, allProducts } = useContext(productContext)
-    const { addToCart } = useContext(cartContext)
-    const { isInWishlist, addToWishlist, removeFromWishlist } = useContext(wishlistContext)
+    const allProducts = useSelector(state=> state.product.allProducts)
+    // const { addToCart } = useContext(cartContext)
+    const wishlist = useSelector(state=> state.wishlist.wishlist)
+    useEffect(()=>{console.log("wishlist in pro full details :",wishlist)},[wishlist])
+    const dispatch = useDispatch()
+    
     const [searchParams] = useSearchParams()
     const isEvent = searchParams.get("isEvent")
     const { events } = useContext(generalContext)
@@ -36,20 +44,8 @@ function ProductFullDetails() {
 
     }, [allProducts, id])
 
-    async function handleSendMessage() {
-        const userId = userData&&userData._id
-        const sellerId = data&&data.shop._id
-        try {
-            const {data} = await axios.post(backend_url+'/api/conversation/create-new-conversation', 
-                {userId, sellerId},
-                {withCredentials: true}
-            )
-            if(data.success){
-                navigate("/conversation/"+data.conversationData._id)
-            }
-        } catch (error) {
-            
-        }
+    function handleSendMessage() {
+        dispatch(sendMessageAction(userData, data, navigate))
     }
     return data && (
         <div>
@@ -97,13 +93,13 @@ function ProductFullDetails() {
                         </div>
 
                         {
-                            isInWishlist(data)
+                            isInWishlistAction(wishlist, data._id)
                                 ? <GoHeartFill
                                     color='red'
                                     className='mb-2 cursor-pointer'
                                     size={25}
                                     onClick={(e) => {
-                                        removeFromWishlist(data)
+                                        dispatch(removeFromWishlistAction(data))
                                         e.preventDefault()
                                         e.stopPropagation()
                                     }} />
@@ -111,7 +107,7 @@ function ProductFullDetails() {
                                     className='mb-2 cursor-pointer'
                                     size={25}
                                     onClick={(e) => {
-                                        addToWishlist(data)
+                                        dispatch(addToWishlistAction(data, userData))
                                         e.preventDefault()
                                         e.stopPropagation()
                                     }} />
@@ -119,7 +115,7 @@ function ProductFullDetails() {
                     </div>
                     <button
                         className="bg-black text-white flex items-center px-7 py-3 rounded-md mt-5 cursor-pointer"
-                        onClick={() => addToCart(data, quantity)}
+                        onClick={() => dispatch(addToCartAction(data, userData, quantity))}
                     >Add to cart
                         <AiOutlineShoppingCart
                             className='ml-1'
@@ -160,10 +156,10 @@ export default ProductFullDetails
 
 function Details({ data }) {
     const [toShow, setToShow] = useState("pro-details")
-    const { backend_url } = useContext(productContext)
-    const { shopProducts, getProductsOfShop } = useContext(productContext)
+    const shopProducts = useSelector(state=> state.product.shopProducts)
+    const dispatch = useDispatch()
     useEffect(() => {
-        getProductsOfShop(data.shop._id)
+        dispatch(getShopProductsAction(data.shop._id))
     }, [data])
     return (
         <div className="w-[80%] bg-[#F5F6FB] m-auto rounded-md mb-15">
@@ -252,9 +248,10 @@ import { wishlistContext } from "../context/WishlistContext";
 import Ratings from "../components/ratings/Ratings";
 import { userContext } from "../context/UserContext";
 import axios from "axios";
+import { getShopProductsAction } from "../redux/actions/product";
 function RelatedProducts({ data }) {
     const [sameCat, setSameCat] = useState(null)
-    const { allProducts } = useContext(productContext)
+    const allProducts = useSelector(state=> state.product.allProducts)
     useEffect(() => {
         const sameCatPro = allProducts.filter((i) => i.category === data.category)
         setSameCat(sameCatPro)

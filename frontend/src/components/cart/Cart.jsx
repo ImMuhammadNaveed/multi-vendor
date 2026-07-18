@@ -2,25 +2,10 @@ import { RxCross1 } from "react-icons/rx";
 import { IoBagHandleOutline } from "react-icons/io5";
 import cart_pic from '../../static/cart-item.png'
 import { Link } from 'react-router-dom'
+import { useSelector } from "react-redux";
+
 function Cart({ setOpenCart }) {
-    // const data = [
-    //     {
-    //         image: cart_pic,
-    //         name: "Iphone 14 pro max 256 gb ssd and 8 gb ram silver colour",
-    //         price: 699
-    //     },
-    //     {
-    //         image: cart_pic,
-    //         name: "Iphone 14 pro max 256 gb ssd and 8 gb ram silver colour",
-    //         price: 999
-    //     },
-    //     {
-    //         image: cart_pic,
-    //         name: "Iphone 14 pro max 256 gb ssd and 8 gb ram silver colour",
-    //         price: 245
-    //     }
-    // ]
-    const { cart } = useContext(cartContext)
+    const cart = useSelector(state=> state.cart.cart)
     return (
         <div className="fixed inset-0 bg-black/40 z-60">
             <div className="fixed z-51 w-[25%] bg-white top-0 right-0 h-screen overflow-y-scroll scrollbar-hide">
@@ -65,25 +50,27 @@ export default Cart
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { useContext, useState } from "react";
-import { cartContext } from "../../context/CartContext";
-import { generalContext } from "../../context/Context"
+import { useDispatch } from "react-redux";
+import { removeFromCartAction, increaseQuantityAction, decreaseQuantityAction } from "../../redux/actions/cart";
+import { backend_url } from "../../server";
 
 function CartItem({ item }) {
     const [quantity, setQuantity] = useState(1)
-    const { backend_url } = useContext(generalContext)
-    const { removeFromCart, increaseQuantity, decreaseQuantity } = useContext(cartContext)
+    const userData = useSelector(state=> state.user.user)
+    const cart = useSelector(state=>state.cart.cart)
+    const dispatch = useDispatch()
     return (
         <div>
             <div className="flex items-center justify-between pt-3 pl-3 pb-3">
                 <div className="flex flex-col gap-1 items-center">
                     <button
-                        onClick={() => increaseQuantity(item.product._id)}
-                        className="p-1 rounded-full bg-red-500 text-white"
+                        onClick={() => dispatch(increaseQuantityAction(item.product._id, cart, userData))}
+                        className="p-1 rounded-full bg-red-500 text-white cursor-pointer"
                     ><FaPlus size={10} /></button>
                     <p>{item.quantity}</p>
                     <button
-                        onClick={() => decreaseQuantity(item.product._id)}
-                        className="p-1 rounded-full bg-[#E4E5E7] text-[#7D879C]"><FaMinus size={10} /></button>
+                        onClick={() => dispatch(decreaseQuantityAction(item.product._id, cart, userData))}
+                        className="p-1 rounded-full bg-[#E4E5E7] text-[#7D879C] cursor-pointer"><FaMinus size={10} /></button>
                 </div>
                 <div className="w-16">
                     <img
@@ -100,7 +87,7 @@ function CartItem({ item }) {
                     <RxCross1
                         // size={20}
                         className="w-full cursor-pointer"
-                        onClick={() => removeFromCart(item.product)}
+                        onClick={() => dispatch(removeFromCartAction(item.product, userData))}
                     />
                 </div>
 

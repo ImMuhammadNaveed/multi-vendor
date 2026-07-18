@@ -1,7 +1,8 @@
 import { useContext, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
-import { shopContext } from "../context/ShopContext"
+import { backend_url } from "../server"
+// import { shopContext } from "../context/ShopContext"
 
 function CreateShop() {
 
@@ -14,7 +15,7 @@ function CreateShop() {
     const [image, setImage] = useState(false)
     const [showPassword, setShowPassword] = useState(true)
     const navigate = useNavigate()
-    const { backend_url, fetchShopData } = useContext(shopContext)
+    // const { backend_url, fetchShopData } = useContext(shopContext)
 
     async function handleSubmit(e) {
         e.preventDefault()

@@ -1,10 +1,11 @@
+import { useSelector } from "react-redux"
 import { productData } from "../../static/data"
-import { productContext } from "../../context/ProductContext"
+// import { productContext } from "../../context/ProductContext"
 import Product from "./ProductCard"
 import { useContext } from "react"
 
 function FeatureProducts() {
-    const { allProducts } = useContext(productContext)
+    const allProducts = useSelector(state=> state.product.allProducts)
     const recentProducts = [...allProducts]
         .sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
         .slice(0, 10)
@@ -16,7 +17,7 @@ function FeatureProducts() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
                     {
                         recentProducts.map((item) =>
-                            <Product item={item} key={item.id} />
+                            <Product item={item} key={item._id} />
                         )
                     }
 

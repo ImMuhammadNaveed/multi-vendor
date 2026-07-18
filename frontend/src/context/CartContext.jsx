@@ -9,7 +9,10 @@ export function CartContextProvider({ children }) {
 
     // load cart from local storage
     useEffect(()=>{
-        if(!userData) return
+        if(!userData){
+            setCart([])
+            return
+        }
         const savedCart = localStorage.getItem(`cart_${userData._id}`)
         if(savedCart){
             setCart(JSON.parse(savedCart))
@@ -87,7 +90,7 @@ export function CartContextProvider({ children }) {
 
 
     const values = {
-        cart,
+        cart, setCart,
         addToCart,
         removeFromCart,
         increaseQuantity,
