@@ -1,14 +1,13 @@
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
-import { useContext, useEffect } from 'react';
-import { userContext } from '../../context/UserContext';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { backend_url } from '../../server';
-import { getUserOrdersAction } from '../../redux/actions/user';
+import { getUserOrdersAction } from '../../redux/actions/order';
 import { useSelector } from 'react-redux';
 function Orders() {
     useEffect(() => { getUserOrdersAction() }, [])
-    const orders = useSelector(state=> state.user.userOrders)
+    const orders = useSelector(state=> state.order.userOrders)
 
     const rows = orders && orders.map((item) => ({
         id: item._id,
@@ -40,15 +39,17 @@ function Orders() {
         },
     ]
     return (
-        <div style={{ width: '100%', height: 400 }}>
-            <DataGrid
-                className="text-right"
+            <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
+                <DataGrid
+                // className="w-full "
                 columns={columns}
                 rows={rows}
-                pageSize={10}
-                autoHeight
+                pageSize={5}
+                // autoHeight 
+                // disableColumnMenu
             />
-        </div>
+            </div>
+            
     )
 }
 export default Orders

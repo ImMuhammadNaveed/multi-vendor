@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useContext } from "react";
-import { userContext } from "../context/UserContext";
+import { useSelector, useDispatch } from 'react-redux'
+import { getUserOrdersAction } from '../redux/actions/order'
 
 function TrackOrder() {
     const { id } = useParams()
-    const { getUserOrders, orders } = useContext(userContext)
-    useEffect(() => { getUserOrders() }, [])
+    const dispatch = useDispatch()
+    useEffect(() => { dispatch(getUserOrdersAction()) }, [])
 
+    const orders = useSelector(state=> state.order.userOrders)
     const reqOrder = orders && orders.find((order) => order._id === id)
 
     useEffect(() => { console.log(reqOrder) }, [])

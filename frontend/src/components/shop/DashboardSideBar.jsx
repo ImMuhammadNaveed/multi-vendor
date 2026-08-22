@@ -16,12 +16,12 @@ function DashboardSideBar({active, setActive}) {
     const linkClass = (({isActive})=>`flex items-center gap-2 text-sm ${isActive?"text-[crimson]":"text-[#555]"}` )
     return (
         <>
-            <div className="w-60 bg-white pl-4 py-6 flex flex-col gap-6">
+            <div className="lg:w-60 shrink-0 h-full bg-white px-4 py-6 flex flex-col justify-between border-r border-gray-300">
                 <NavLink to='/shop-dashboard' end className={linkClass}>
                     <span>
                         <RxDashboard size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Dashboard
                     </span>
                 </NavLink>
@@ -29,7 +29,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <FiShoppingBag size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         All Orders
                     </span>
                 </NavLink>
@@ -37,7 +37,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <FiPackage size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         All Products
                     </span>
                 </NavLink>
@@ -45,7 +45,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <AiOutlineFolderAdd size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Create Product
                     </span>
                 </NavLink>
@@ -53,7 +53,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <MdOutlineLocalOffer size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         All Events
                     </span>
                 </NavLink>
@@ -61,7 +61,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <VscNewFile size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Create Event
                     </span>
                 </NavLink>
@@ -69,7 +69,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <CiMoneyBill size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Withdraw Money
                     </span>
                 </NavLink>
@@ -77,7 +77,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <BiMessageSquareDetail size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Shop Inbox
                     </span>
                 </NavLink>
@@ -85,7 +85,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <AiOutlineGift size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Discount Codes
                     </span>
                 </NavLink>
@@ -93,7 +93,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <HiOutlineReceiptRefund size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Refunds
                     </span>
                 </NavLink>
@@ -101,7 +101,7 @@ function DashboardSideBar({active, setActive}) {
                     <span>
                         <CiSettings size={20} />
                     </span>
-                    <span>
+                    <span className='lg:block hidden'>
                         Settings
                     </span>
                 </NavLink>

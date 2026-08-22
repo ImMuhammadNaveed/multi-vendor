@@ -21,10 +21,6 @@ const orderSchema = mongoose.Schema({
         type: String,
         default: "processing"
     },
-    isReviewed:{
-        type: Boolean,
-        default: false
-    },
     paymentInfo:{
         id: {
             type: String

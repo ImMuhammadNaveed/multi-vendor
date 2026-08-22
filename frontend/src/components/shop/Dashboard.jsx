@@ -1,15 +1,14 @@
 import { AiOutlineMoneyCollect } from "react-icons/ai";
 import { RxBorderSplit } from "react-icons/rx";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { shopContext } from '../../context/ShopContext'
 import { backend_url } from "../../server";
 import { getAllProductsAction } from "../../redux/actions/product";
 import { useDispatch, useSelector } from "react-redux";
 
 function Dashboard() {
-    const orders = useSelector(state=> state.shop.sellerOrders)
-    const topOrders = orders.slice(0, 3).reverse()
+    const orders = useSelector(state=> state.order.sellerOrders)
+    const topOrders = orders&&orders.slice(0, 3).reverse()
 
     const sellerData = useSelector(state=> state.shop.seller)
     const shopProducts = useSelector(state=> state.product.shopProducts)
@@ -20,15 +19,15 @@ function Dashboard() {
         }
     }, [sellerData])
 
-    const deliveredOrders = orders && orders.filter((order)=>order.status==="Delivered")
-    const totalPrice = deliveredOrders && deliveredOrders.reduce((acc, item)=>acc+item.totalPrice,0)
-    const serviceCharges = totalPrice&&totalPrice*0.1
-    const availableBalance = totalPrice - serviceCharges
+    // const deliveredOrders = orders && orders.filter((order)=>order.status==="Delivered")
+    // const totalPrice = deliveredOrders && deliveredOrders.reduce((acc, item)=>acc+item.totalPrice,0)
+    // const serviceCharges = totalPrice&&totalPrice*0.1
+    // const availableBalance = totalPrice - serviceCharges
     return (
         <>
-            <div className="w-full my-4 mx-8">
+            <div className="w-full py-4 lg:px-8 px-2">
                 <p className="text-xl font-semibold mb-2">Overview</p>
-                <div className="flex justify-between">
+                <div className="flex lg:flex-row lg:justiy-start flex-col items-center lg:gap-0 gap-4 justify-between">
                     <div className="bg-white w-70 p-4 border border-gray-200">
                         <div className="flex items-center gap-2">
                             <AiOutlineMoneyCollect size={30} color="#9E9E9E" />
@@ -39,8 +38,8 @@ function Dashboard() {
                                 </span>
                             </p>
                         </div>
-                        <p className="font-semibold text-xl ml-4 my-2">{availableBalance}</p>
-                        <Link className="text-sm text-cyan-800 cursor-pointer">Withdram Money</Link>
+                        <p className="font-semibold text-xl ml-4 my-2">{sellerData.availableBalance}</p>
+                        <Link to={'/shop-dashboard/withdraw-money'} className="text-sm text-cyan-800 cursor-pointer">Withdram Money</Link>
                     </div>
                     <div className="bg-white w-70 p-4 border border-gray-200">
                         <div className="flex items-center gap-2">
@@ -79,7 +78,6 @@ function Dashboard() {
 
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
-import { productContext } from "../../context/ProductContext";
 import { getShopProductsAction } from "../../redux/actions/product";
 function Orders({ topOrders }) {
     const rows = topOrders && topOrders.map((item) => ({

@@ -1,10 +1,16 @@
 import { Country, State, City } from 'country-state-city'
 import { RxCross1 } from "react-icons/rx";
-import { useContext, useState } from 'react';
-import { userContext } from '../../context/UserContext';
+import { useState } from 'react';
 import { AiTwotoneDelete } from "react-icons/ai";
+import { useDispatch, useSelector } from 'react-redux';
+import { backend_url } from '../../server';
+import axios from 'axios';
+import { setUser } from '../../redux/slices/user'
+import { toast } from 'react-toastify';
+
 function Address() {
-    const { backend_url, userData } = useContext(userContext)
+    const dispatch = useDispatch()
+    const userData = useSelector(state=> state.user.user)
     const [openAddressForm, setOpenAddressForm] = useState(false)
 
     const [country, setCountry] = useState("")
@@ -24,17 +30,24 @@ function Address() {
         try {
             const { data } = await axios.post(backend_url + "/api/user/add-address", { addressType, city, country, zipCode, address1, address2 }, { withCredentials: true })
             if (data.success) {
-                alert(data.message || "Address successfully added!")
+                setOpenAddressForm(false)
+                dispatch(setUser(data.updatedUser))
+            }else{
+                toast.error(data.message)
             }
         } catch (error) {
-            console.log(error.response?.data?.message)
+            toast.error(error.response?.data?.message)
         }
     }
     async function deleteAddress(id) {
         try {
             const { data } = await axios.delete(backend_url + `/api/user/delete-address/${id}`, { withCredentials: true })
             // console.log(data)
-            alert(data.message)
+            if(data.success){
+                dispatch(setUser(data.updatedUser))
+            }else{
+                toast.error(data.message)
+            }
         } catch (error) {
             console.log(error.response.data.message)
         }
@@ -45,7 +58,7 @@ function Address() {
                 <div className="flex justify-center items-center bg-black/40 w-full h-screen fixed inset-0">
                     <form
                         action=""
-                        className="flex flex-col gap-2 bg-white w-[35%] overflow-y-auto p-2 rounded-sm"
+                        className="flex flex-col gap-2 bg-white w-[90%] lg:w-[35%] overflow-y-auto p-2 rounded-sm"
                         onSubmit={handleSubmit}
                     >
                         <div className="flex justify-end">
@@ -145,17 +158,17 @@ function Address() {
                             <button className="bg-black text-white py-2 px-4 rounded-md cursor-pointer" onClick={() => setOpenAddressForm(true)}>Add New</button>
                         </div>
                         {userData.addresses.map((item, index) => (
-                            <div key={index} className="flex justify-between items-center bg-white mt-6 p-4 rounded-md h-15">
-                                <div className="flex items-center">
-                                    <p className="font-semibold pl-4">{item.addressType}</p>
+                            <div key={index} className="flex justify-between items-center gap-4 bg-white mt-6 p-4 rounded-md min-h-15">
+                                <div className="flex items-center justify-start w-16">
+                                    <p className="font-semibold">{item.addressType}</p>
                                 </div>
-                                <div className="flex items-center text-sm">
-                                    <p>{item.address1}, {item.address2}</p>
+                                <div className="flex items-center text-sm w-20 md:w-80 justify-start">
+                                    <p>{item.address1}. {item.address2}</p>
                                 </div>
-                                <div className="flex items-center text-sm">
+                                <div className="flex items-center text-sm justify-start">
                                     <p>{userData.phoneNumber}</p>
                                 </div>
-                                <div className="w-15 cursor-pointer">
+                                <div className="w-15 cursor-pointer flex justify-end">
                                     <AiTwotoneDelete
                                         size={25}
                                         onClick={() => deleteAddress(item._id)}

@@ -2,13 +2,14 @@ import Header from "../components/shop/Header"
 import { Link, useParams } from "react-router-dom"
 import { IoBag } from "react-icons/io5";
 import axios from "axios";
-import { shopContext } from "../context/ShopContext";
 import { useEffect, useState } from "react";
-import { useContext } from "react";
+import { useSelector } from "react-redux";
+import { backend_url } from "../server";
+import { toast } from "react-toastify";
 
 function ShopOrderDetails() {
     const { id } = useParams()
-    const { backend_url, orders } = useContext(shopContext)
+    const orders = useSelector(state=> state.order.sellerOrders)
     const [data, setData] = useState(null)
     const [status, setStatus] = useState('Processing')
 
@@ -29,9 +30,11 @@ function ShopOrderDetails() {
     async function updateStatus() {
         try {
             const { data } = await axios.post(backend_url + `/api/order/update-order-status/${id}`, { status: status }, { withCredentials: true })
-            alert(data.message)
+            if(data.success){
+                setData(data.orderData)
+            }
         } catch (error) {
-            alert(error.response.data.message)
+            toast.error(error.response.data.message)
         }
     }
     const isRefundFlow =
@@ -40,9 +43,13 @@ function ShopOrderDetails() {
     async function refundOrderUpdateHandler() {
         try {
             const { data } = await axios.post(backend_url + `/api/order/refund-success/${id}`, { status: status }, { withCredentials: true })
-            alert(data.message)
+            if(data.success){
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
+            }
         } catch (error) {
-            alert(error.response.data.message)
+            toast.error(error.response.data.message)
         }
     }
     return data && (

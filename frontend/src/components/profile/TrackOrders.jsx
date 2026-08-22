@@ -1,13 +1,12 @@
-import { userContext } from "../../context/UserContext"
-import { useContext, useEffect } from "react"
+import { useEffect } from "react"
 import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { MdOutlineTrackChanges } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
-import { getUserOrdersAction } from "../../redux/actions/user";
+import { getUserOrdersAction } from "../../redux/actions/order";
 
 function TrackOrders() {
-    const orders  = useSelector(state=> state.user.userOrders)
+    const orders  = useSelector(state=> state.order.userOrders)
     const dispatch = useDispatch()
     const rows = orders.length!==0&&orders.map((item) => ({
         id: item._id,
@@ -39,13 +38,13 @@ function TrackOrders() {
         },
     ]
     return (
-        <div style={{ width: '100%', height: 400 }}>
+        <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
             <DataGrid
-                className="text-right"
+                // className="text-right"
                 columns={columns}
                 rows={rows}
-                pageSize={10}
-                autoHeight
+                pageSize={5}
+                // autoHeight = {orders.length===0}
             />
         </div>
     )

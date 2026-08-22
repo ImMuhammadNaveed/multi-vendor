@@ -1,12 +1,10 @@
-import { useContext } from "react"
-import { shopContext } from "../../context/ShopContext"
 import { DataGrid } from '@mui/x-data-grid'
 import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
 import { backend_url } from "../../server";
 import { useSelector } from "react-redux";
 function ShopRefunds() {
-    const orders = useSelector(state=> state.shop.orders)
+    const orders = useSelector(state=> state.order.sellerOrders)
     const refOrders = orders && orders.filter((order)=>order.status==="Processing refund")
 
     const rows = refOrders && refOrders.map((item) => ({

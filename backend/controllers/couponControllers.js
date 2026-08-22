@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose")
 const {couponModel} = require("../database/couponModel") 
 const {shopModel} = require("../database/shopModel")
 
@@ -29,8 +30,8 @@ async function allCoupons(req, res) {
     try {
         const shopId = req.shopId
         console.log("shop id at all-coupons controller: ", shopId)
-        const allCoupons = await couponModel.find({shopId: shopId})
-        console.log("all fetched products of the shop: ", allCoupons)
+        const allCoupons = await couponModel.find({"shop._id": new mongoose.Types.ObjectId(shopId)})
+        // console.log("all fetched coupons of the shop: ", allCoupons)
         return res.status(200).json({success: true, data: allCoupons})
     } catch (error) {
         return res.status(500).json({success: false, message: error.message})
@@ -40,13 +41,38 @@ async function allCoupons(req, res) {
 async function findCoupon(req, res) {
     try {
         const couponName = req.params.name
-        // console.log(couponName)
+        const {cart} = req.body
         const coupon = await couponModel.findOne({name: couponName})
-        // console.log(coupon)
         if(!coupon){
             return res.status(400).json({success: false, message: "Coupon not found!"})
         }
-        return res.status(200).json({success: true, data: coupon})
+        const eligibleItems = cart.filter((item)=>item.product.shop._id.toString()===coupon.shop._id.toString())
+        if(eligibleItems.length===0){
+            return res.status(400).json({success: false, message: "Coupon is not valid for these products!"})
+        }
+        let eligibleTotal = 0
+        for (item of eligibleItems){
+            eligibleTotal += item.product.price*item.quantity
+        }
+        const discount = (eligibleTotal/100)*coupon.value
+        
+        return res.status(200).json({success: true, discount: discount})
+    } catch (error) {
+        return res.status(500).json({success: false, message: error.message})
+    }
+}
+
+async function deleteCoupon(req, res){
+    try {
+        const id = req.params.id
+        if(!id){
+            return res.status(400).json({success: false, message: "id is missing!"})
+        }
+        const deletedRecord = await couponModel.findByIdAndDelete(new mongoose.Types.ObjectId(id))
+        if(!deletedRecord){
+            return res.status(400).json({success: false, message: "deletion not happened!"})
+        }
+        return res.status(200).json({success: true, deletedCoupon: deletedRecord})
     } catch (error) {
         return res.status(500).json({success: false, message: error.message})
     }
@@ -54,5 +80,6 @@ async function findCoupon(req, res) {
 module.exports = {
     createCoupon,
     allCoupons,
-    findCoupon
+    findCoupon,
+    deleteCoupon
 }

@@ -4,7 +4,7 @@ const app = express()
 const cookieParser = require('cookie-parser')
 const cors = require("cors")
 const path = require('path')
-const {userRouter} = require("./routes/userRoutes")
+const { userRouter } = require("./routes/userRoutes")
 const { shopRouter } = require("./routes/shopRoutes")
 const { productRouter } = require("./routes/productRoutes")
 const { eventRouter } = require("./routes/eventRoutes")
@@ -12,6 +12,8 @@ const { couponRouter } = require("./routes/couponRoutes")
 const { orderRouter } = require("./routes/orderRoutes")
 const { conversationRouter } = require("./routes/conversationRoutes")
 const { messageRouter } = require("./routes/messageRoutes")
+const { withdrawRouter } = require("./routes/withdrawRoutes")
+const { paymentRouter } = require("./routes/paymentRoutes")
 
 const corsOption = {
     origin: process.env.FRONTEND_URL,
@@ -32,6 +34,8 @@ app.use('/api/coupon', couponRouter)
 app.use('/api/order', orderRouter)
 app.use('/api/conversation', conversationRouter)
 app.use('/api/message', messageRouter)
+app.use('/api/withdraw', withdrawRouter)
+app.use('/api/payment', paymentRouter)
 
 databaseConnection()
 

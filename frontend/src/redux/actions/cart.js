@@ -1,4 +1,5 @@
 import { setCart, removeFromCart, addToCart } from "../slices/cart"
+import { toast } from "react-toastify"
 export function loadCartAction(userData) {
     return function (dispatch) {
         if (!userData) {
@@ -12,10 +13,15 @@ export function loadCartAction(userData) {
     }
 }
 
-export function addToCartAction(data, userData, quantity=1) {
+export function addToCartAction(data, userData, quantity = 1) {
     return function (dispatch, getState) {
-        dispatch(addToCart({product: data, quantity}))
+        if (!getState().user.userLogin) {
+            toast.error("user not logged in")
+            return
+        }
+        dispatch(addToCart({ product: data, quantity }))
         localStorage.setItem(`cart_${userData._id}`, JSON.stringify(getState().cart.cart))
+        toast.success("Item Successfully added in cart!")
     }
 }
 
@@ -68,3 +74,4 @@ export function decreaseQuantityAction(id, cart, userData) {
         );
     }
 }
+

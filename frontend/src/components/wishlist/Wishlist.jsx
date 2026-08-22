@@ -27,7 +27,7 @@ function Wishlist({ setOpenWishlist }) {
 
     return (
         <div className="fixed inset-0 bg-black/40 z-60">
-            <div className="fixed z-51 w-[25%] bg-white top-0 right-0 h-screen overflow-y-scroll">
+            <div className="fixed z-51 lg:w-[25%] w-[70%] bg-white top-0 right-0 h-screen overflow-y-scroll">
                 <div className="flex justify-end mr-3 mt-3">
                     <RxCross1
                         onClick={() => { setOpenWishlist(false) }}
@@ -69,22 +69,22 @@ function WishlistItem({ item }) {
     const userData = useSelector(state=> state.user.user)
     return (
         <div>
-            <div className="flex items-center pt-3 pl-3 pb-3">
+            <div className="flex lg:flex-row flex-col items-center pt-3 pl-3 pb-3">
                 <RxCross1
-                    size={30}
-                    className="cursor-pointer"
+                    // size={30}
+                    className="cursor-pointer text-2xl lg:text-4xl"
                     onClick={() => dispatch(removeFromWishlistAction(item.product))}
                 />
                 <div>
-                    <img src={`${backend_url}/uploads/` + item.product.images[0]} className="w-70 object-contain" alt="" />
+                    <img src={`${backend_url}/uploads/` + item.product.images[0]} className="lg:w-70 w-40 p-2 object-contain" alt="" />
                 </div>
-                <div>
+                <div className="lg:w-100 w-full">
                     <p className="text-sm">{item.product.name}</p>
                     <p className="font-bold text-[#D02222] mt-1">US${item.product.price}</p>
                 </div>
                 <AiOutlineShoppingCart
-                    size={50}
-                    className="cursor-pointer"
+                    // size={50}
+                    className="cursor-pointer text-2xl lg:text-4xl"
                     onClick={()=>dispatch(addToCartAction(item.product, userData))}
                 />
             </div>

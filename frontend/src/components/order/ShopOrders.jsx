@@ -6,7 +6,7 @@ import { backend_url } from "../../server";
 import { useSelector } from "react-redux";
 
 function ShopOrders() {
-    const orders = useSelector(state=> state.shop.sellerOrders)
+    const orders = useSelector(state=> state.order.sellerOrders)
     
     const rows = orders && orders.map((item) => ({
         id: item._id,

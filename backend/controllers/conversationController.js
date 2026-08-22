@@ -1,5 +1,6 @@
-const { model } = require("mongoose")
-const {conversationModel} = require("../database/conversationModel")
+const { model, default: mongoose } = require("mongoose")
+const { conversationModel } = require("../database/conversationModel")
+const { messageModel } = require("../database/messageModel")
 
 async function createConversation(req, res) {
     try {
@@ -41,7 +42,7 @@ async function userConversations(req, res) {
                 $in: req.userId
             }
         })
-        console.log(conversations)
+        // console.log(conversations)
         return res.status(200).json({success: true, conversationsData: conversations})
     } catch (error) {
         return res.status(500).json({success: false, message: error.message})
@@ -50,7 +51,8 @@ async function userConversations(req, res) {
 
 async function getConversation(req, res) {
     try {
-        const conversation = await conversationModel.findById(req.params.id)
+        const id = req.params.id
+        const conversation = await conversationModel.findById(new mongoose.Types.ObjectId(id))
         if(!conversation){
             return res.status(400).json({success: false, message: "conversation not found!"})
         }
@@ -63,8 +65,9 @@ async function getConversation(req, res) {
 async function updateLastMessage(req, res){
     try {
         const {lastMessage, sender} = req.body
+        const id = req.params.id
         const conversation = await conversationModel.findByIdAndUpdate(
-            req.params.id,
+            new mongoose.Types.ObjectId(id),
             {
                 lastMessage: lastMessage,
                 lastMessageId: sender
@@ -76,11 +79,25 @@ async function updateLastMessage(req, res){
     }
 }
 
+async function countUnseenMessages(req, res) {
+    try {
+        const conId = req.params.id
+        const {recipient} = req.body
+        // console.log("unread body: ", req.body)
+        const number = await messageModel.countDocuments({conversationId: conId, seen: false, sender: {$ne: recipient}})
+        // console.log(number)
+        return res.status(200).json({success: true, unread: number})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({success: false, message: error.message})
+    }
+}
 
 module.exports = {
     createConversation,
     sellerConversations,
     userConversations,
     getConversation,
-    updateLastMessage
+    updateLastMessage,
+    countUnseenMessages
 }

@@ -1,7 +1,8 @@
+import { ToastContainer } from 'react-toastify'
+import "react-toastify/dist/ReactToastify.css"
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
-import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import VerifyAccount from './pages/VerifyAccount'
@@ -36,7 +37,7 @@ import TrackOrder from './pages/TrackOrder'
 // import UserInbox from './components/profile/UserInbox'
 import UserConversation from './pages/UserConversation'
 import Dashboard from './components/shop/Dashboard'
-import AllConversations from './components/shop/AllMessages'
+import AllConversations from './components/shop/ShopInbox'
 import ShopOrders from './components/order/ShopOrders'
 import CreateEvent from './components/shop/CreateEvent'
 import AllEvents from './components/shop/AllEvents'
@@ -44,27 +45,46 @@ import WithdrawMoney from './components/shop/WithdrawMoney'
 import CreateCoupon from './components/shop/CreateCoupon'
 import ShopRefunds from './components/shop/ShopRefunds'
 import Settings from './components/shop/Settings'
-
+//admin
+import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboardContent from './components/admin/AdminDashboardContent'
+import AdminAllEvents from './components/admin/AdminAllEvents'
+import AdminAllOrders from './components/admin/AdminAllOrders'
+import AdminAllProducts from './components/admin/AdminAllProducts'
+import AdminAllSellers from './components/admin/AdminAllSellers'
+import AdminAllUsers from './components/admin/AdminAllUsers'
+import AdminWithdrawRequest from './components/admin/AdminWithdrawRequest'
 
 
 import { loadWishlistAction } from './redux/actions/wishlist'
 import { setWishlist } from './redux/slices/wishlist'
-import { useContext, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { userContext } from './context/UserContext'
 import { loadCartAction } from './redux/actions/cart'
 import { setCart } from './redux/slices/cart'
 import { getAllProductsAction } from './redux/actions/product'
-import { getSellerConversationsAction, getOnlineUsersAction, getSellerOrderAction, getSellerAction } from './redux/actions/shop'
-import { getUserAction, getUserConversationsAction, getUserOrdersAction} from './redux/actions/user'
+import { getSellerConversationsAction, getSellerAction, getOnlineSellersAction, addOnlineSellersAction, getSellerUnreadMessage } from './redux/actions/shop'
+import { updateSellerConversation } from './redux/slices/shop'
+import { getUserAction, getUserConversationsAction, getOnlineUsersAction, addOnlineUsersAction, getUserUnreadMessage } from './redux/actions/user'
+import { updateUserConversation } from './redux/slices/user'
+import { getUserOrdersAction, getSellerOrdersAction } from './redux/actions/order'
+import { getAllEventsAction } from './redux/actions/event'
+
+
+
+import { AdminProtectedRoute, SellerProtectedRoute, UserProtectedRoute } from './routes/Auth'
+import { socket } from './socket/Socket'
+
+
+
 
 function App() {
 
-  const userData = useSelector(state=> state.user.user)
-  const userLogin = useSelector(state=> state.user.userLogin)
+  const userData = useSelector(state => state.user.user)
+  const userLogin = useSelector(state => state.user.userLogin)
   const dispatch = useDispatch()
-  const sellerData = useSelector(state=> state.shop.seller)
-  const sellerLogin = useSelector(state=> state.shop.sellerLogin)
+  const sellerData = useSelector(state => state.shop.seller)
+  const sellerLogin = useSelector(state => state.shop.sellerLogin)
 
   useEffect(() => {
     if (userData) {
@@ -76,37 +96,68 @@ function App() {
     }
   }, [userData]);
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(getAllProductsAction())
-  },[])
+  }, [])
+  useEffect(() => {
+    dispatch(getAllEventsAction())
+  }, [dispatch])
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(getSellerAction())
-  },[sellerLogin])
-  useEffect(()=>{
-    dispatch(getSellerOrderAction())
-  },[sellerLogin])
-  useEffect(()=>{
+  }, [sellerLogin])
+  useEffect(() => {
+    dispatch(getSellerOrdersAction())
+  }, [sellerLogin])
+  useEffect(() => {
+    dispatch(addOnlineSellersAction(sellerData._id))
+  }, [sellerData])
+  useEffect(() => {
     dispatch(getSellerConversationsAction())
-  },[sellerLogin])
-  useEffect(()=>{
-    dispatch(getOnlineUsersAction(sellerData._id))
-  },[sellerData])
+  }, [sellerLogin])
+  useEffect(() => {
+    const cleanup = dispatch(getOnlineSellersAction())
+    return cleanup
+  }, [])
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(getUserAction())
-  },[])
-  useEffect(()=>{
-    dispatch(getUserConversationsAction())
-  },[userLogin])
-  useEffect(()=>{
-    dispatch(getOnlineUsersAction(userData._id))
-  },[userLogin])
-  useEffect(() => { 
-    dispatch(getUserOrdersAction()) 
+  }, [])
+  useEffect(() => {
+    if (userLogin) {
+      dispatch(getUserConversationsAction())
+    }
   }, [userLogin])
+  useEffect(() => {
+    if (userLogin) {
+      dispatch(getUserOrdersAction())
+    }
+  }, [userLogin])
+  useEffect(() => {
+    dispatch(addOnlineUsersAction(userData._id))
+  }, [userData])
+  useEffect(() => {
+    const cleanup = dispatch(getOnlineUsersAction())
+    return cleanup
+  }, [])
+
+  useEffect(() => {
+    function handleGetMessage(m) {
+      // console.log("got msg", m, "userLogin=", userLogin, "sellerLogin=", sellerLogin)
+      if (userLogin) {
+        dispatch(getUserUnreadMessage(m.conversationId, userData._id))
+        dispatch(updateUserConversation({ conversationId: m.conversationId, lastMessage: m.text, lastMessageId: m.sender }))
+      }
+      if (sellerLogin) {
+        dispatch(getSellerUnreadMessage(m.conversationId, sellerData._id))
+        dispatch(updateSellerConversation({ conversationId: m.conversationId, lastMessage: m.text, lastMessageId: m.sender }))
+      }
+    }
+    socket.on("getMessage", handleGetMessage)
+    return () => socket.off("getMessage", handleGetMessage)
+  }, [userLogin, sellerLogin])
 
 
 
@@ -133,14 +184,14 @@ function App() {
     location.pathname === '/shop-dashboard/refunds' ||
     location.pathname === '/shop-dashboard/settings' ||
     location.pathname.startsWith('/user/order/') ||
-    location.pathname.startsWith('/conversation')
+    location.pathname.startsWith('/conversation') ||
+    location.pathname.startsWith('/admin-dashboard')
   return (
     <>
       {!hideLayout && <Header />}
-      {/* <Header/> */}
       <Routes>
+        {/* public routes */}
         <Route path='/' element={<Home />} />
-        <Route path='/about' element={<About />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/verify-account' element={<VerifyAccount />} />
@@ -149,39 +200,68 @@ function App() {
         <Route path='/products/:id' element={<ProductFullDetails />} />
         <Route path='/events' element={<Events />} />
         <Route path='/faq' element={<FAQ />} />
-        <Route path='/profile' element={<Profile />} >
-          <Route index element={<ChangeProfile />} />
-          <Route path='orders' element={<Orders />} />
-          <Route path='refunds' element={<Refunds />} />
-          <Route path='inbox' element={<UserInbox />} />
-          <Route path='track-orders' element={<TrackOrders />} />
-          <Route path='change-password' element={<ChangePassword />} />
-          <Route path='address' element={<Address />} />
+        {/* User routes */}
+        <Route element={<UserProtectedRoute />}>
+          <Route path='/profile' element={<Profile />} >
+            <Route index element={<ChangeProfile />} />
+            <Route path='orders' element={<Orders />} />
+            <Route path='refunds' element={<Refunds />} />
+            <Route path='inbox' element={<UserInbox />} />
+            <Route path='track-orders' element={<TrackOrders />} />
+            <Route path='change-password' element={<ChangePassword />} />
+            <Route path='address' element={<Address />} />
+          </Route>
+          <Route path='/inbox' element={<UserInbox />} />
+          <Route path='/conversation/:id' element={<UserConversation />} />
+          <Route path='/shipping' element={<Shipping />} />
+          <Route path='/user/order/:id' element={<UserOrderDetails />} />
+          <Route path='/user/track/order/:id' element={<TrackOrder />} />
         </Route>
+        {/* shop routes */}
         <Route path='/create-shop' element={<CreateShop />} />
-        <Route path='/inbox' element={<UserInbox />} />
-        <Route path='/conversation/:id' element={<UserConversation />} />
         <Route path='/login-shop' element={<LoginShop />} />
         <Route path='/verify-shop' element={<VerifyShop />} />
         <Route path='/shop/:shopId' element={<Shop />} />
-        <Route path='/shipping' element={<Shipping />} />
-        <Route path='/shop/order/:id' element={<ShopOrderDetails />} />
-        <Route path='/user/order/:id' element={<UserOrderDetails />} />
-        <Route path='/user/track/order/:id' element={<TrackOrder />} />
-        <Route path='/shop-dashboard' element={<ShopDashboard />}>
-          <Route index element={<Dashboard />} />
-          <Route path='all-orders' element={<ShopOrders />} />
-          <Route path='all-products' element={<AllProducts />} />
-          <Route path='create-product' element={<CreateProduct />} />
-          <Route path='all-events' element={<AllEvents />} />
-          <Route path='create-event' element={<CreateEvent />} />
-          <Route path='withdraw-money' element={<WithdrawMoney />} />
-          <Route path='messages' element={<AllConversations />} />
-          <Route path='coupons' element={<CreateCoupon />} />
-          <Route path='refunds' element={<ShopRefunds />} />
-          <Route path='settings' element={<Settings />} />
+        {/* shop protected routes */}
+        <Route element={<SellerProtectedRoute />}>
+          <Route path='/shop/order/:id' element={<ShopOrderDetails />} />
+          <Route path='/shop-dashboard' element={<ShopDashboard />}>
+            <Route index element={<Dashboard />} />
+            <Route path='all-orders' element={<ShopOrders />} />
+            <Route path='all-products' element={<AllProducts />} />
+            <Route path='create-product' element={<CreateProduct />} />
+            <Route path='all-events' element={<AllEvents />} />
+            <Route path='create-event' element={<CreateEvent />} />
+            <Route path='withdraw-money' element={<WithdrawMoney />} />
+            <Route path='messages' element={<AllConversations />} />
+            <Route path='coupons' element={<CreateCoupon />} />
+            <Route path='refunds' element={<ShopRefunds />} />
+            <Route path='settings' element={<Settings />} />
+          </Route>
+        </Route>
+        {/* admin routes */}
+        <Route element={<AdminProtectedRoute />}>
+          <Route path='/admin-dashboard' element={<AdminDashboard />}>
+            <Route index element={<AdminDashboardContent />} />
+            <Route path='all-orders' element={<AdminAllOrders />} />
+            <Route path='all-sellers' element={<AdminAllSellers />} />
+            <Route path='all-users' element={<AdminAllUsers />} />
+            <Route path='all-products' element={<AdminAllProducts />} />
+            <Route path='all-events' element={<AdminAllEvents />} />
+            <Route path='withdraw-request' element={<AdminWithdrawRequest />} />
+            {/* <Route path='settings' element={<Settings />} /> */}
+          </Route>
         </Route>
       </Routes>
+      <
+        ToastContainer
+        position='top-right'
+        autoClose={3000}
+        pauseOnHover
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+      />
       {!hideLayout && <Footer />}
       {/* <Footer/> */}
     </>

@@ -1,41 +1,56 @@
 import CategoryList from "./CategoryList"
-import { useContext, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import Cart from "../cart/Cart"
 import Wishlist from "../wishlist/Wishlist"
-import { userContext } from "../../context/UserContext"
-import {cartContext} from '../../context/CartContext'
-import { wishlistContext } from "../../context/WishlistContext"
-import { shopContext } from "../../context/ShopContext"
 import { useSelector } from "react-redux"
-import {backend_url} from '../../server'
+import { backend_url } from '../../server'
 
-function Navbar() {
+function Navbar({cart, openCart, setOpenCart, wishlist, openWishlist, setOpenWishlist, uLoggedIn, userData}) {
     const [showCategory, setShowCategory] = useState(false)
-    const [openCart, setOpenCart] = useState(false)
-    const [openWishlist, setOpenWishlist] = useState(false)
-    const userData = useSelector(state=> state.user.user)
-    const uLoggedIn = useSelector(state=> state.user.userLogin)
-    const cart = useSelector(state=> state.cart.cart)
-    const wishlist = useSelector(state=>state.wishlist.wishlist)
     
+    
+
+    const location = useLocation()
+    function isActive(path) {
+        return path === location.pathname
+    }
 
     const navigate = useNavigate()
 
     return (
         <>
             <div className="flex items-center justify-between bg-[#332AC8] h-17 px-20">
-                <button onClick={() => setShowCategory(!showCategory)} className="bg-white h-15 mt-2 font-semibold rounded-t-lg px-3 text-lg cursor-pointer w-70">
+                <button onClick={() => setShowCategory(!showCategory)} className="lg:block hidden bg-white h-15 mt-2 font-semibold rounded-t-lg px-3 text-lg cursor-pointer w-70">
                     <i className="fa-solid fa-book-open mr-3"></i>
                     All Categories
                     <i className="fa-solid fa-angle-down ml-18"></i>
                 </button>
                 <div className="flex gap-10">
-                    <Link to='/' className="font-semibold text-white cursor-pointer">Home</Link>
-                    <Link to='/best-selling' className="font-semibold text-white cursor-pointer">Best Selling</Link>
-                    <Link to='/products' className="font-semibold text-white cursor-pointer">Products</Link>
-                    <Link to='/events' className="font-semibold text-white cursor-pointer">Events</Link>
-                    <Link to='/faq' className="font-semibold text-white cursor-pointer">FAQ</Link>
+                    <Link
+                        to='/'
+                        className={`font-semibold cursor-pointer ${isActive('/') ? "text-green-500" : "text-white"}`}
+                    >Home
+                    </Link>
+                    <Link
+                        to='/best-selling'
+                        className={`font-semibold cursor-pointer ${isActive('/best-selling') ? "text-green-500" : "text-white"}`}
+                    >Best Selling
+                    </Link>
+                    <Link
+                        to='/products'
+                        className={`font-semibold cursor-pointer ${isActive('/products') ? "text-green-500" : "text-white"}`}
+                    >Products</Link>
+                    <Link
+                        to='/events'
+                        className={`font-semibold cursor-pointer ${isActive('/events') ? "text-green-500" : "text-white"}`}
+                    >Events
+                    </Link>
+                    <Link
+                        to='/faq'
+                        className={`font-semibold cursor-pointer ${isActive('/faq') ? "text-green-500" : "text-white"}`}
+                    >FAQ
+                    </Link>
                 </div>
                 <div className="flex items-center text-white text-2xl gap-5">
                     <div className="relative inline-block cursor-pointer">
@@ -61,23 +76,19 @@ function Navbar() {
                             {cart.length}
                         </span>
                     </div>
-                    <div className="relative inline-block cursor-pointer">
+                    <div className="relative inline-block cursor-pointer" onClick={() => navigate('/profile')}>
                         {uLoggedIn
                             ? <img
                                 src={`${backend_url}/uploads/` + userData?.avator}
                                 alt=""
                                 className="w-10 h-10 object-cover rounded-full"
-                                onClick={() => navigate('/profile')}
                             />
-                            : <i
-                                className="fa-regular fa-circle-user"
-                                onClick={() => navigate('/login')}>
-                            </i>
+                            : <i className="fa-regular fa-circle-user"></i>
                         }
                     </div>
                 </div>
             </div>
-            {showCategory && <CategoryList />}
+            {showCategory && <CategoryList setShowCategory={setShowCategory} />}
             {openCart && <Cart setOpenCart={setOpenCart} />}
             {openWishlist && <Wishlist setOpenWishlist={setOpenWishlist} />}
         </>

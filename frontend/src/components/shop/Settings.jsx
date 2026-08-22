@@ -1,10 +1,9 @@
-import { useContext } from "react"
-import { shopContext } from "../../context/ShopContext"
 import { useState, useEffect } from "react"
 import { IoCameraOutline } from "react-icons/io5";
 import axios from "axios";
 import { backend_url } from "../../server";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 function Settings() {
     const sellerData = useSelector(state=> state.shop.seller)
@@ -48,17 +47,21 @@ function Settings() {
             formData.append("zipCode", zipCode)
             formData.append("image", image)
             const { data } = await axios.post(backend_url + "/api/shop/update-seller", formData, { withCredentials: true })
-            alert(data.message)
+            if(data.success){
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
+            }
         } catch (error) {
             console.log(error.response?.data?.message)
         }
     }
 
     return sellerData && (
-        <div className="w-120 mx-auto flex items-center">
+        <div className="lg:w-120 w-full mx-auto flex items-center">
         <form
             onSubmit={handleSubmit}
-            className="h-115 flex-1 bg-white p-3 rounded-md overflow-y-scroll scrollbar-hide"
+            className="lg:h-115 h-full flex-1 bg-white p-3 rounded-md overflow-y-scroll scrollbar-hide"
         >
             <div className="w-full relative">
                 <img

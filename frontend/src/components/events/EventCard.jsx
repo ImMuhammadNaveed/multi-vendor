@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import mobile from '../../static/mobile.jpg'
 import { FaArrowRight } from "react-icons/fa6";
-import { generalContext } from '../../context/Context';
 import { addToCartAction } from '../../redux/actions/cart';
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
+import { backend_url } from '../../server';
 
 function EventCard({ event }) {
-    const { backend_url } = useContext(generalContext)
     const [timeLeft, setTimeLeft] = useState("")
     const dispatch = useDispatch()
 
@@ -34,11 +33,11 @@ function EventCard({ event }) {
     // useEffect(() => { calculateTime() }, [event])
     return event && (
         <>
-            <div className="bg-white flex items-center p-5 rounded-lg">
-                <div className="w-[50%]">
+            <div className="bg-white lg:flex items-center p-5 rounded-lg">
+                <div className="w-full lg:w-[50%] p-12">
                     <img src={backend_url + `/uploads/${event.images[0]}`} alt="" />
                 </div>
-                <div className="w-[50%]">
+                <div className="w-full lg:w-[50%]">
                     <p className='text-2xl font-bold mb-2'>{event.name}</p>
                     <p>{event.description}</p>
                     <div className='flex justify-between items-center my-3'>

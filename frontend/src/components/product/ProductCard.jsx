@@ -1,35 +1,28 @@
-import {useContext, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {FaRegHeart } from 'react-icons/fa'
 import { GoHeart, GoHeartFill } from 'react-icons/go'
 import { FiEye } from 'react-icons/fi'
 import { AiOutlineShoppingCart } from 'react-icons/ai'
 import ProductDetails from './ProductDetails'
 import { Link } from 'react-router-dom'
-import { generalContext } from '../../context/Context'
-import { cartContext } from '../../context/CartContext'
-// import { wishlistContext } from '../../context/WishlistContext'
-import {userContext} from '../../context/UserContext'
 import Ratings from '../ratings/Ratings'
-import {useDispatch, useSelector} from 'react-redux'
-import {isInWishlistAction, addToWishlistAction} from '../../redux/actions/wishlist'
+import { useDispatch, useSelector } from 'react-redux'
+import { isInWishlistAction, addToWishlistAction, removeFromWishlistAction } from '../../redux/actions/wishlist'
 import { addToCartAction } from '../../redux/actions/cart'
 import { backend_url } from '../../server'
 
-function Product({ item }) {
+function Product({ item, isEvent}) {
     const [imageError, setImageError] = useState(false)
     const [showProductDetails, setShowProductDetails] = useState(false)
     const userData = useSelector(state=>state.user.user)
     const dispatch = useDispatch()
     const wishlist = useSelector(state=> state.wishlist.wishlist)
-    // const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(wishlistContext)
     
 
     
-
-    // const name = item.name.replaceAll(" ", '-')
     return item && (
         <div>
-            <Link to={`/products/${item._id}`}>
+            <Link to={`/products/${item._id}${isEvent?"?isEvent=true":""}`}>
                 <div className='p-[12px] bg-white rounded-lg'>
                     <div className='flex justify-center'>
                         {!imageError && item?.images?.[0]
@@ -53,7 +46,7 @@ function Product({ item }) {
                                         onClick={(e)=>{
                                             e.preventDefault()
                                             e.stopPropagation()
-                                            removeFromWishlist(item)
+                                            dispatch(removeFromWishlistAction(item, userData))
                                         }}
                                     />
                                     : <GoHeart

@@ -8,16 +8,16 @@ import Header from "../components/header/Header"
 import Navbar from "../components/header/Navbar"
 
 function Home() {
-    
-    return(
+
+    return (
         <div className="bg-[#F6F6F5] pb-10">
-        {/* <Header/> */}
-        <Hero/>
-        <BrandigList/>
-        <BestDeal/>
-        <PopularEvents/>
-        <FeatureProducts/>
-        <Sponser/>
+            {/* <Header/> */}
+            <Hero />
+            <BrandigList />
+            <BestDeal />
+            <PopularEvents />
+            <FeatureProducts />
+            <Sponser />
         </div>
     )
 }

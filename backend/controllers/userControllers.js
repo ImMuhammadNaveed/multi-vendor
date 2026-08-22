@@ -4,6 +4,7 @@ const { sendEmail } = require("../middlewares/email")
 const { authSign, emailSign, emailVerify } = require("../middlewares/auth")
 const path = require("path")
 const fs = require("fs")
+const { default: mongoose } = require("mongoose")
 
 async function register(req, res) {
     try {
@@ -34,6 +35,18 @@ async function register(req, res) {
         sendEmail(userData.email, "Account verification", `Your account created please click on the link below to verify: \n ${frontend_url}/verify-account?token=${emailToken}`)
         res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
+        if (req.file) {
+            const fileName = req.file ? req.file.filename : ""
+            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log(error)
+                    return res.status(500).json({ success: false, message: error.message })
+                } else {
+                    console.log("unused file deleted successfully")
+                }
+            })
+        }
         return res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -78,7 +91,7 @@ async function login(req, res) {
         }
         const uToken = authSign(user._id)
         res.cookie("uToken", uToken)
-        res.status(200).json({ success: true, userData: user})
+        res.status(200).json({ success: true, userData: user })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
@@ -99,7 +112,7 @@ async function info(req, res) {
 async function anyUserInfo(req, res) {
     try {
         const userId = req.params.id
-        // console.log("user id in info is: ", userId)
+        console.log("user id in info is: ", userId)
         const user = await userModel.findById(userId).select("-password")
         // console.log('this is shop info :',shop)
         res.status(200).json({ success: true, userData: user })
@@ -141,7 +154,7 @@ async function updateUser(req, res) {
         user.name = name
         user.email = email
         user.phoneNumber = phoneNumber
-        
+
         if (req.file) {
             // delete old image from record
             const path = "uploads/" + user.avator
@@ -157,6 +170,18 @@ async function updateUser(req, res) {
         await user.save()
         res.status(200).json({ success: true, message: "user info successfully updated!" })
     } catch (error) {
+        if (req.file) {
+            const fileName = req.file ? req.file.filename : ""
+            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log(error)
+                    return res.status(500).json({ success: false, message: error.message })
+                } else {
+                    console.log("unused file deleted successfully")
+                }
+            })
+        }
         return res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -164,17 +189,17 @@ async function updateUser(req, res) {
 async function addAddress(req, res) {
     try {
         console.log(req.body)
-        const {addressType, country, city, address1, address2, zipCode} = req.body
+        const { addressType, country, city, address1, address2, zipCode } = req.body
         const user = await userModel.findById(req.userId)
-        const sameTypeAddress = user.addresses.find((address)=>address.addressType === addressType)
-        if(sameTypeAddress){
-            return res.status(400).json({success: false, message: "same typed address already exists!"})
+        const sameTypeAddress = user.addresses.find((address) => address.addressType === addressType)
+        if (sameTypeAddress) {
+            return res.status(400).json({ success: false, message: "same typed address already exists!" })
         }
 
         user.addresses.push(req.body)
-        
+
         await user.save()
-        return res.status(200).json({success: true, userUpdatedAddress: user})
+        return res.status(200).json({ success: true, updatedUser: user })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
@@ -194,10 +219,10 @@ async function deleteAddress(req, res) {
                 message: "Address not found!"
             })
         }
-        
-        user.addresses = user.addresses.filter((item)=>item._id.toString() !== addressId)
+
+        user.addresses = user.addresses.filter((item) => item._id.toString() !== addressId)
         await user.save()
-        res.status(200).json({success: true, message: "Address successfully deleted!"})
+        res.status(200).json({ success: true, updatedUser: user })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
@@ -205,15 +230,15 @@ async function deleteAddress(req, res) {
 
 async function changePassword(req, res) {
     try {
-        const {oldPassword, newPassword, confirmPassword} = req.body
+        const { oldPassword, newPassword, confirmPassword } = req.body
         // console.log(req.body)
         const user = await userModel.findById(req.userId)
         // console.log(user)
         const isMatched = bcrypt.compareSync(oldPassword, user.password)
-        if(!isMatched){
+        if (!isMatched) {
             return res.status(400).json({ success: false, message: "incorrect old password!" })
         }
-        if(newPassword !== confirmPassword){
+        if (newPassword !== confirmPassword) {
             return res.status(400).json({ success: false, message: "new password and confirm password are different!" })
         }
         const passwordToStore = bcrypt.hashSync(newPassword, parseInt(process.env.SALT))
@@ -228,9 +253,45 @@ async function changePassword(req, res) {
 async function logout(req, res) {
     try {
         res.clearCookie("uToken")
-        res.status(200).json({success: true, message: "user successfully logged out!"})
+        res.status(200).json({ success: true, message: "user successfully logged out!" })
     } catch (error) {
-        return res.status(500).json({success: false, message: error.message})
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+async function getAllUsers(req, res) {
+    try {
+        const allUsers = await userModel.find()
+        if (!allUsers || allUsers.length === 0) {
+            return res.status(400).json({ success: false, message: "users not found!" })
+        }
+        return res.status(200).json({ success: true, users: allUsers })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+async function deleteUser(req, res) {
+    try {
+        const id = req.params.id
+        console.log(id)
+        const objectId = new mongoose.Types.ObjectId(id)
+        const deletedUser = await userModel.findByIdAndDelete(objectId)
+        if (!deletedUser) {
+            return res.status(400).json({ success: false, message: "user not found!" })
+        }
+        if (deletedUser) {
+            // delete old image from record
+            const path = "uploads/" + deletedUser.avator
+            fs.unlink(path, (err) => {
+                if (err) {
+                    console.log(err.message)
+                }
+            })
+        }
+        return res.status(200).json({ success: true, message: "user successfully deleted!" })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
     }
 }
 
@@ -244,5 +305,7 @@ module.exports = {
     addAddress,
     deleteAddress,
     changePassword,
-    logout
+    logout,
+    getAllUsers,
+    deleteUser
 }

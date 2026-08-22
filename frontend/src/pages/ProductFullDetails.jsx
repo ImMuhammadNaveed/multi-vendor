@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState } from "react"
-// import { productData } from "../static/data"
+import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { generalContext } from "../context/Context"
 import { GoHeart, GoHeartFill } from 'react-icons/go'
 import { AiFillMessage } from "react-icons/ai";
 import { AiOutlineShoppingCart } from 'react-icons/ai'
@@ -22,53 +20,61 @@ function ProductFullDetails() {
     const [quantity, setQuantity] = useState(1)
     const { id } = useParams()
     const allProducts = useSelector(state=> state.product.allProducts)
-    // const { addToCart } = useContext(cartContext)
     const wishlist = useSelector(state=> state.wishlist.wishlist)
-    useEffect(()=>{console.log("wishlist in pro full details :",wishlist)},[wishlist])
     const dispatch = useDispatch()
     
     const [searchParams] = useSearchParams()
     const isEvent = searchParams.get("isEvent")
-    const { events } = useContext(generalContext)
+    const events = useSelector(state=> state.event.allEvents)
 
     useEffect(() => {
         if (isEvent !== null) {
             const data = events && events.find((i) => i._id === id)
+            console.log("event details:", data)
             setData(data)
-            console.log("event data: ", data)
         } else {
             const data = allProducts && allProducts.find((i) => i._id === id)
             setData(data)
-            console.log("product data: ", data)
         }
-
     }, [allProducts, id])
+
+    useEffect(() => {
+        if(!data) return
+        dispatch(getShopProductsAction(data.shop._id))
+    }, [data, dispatch])
+    const shopProducts = useSelector(state=> state.product.shopProducts)
+
+    const totalNumberOfReviews = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.length, 0)
+    const totalRatings = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.reduce((sum, r)=>sum+r.rating, 0), 0)
+    const shopRating = totalNumberOfReviews/totalRatings
 
     function handleSendMessage() {
         dispatch(sendMessageAction(userData, data, navigate))
     }
     return data && (
         <div>
-            <div className="flex w-[80%] m-auto mt-5">
-                <div className="w-[50%]">
-                    <img
+            <div className="flex flex-col lg:flex-row lg:w-[80%] w-[92%] m-auto mt-5">
+                <div className="w-full lg:w-[50%]">
+                    <div className="flex justify-center lg:justify-start">
+                        <img
                         src={`${backend_url}/uploads/` + data?.images[activeImage]}
                         alt=""
                         className="w-80 h-80 object-contain"
                     />
-                    <div className="flex">
+                    </div>
+                    <div className="flex justify-center lg:justify-start my-4">
                         {data.images.map((item, index) =>
                             <img
                                 key={index}
                                 onClick={() => setActiveImage(index)}
                                 src={`${backend_url}/uploads/` + item}
                                 alt=""
-                                className={`w-50 cursor-pointer ${activeImage === index ? "border border-[#E5E7EB]" : ""}`}
+                                className={`w-40 p-4 cursor-pointer ${activeImage === index ? "border border-[#E5E7EB]" : ""}`}
                             />
                         )}
                     </div>
                 </div>
-                <div className="w-[50%]">
+                <div className="w-full lg:w-[50%]">
                     <p className="text-2xl text-[#333333] font-bold mb-1">{data.name}</p>
                     <p>{data.description}</p>
                     <div className="flex mt-5">
@@ -129,7 +135,7 @@ function ProductFullDetails() {
                             </Link>
                             <div className="ml-2">
                                 <Link to={`/shop/${data.shop._id}`} className="text-sm text-blue-500">{data.shop.name}</Link>
-                                <p className="text-sm">({data.shop.ratings}) Ratings</p>
+                                <p className="text-sm">({shopRating}) Ratings</p>
                             </div>
                         </div>
                         <button
@@ -145,7 +151,7 @@ function ProductFullDetails() {
                     </div>
                 </div>
             </div>
-            <Details data={data} />
+            <Details data={data} shopProducts={shopProducts} shopRating={shopRating} totalNumberOfReviews={totalNumberOfReviews} />
             <RelatedProducts data={data} />
         </div>
     )
@@ -154,16 +160,12 @@ export default ProductFullDetails
 
 
 
-function Details({ data }) {
+function Details({ data, shopRating, shopProducts, totalNumberOfReviews}) {
     const [toShow, setToShow] = useState("pro-details")
-    const shopProducts = useSelector(state=> state.product.shopProducts)
-    const dispatch = useDispatch()
-    useEffect(() => {
-        dispatch(getShopProductsAction(data.shop._id))
-    }, [data])
-    return (
-        <div className="w-[80%] bg-[#F5F6FB] m-auto rounded-md mb-15">
-            <div className="p-10">
+    
+    return data&&(
+        <div className="lg:w-[80%] w-[92%] bg-[#F5F6FB] m-auto rounded-md mb-15">
+            <div className="lg:p-10 px-4 py-10">
                 <div className="flex justify-between items-center">
                     <p className={`text-xl font-semibold cursor-pointer px-1 ${toShow === 'pro-details' ? 'border-b-3 border-[#DC143C]' : ""}`} onClick={() => setToShow("pro-details")}>Product Details</p>
                     <p className={`text-xl font-semibold cursor-pointer px-1 ${toShow === 'pro-reviews' ? 'border-b-3 border-[#DC143C]' : ""}`} onClick={() => setToShow("pro-reviews")}>Product Reviews</p>
@@ -171,16 +173,16 @@ function Details({ data }) {
                 </div>
                 <hr className="text-[#E5E7EB] mt-1 mb-6" />
                 {toShow === "pro-details"
-                    ? <div className="flex flex-col gap-10 text-lg leading-8">
+                    ? <div className="flex flex-col gap-10 text-lg leading-8 h-50 overflow-y-scroll scrollbar-hide">
                         <p>{data.description}</p>
                     </div>
                     : toShow === 'pro-reviews'
                         ? <div className="h-50">
-                            {data?.reviews?.length === 0
+                            {data?.reviews?.length === 0 || !data.reviews
                                 ? <div className="flex justify-center items-center flex-1">
                                     <p>No reviews yet!</p>
                                 </div>
-                                : <div>
+                                : <div className="h-50 overflow-y-scroll scrollbar-hide">
                                     {
                                         data.reviews.map((rev) => (
                                             <div className="flex items-center">
@@ -206,19 +208,19 @@ function Details({ data }) {
 
                         </div>
                         : toShow === 'seller-info'
-                            ? <div className="flex justify-between">
-                                <div className="w-[50%]">
+                            ? <div className="flex lg:flex-row flex-col lg:justify-between lg:gap-0 gap-4 h-50 overflow-y-scroll scrollbar-hide">
+                                <div className="lg:w-[50%] w-full">
                                     <div className="flex items-center mb-4">
                                         <Link to={`/shop/${data.shop._id}`} className="w-15 h-15 rounded-full overflow-hidden">
                                             <img src={`${backend_url}/uploads/` + data.shop.avator} alt="" className="w-full h-full object-cover" />
                                         </Link>
                                         <div className="ml-2">
                                             <Link to={`/shop/${data.shop._id}`} className="text-sm text-blue-500">{data.shop.name}</Link>
-                                            <p className="text-sm">({data.shop.ratings}) Ratings</p>
+                                            <p className="text-sm">({shopRating}) Ratings</p>
                                         </div>
                                     </div>
                                     <p>
-                                        {data.shop.description
+                                        {data&&data.shop.description
                                             ? data.shop.description
                                             : "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Velit iste suscipit provident quo fugit, omnis maiores sunt voluptate commodi consequuntur aspernatur obcaecati impedit cum voluptatum itaque autem eius voluptas maxime facilis asperiores quae officia soluta sed vel."
                                         }
@@ -227,7 +229,7 @@ function Details({ data }) {
                                 <div className="flex flex-col gap-3">
                                     <p className="font-semibold">Joined On: {data.shop.createdAt.split('T')[0]}</p>
                                     <p className="font-semibold">Total Products: {shopProducts?.length}</p>
-                                    <p className="font-semibold">Total Reviews: --</p>
+                                    <p className="font-semibold">Total Reviews: {totalNumberOfReviews}</p>
                                     <Link
                                         to={`/shop/${data.shop._id}`}
                                         className="bg-black text-white w-38 py-2 rounded-md cursor-pointer flex justify-center">Visit Shop</Link>
@@ -242,11 +244,8 @@ function Details({ data }) {
 
 
 
-import { productContext } from "../context/ProductContext"
-import { cartContext } from "../context/CartContext";
-import { wishlistContext } from "../context/WishlistContext";
+
 import Ratings from "../components/ratings/Ratings";
-import { userContext } from "../context/UserContext";
 import axios from "axios";
 import { getShopProductsAction } from "../redux/actions/product";
 function RelatedProducts({ data }) {
@@ -261,7 +260,7 @@ function RelatedProducts({ data }) {
             <div className="w-[90%] m-auto">
                 <p className="text-3xl font-bold">Related Products</p>
                 <hr className="text-[#E5E7EB] mt-8 mb-6" />
-                <div className="grid grid-cols-4 gap-7">
+                <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-7 mx-auto">
                     {
                         sameCat.map((item) =>
                             <Product key={item._id} item={item} />

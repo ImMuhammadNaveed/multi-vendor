@@ -1,25 +1,26 @@
 import Header from "../components/header/Header"
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { IoBag } from "react-icons/io5";
 import axios from "axios";
-import { shopContext } from "../context/ShopContext";
 import { useEffect, useState } from "react";
-import { useContext } from "react";
 import { RxCross1 } from "react-icons/rx";
 import { AiOutlineStar } from "react-icons/ai";
 import { AiFillStar } from "react-icons/ai";
-import { productData } from "../static/data";
-import { userContext } from "../context/UserContext";
-
+import { backend_url } from "../server";
+import { useDispatch, useSelector } from "react-redux";
+import { sendMessageAction } from "../redux/actions/user";
+import { toast } from "react-toastify";
 
 function UserOrderDetails() {
     const { id } = useParams()
-    const { backend_url } = useContext(shopContext)
     const [data, setData] = useState(null)
     const [openReview, setOpenReview] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState("")
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     async function getOrderDetails() {
         try {
@@ -39,9 +40,13 @@ function UserOrderDetails() {
     async function processRefund() {
         try {
             const { data } = await axios.post(backend_url + `/api/order/process-refund/${id}`, { withCredentials: true })
-            alert(data.message)
+            if(data.success){
+                toast.error(data.message)
+            }else{
+                toast.error(data.message)
+            }
         } catch (error) {
-            alert(error.response.data.message)
+            toast.error(error.response.data.message)
         }
     }
     return data && (
@@ -49,12 +54,13 @@ function UserOrderDetails() {
             {openReview && (
                 <ReviewForm
                     product={selectedProduct}
-                    backend_url={backend_url}
                     setOpenReview={setOpenReview}
                     rating={rating}
                     setRating={setRating}
                     comment={comment}
                     setComment={setComment}
+                    data={data}
+                    getOrderDetails={getOrderDetails}
                 />
             )}
             <Header />
@@ -76,7 +82,7 @@ function UserOrderDetails() {
                     <div className="flex flex-col gap-4 flex-1">
                         {
                             data.cart.map((item) => (
-                                <div key={item._id} className="flex gap-2 justify-between">
+                                <div key={item._id} className="flex gap-2 justify-between items-center">
                                     <div className="flex items-center gap-2">
                                         <img
                                             src={`${backend_url}/uploads/` + item.product.images[0]}
@@ -84,7 +90,7 @@ function UserOrderDetails() {
                                             className="w-12 bg-white"
                                         />
                                         <div>
-                                            <p>{item.product.name}</p>
+                                            <p className="lg:w-full w-48">{item.product.name}</p>
                                             <p className="text-gray-500">{item.quantity} * ${item.product.price}</p>
                                         </div>
                                     </div>
@@ -92,12 +98,12 @@ function UserOrderDetails() {
                                         {
                                             data.status === "Delivered" && !item.isReviewed
                                                 ? <button
-                                                    className="bg-black text-white px-6 py-2 rounded-lg cursor-pointer"
+                                                    className=" bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
                                                     onClick={() => {
                                                         setSelectedProduct(item.product)
                                                         setOpenReview(true)
                                                     }}>
-                                                    Write a review
+                                                    Write review
                                                 </button>
                                                 : ""
                                         }
@@ -132,9 +138,11 @@ function UserOrderDetails() {
                         </button>
                     </div>
                 </div>
-                <Link className="bg-black text-white px-6 py-2 rounded-lg absolute my-8">
+                <button
+                    onClick={() => dispatch(sendMessageAction(data.user, data.cart[0].product, navigate))}
+                    className="bg-black text-white px-6 py-2 rounded-lg absolute my-8">
                     Send Message
-                </Link>
+                </button>
             </div>
         </>
     )
@@ -150,36 +158,41 @@ export default UserOrderDetails
 
 function ReviewForm({
     product,
-    backend_url,
     setOpenReview,
     rating,
     setRating,
     comment,
-    setComment
+    setComment,
+    data,
+    getOrderDetails
 }) {
-    const { userData } = useContext(userContext)
+    const userData = useSelector(state => state.user.user)
     async function addReview() {
         try {
-            if (!rating) return alert("Give rating first")
+            if (!rating) return toast.error("Give rating first")
             const res = await axios.post(
                 backend_url + "/api/product/add-product-review",
                 {
                     productId: product._id,
                     rating,
                     comment,
-                    user: userData
+                    user: userData,
+                    orderId: data._id
                 },
                 { withCredentials: true }
             )
-
-            alert(res.data.message)
-
+            if (res.data.success) {
+                getOrderDetails()
+                toast.success(res.data.message)
+            }else{
+                toast.error(res.data.message)
+            }
             setOpenReview(false)
             setRating(0)
             setComment("")
 
         } catch (error) {
-            console.log(error)
+            console.log(error.response)
         }
     }
     return (
@@ -239,7 +252,7 @@ function ReviewForm({
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="How was your product? Write your expressions about it!"
-                        className="w-full border border-gray-300 p-1"
+                        className="w-full border border-gray-300 p-1 focus:ouline-none"
                     ></textarea>
                 </div>
                 <button

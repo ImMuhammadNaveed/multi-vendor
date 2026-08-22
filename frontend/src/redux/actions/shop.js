@@ -1,7 +1,20 @@
 import { backend_url } from '../../server'
 import axios from 'axios'
-import { setShop, setSeller, sellerLogin, setSellerOrder, setSellerConversations, setOnlineUsers, setEvents } from "../slices/shop"
+import {
+    setShop,
+    setSeller,
+    setAllSellers,
+    sellerLogin,
+    sellerChecked,
+    setSellerOrder,
+    setSellerConversations,
+    setOnlineUsers,
+    setEvents,
+    deleteSeller,
+    setSellerUnreadMessages
+} from "../slices/shop"
 import { socket } from '../../socket/Socket'
+import { toast } from 'react-toastify'
 
 export function getShopAction(id) {
     return async function (dispatch) {
@@ -27,16 +40,19 @@ export function getSellerAction() {
         } catch (error) {
             dispatch(sellerLogin(false))
             console.log(error.response?.data?.message)
+        }finally{
+            dispatch(sellerChecked(true))
         }
     }
 }
 
-export function getSellerOrderAction() {
+export function getAllSellersAction() {
     return async function (dispatch) {
         try {
-            const { data } = await axios.get(backend_url + "/api/order/seller-orders", { withCredentials: true })
+            const { data } = await axios.get(backend_url + '/api/shop/all-sellers', { withCredentials: true })
+            // console.log("all sellers: ", data)
             if (data.success) {
-                dispatch(setSellerOrder(data.data))
+                dispatch(setAllSellers(data.sellers))
             }
         } catch (error) {
             console.log(error.response?.data?.message)
@@ -57,18 +73,19 @@ export function getSellerConversationsAction() {
     }
 }
 
-export function getOnlineUsersAction(id) {
-    return function (dispatch) {
-        // const seller = getState().shop.seller;
-
+export function addOnlineSellersAction(id) {
+    return function () {
         if (!id) return;
-
         socket.emit("addUser", id);
-
-        socket.on("getUsers", (users) => {
-            dispatch(setOnlineUsers(users));
-        });
     };
+}
+
+export function getOnlineSellersAction() {
+    return function(dispatch){
+        const handler = (users) => dispatch(setOnlineUsers(users))
+        socket.on("getUsers", handler);
+        return ()=> socket.off("getUsers", handler)
+    }
 }
 
 export function getEventsAction(id) {
@@ -80,6 +97,41 @@ export function getEventsAction(id) {
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        }
+    }
+}
+
+export function deleteSellerAction(id) {
+    return async function (dispatch) {
+        try {
+            const { data } = await axios.delete(backend_url + `/api/shop/delete-seller/${id}`, { withCredentials: true })
+            // console.log("deleteSeller: ", data)
+            if (data.success) {
+                dispatch(deleteSeller(id))
+            }
+            return data
+        } catch (error) {
+            toast.error(error.response?.data?.message)
+            return {
+                success: false,
+                message: error.response?.data?.message
+            };
+        }
+    }
+}
+
+export function getSellerUnreadMessage(conversationId, recipientId) {
+    return async function (dispatch) {
+        if (!conversationId) return
+        // console.log(conversationId, recipientId)
+        try {
+            const { data } = await axios.post(backend_url + `/api/conversation/count-unread-messages/${conversationId}`, { recipient: recipientId }, { withCredentials: true })
+            // console.log("seller unread messages: ",data)
+            if (data.success) {
+                dispatch(setSellerUnreadMessages({conversationId:conversationId, count: data.unread}))
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 }

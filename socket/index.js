@@ -38,15 +38,18 @@ io.on("connection", (socket) => {
         addUser(userId, socket.id)
         io.emit("getUsers", users)
     })
-    socket.on("sendMessage", ({ conversationId, senderId, receiverId, text }) => {
+    socket.on("sendMessage", ({ conversationId, senderId, receiverId, text, images }) => {
+        console.log(images)
         const receiver = getUser(receiverId)
         if (receiver) {
             io.to(receiver.socketId).emit("getMessage", {
                 conversationId,
                 sender: senderId,
                 text,
+                images,
                 seen: false
             })
+            
         }
     })
     socket.on("messageSeen", ({ conversationId, senderId, receiverId }) => {
@@ -66,6 +69,10 @@ io.on("connection", (socket) => {
         removeUser(socket.id)
         io.emit("getUsers", users)
     })
+    socket.on("logout", () => {
+        removeUser(socket.id); // or removeUser(socket.id)
+        io.emit("getUsers", users);
+    });
 })
 
 

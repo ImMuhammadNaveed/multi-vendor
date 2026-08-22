@@ -1,29 +1,32 @@
 import axios from "axios"
-import { useContext } from "react"
-import { useState } from "react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
-import { shopContext } from "../context/ShopContext"
+import { backend_url } from "../server"
+import { useDispatch } from "react-redux"
+import { getSellerAction } from '../redux/actions/shop'
+import { toast } from "react-toastify"
 
 function VerifyShop() {
+    const dispatch = useDispatch()
     const [activate, setActivate] = useState(null)
     const location = useLocation()
     const params = new URLSearchParams(location.search)
     const token = params.get("shopActivationToken")
-    const { backend_url, fetchShopData } = useContext(shopContext)
     async function activateShop() {
         try {
             const { data } = await axios.post(backend_url + '/api/shop/verify-shop', { token: token }, { withCredentials: true })
             // console.log(response)
             if (data.success) {
-                await fetchShopData()
+                dispatch(getSellerAction())
                 setActivate(true)
                 navigate("/")
+                toast.success(data.message)
             }else{
                 setActivate(false)
+                toast.error(data.message)
             }
-            alert(data.message)
         } catch (error) {
+            toast.error(error?.response?.data?.message)
             console.log(error.response.data.message)
             setActivate(false)
         }

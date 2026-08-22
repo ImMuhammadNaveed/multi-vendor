@@ -1,10 +1,8 @@
 import axios from "axios"
-import { useContext, useEffect, useState } from "react"
-import { generalContext } from "../../context/Context"
+import { useEffect, useState } from "react"
 import { AiOutlineEye } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
-import { shopContext } from "../../context/ShopContext";
 import { backend_url } from "../../server";
 import { getShopProductsAction } from "../../redux/actions/product";
 import { useDispatch, useSelector } from "react-redux";

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 function BrandigList() {
     return (
         <>
-            <div className="flex bg-white mt-12 w-[90%] m-auto justify-between rounded-lg">
+            <div className="hidden md:flex bg-white mt-12 w-[90%] m-auto justify-between rounded-lg">
                 {
                     brandingData.map((item) =>
                         <div key={item.id} className="flex p-[20px] items-center">
@@ -17,13 +17,13 @@ function BrandigList() {
                     )
                 }
             </div>
-            <div className="flex flex-wrap gap-5 bg-white mt-12 p-10 w-[90%] m-auto justify-between rounded-lg">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 bg-white mt-12 p-10 w-[90%] m-auto justify-between rounded-lg">
                 {
                     categoriesData.map((item) =>
-                        <div key={item.id} className="flex items-center justify-even w-1/4 cursor-pointer">
-                            <Link className="text-lg w-[50%]">{item.title}</Link>
-                            <img className="w-25 w-[50%]" src={item.image} alt="" />
-                        </div>
+                        <Link to={`/products/?category=${item.title}`} key={item.id} className="flex items-center justify-between cursor-pointer">
+                            <p className="text-lg w-[50%]">{item.title}</p>
+                            <img className="w-25" src={item.image} alt="" />
+                        </Link>
                     )
                 }
             </div>

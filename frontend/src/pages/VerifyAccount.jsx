@@ -1,7 +1,8 @@
 import { useSearchParams } from "react-router-dom"
 import axios from 'axios'
-import { useContext, useEffect, useState } from "react"
-import { generalContext } from "../context/Context"
+import { useEffect, useState } from "react"
+import { backend_url } from "../server"
+import { toast } from "react-toastify"
 
 function VerifyAccount() {
     const [loading, setLoading] = useState(false)
@@ -9,21 +10,18 @@ function VerifyAccount() {
     const [searchParams] = useSearchParams()
     const token = searchParams.get("token")
 
-    const {backend_url} = useContext(generalContext)
-
     async function verifyAccount() {
         try {
             setLoading(true)
             const {data} = await axios.post(backend_url+"/api/user/verify-account", {token}, {withCredentials: true})
-            alert(data.message)
             if(data.success){
                 setVerified(true)
+                toast.success(data.message)
             }
         } catch (error) {
             if(error.response){
-                alert(error.response.data.message)
+                toast.error(error.response.data.message)
             }
-            console.log(error)
         }finally{
             setLoading(false)
         }

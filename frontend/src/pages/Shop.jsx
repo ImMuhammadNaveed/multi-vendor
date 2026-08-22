@@ -1,8 +1,7 @@
 import axios from "axios"
 import ShopProfileData from "../components/shop/ShopProfileData"
 import ShopSideBar from "../components/shop/ShopSideBar"
-import { useContext, useEffect, useState } from "react"
-import { shopContext } from "../context/ShopContext"
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { getShopProductsAction } from "../redux/actions/product"
 import { useDispatch, useSelector } from "react-redux"
@@ -16,6 +15,10 @@ function Shop() {
     const sellerData = useSelector(state=> state.shop.seller)
     const shopData = useSelector(state=> state.shop.shop)
     const shopEvents = useSelector(state=> state.shop.events)
+
+    const totalNumberOfReviews = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.length, 0)
+    const totalRatings = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.reduce((sum, r)=>sum+r.rating, 0), 0)
+    const shopRating = totalNumberOfReviews/totalRatings
     
     useEffect(() => {
         dispatch(getShopProductsAction(shopId))
@@ -38,8 +41,8 @@ function Shop() {
 
     return (
         <>
-            <div className="flex bg-gray-100 pt-7">
-                <ShopSideBar shopData={shopData} shopProducts={shopProducts} owner={owner}/>
+            <div className="flex lg:flex-row flex-col bg-gray-100 py-7 px-4 h-full">
+                <ShopSideBar shopData={shopData} shopProducts={shopProducts} owner={owner} shopRating={shopRating}/>
                 {shopProducts&&<ShopProfileData shopProducts={shopProducts} shopEvents={shopEvents} owner={owner}/>}
             </div>
         </>

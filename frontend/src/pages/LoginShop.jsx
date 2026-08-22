@@ -4,6 +4,7 @@ import { backend_url } from "../server"
 import axios from "axios"
 import { useDispatch } from "react-redux"
 import {getSellerAction} from '../redux/actions/shop'
+import { toast } from "react-toastify"
 
 function LoginShop() {
     const [email, setEmail] = useState("")
@@ -20,11 +21,11 @@ function LoginShop() {
                 dispatch(getSellerAction())
                 navigate("/")
             }else{
-                alert(data.message)
+                toast.error(data.message)
             }
         } catch (error) {
             if(error.response){
-                alert(error.response.data.message)
+                toast.error(error.response.data.message)
             }
             console.log(error)
         }
@@ -32,7 +33,7 @@ function LoginShop() {
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-[30%] m-auto border border-gray-200 rounded-lg p-5" onSubmit={handleSubmit}>
+            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5" onSubmit={handleSubmit}>
                 <p className="text-2xl font-bold">Login to your Shop</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Email address</p>

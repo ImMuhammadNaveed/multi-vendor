@@ -7,7 +7,8 @@ const {
     sellerConversations, 
     getConversation, 
     userConversations,
-    updateLastMessage
+    updateLastMessage,
+    countUnseenMessages
 } = require("../controllers/conversationController")
 
 
@@ -16,6 +17,7 @@ conversationRouter.get("/get-seller-conversations", shopLoginCheck, sellerConver
 conversationRouter.get("/get-user-conversations", userLoginCheck, userConversations)
 conversationRouter.get("/get-conversation/:id", getConversation)
 conversationRouter.put("/update-last-message/:id", updateLastMessage)
+conversationRouter.post("/count-unread-messages/:id", countUnseenMessages)
 
 module.exports = {
     conversationRouter

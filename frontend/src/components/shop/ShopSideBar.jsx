@@ -1,26 +1,32 @@
-import { useContext, useEffect } from "react"
-import { shopContext } from '../../context/ShopContext'
+import { useEffect } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
 import { backend_url } from "../../server"
+import { getSellerAction } from '../../redux/actions/shop'
+import { useDispatch } from 'react-redux'
+import { sellerLogout } from "../../redux/slices/shop"
+import { socket } from "../../socket/Socket"
+import { toast } from "react-toastify"
 
-function ShopSideBar({ shopData, shopProducts, owner }) {
-    // const { backend_url } = useContext(shopContext)
+function ShopSideBar({ shopData, shopProducts, owner, shopRating }) {
+    const dispatch = useDispatch()
     async function logout() {
         try {
             const { data } = await axios.post(backend_url + "/api/shop/logout", {}, { withCredentials: true })
             if (data.success) {
-                alert(data.message)
+                dispatch(sellerLogout())
+                socket.emit("logout", shopData?._id)
+                toast.success(data.message)
             }
         } catch (error) {
-            console.log(error.response.data.message)
+            toast.error(error.response?.data?.message)
         }
     }
     useEffect(()=>{console.log(shopData)},[])
     return shopProducts && (
         <>
-            <div className="h-[100vh]">
-                <div className="w-70 bg-white px-2 overflow-y-scroll h-[90%] ml-10 rounded-md py-4">
+            <div className="">
+                <div className="lg:w-70 w-full bg-white px-4 lg:ml-10 ml-0 rounded-md py-4">
                     <div className="flex flex-col justify-center items-center mx-auto w-full">
                         <img
                             src={backend_url + '/uploads/' + shopData.avator}
@@ -45,7 +51,7 @@ function ShopSideBar({ shopData, shopProducts, owner }) {
                         </div>
                         <div >
                             <p className='font-semibold text-sm'>Shop Ratings</p>
-                            <p className='text-sm'>--</p>
+                            <p className='text-sm'>{shopRating}</p>
                         </div>
                         <div >
                             <p className='font-semibold text-sm'>Joined On</p>

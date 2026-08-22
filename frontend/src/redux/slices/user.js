@@ -1,19 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit'
 import {
     setUserReducer,
-    userLoginReducer,
-    setUserOrdersReducer,
+    setUserLoginReducer,
+    setUserCheckedReducer,
     setUserConversationsReducer,
-    updateConversationReducer,
-    setOnlineUsersReducer
+    updateUserConversationReducer,
+    setOnlineUsersReducer,
+    setUsersReducer,
+    deleteUserReducer,
+    setUserUnreadMessagesReducer
 } from '../reducers/user'
 
 const initialState = {
     user: {},
     userLogin: false,
-    userOrders: [],
+    userChecked: false,
     userConversations: [],
-    onlineUsers: []
+    onlineUsers: [],
+    allUsers: []
 }
 
 const userSlice = createSlice({
@@ -21,19 +25,27 @@ const userSlice = createSlice({
     initialState,
     reducers: {
         setUser: setUserReducer,
-        userLogin: userLoginReducer,
-        setUserOrders: setUserOrdersReducer,
+        setUserLogin: setUserLoginReducer,
+        setUserChecked: setUserCheckedReducer,
         setUserConversations: setUserConversationsReducer,
-        updateConversation: updateConversationReducer,
-        setOnlineUsers: setOnlineUsersReducer
+        updateUserConversation: updateUserConversationReducer,
+        setOnlineUsers: setOnlineUsersReducer,
+        setUsers: setUsersReducer,
+        deleteUser: deleteUserReducer,
+        setUserUnreadMessages: setUserUnreadMessagesReducer
     }
 })
 
 export const {
     setUser,
-    userLogin,
+    setUserLogin,
+    setUserChecked,
     setUserOrders,
     setUserConversations,
-    setOnlineUsers
+    updateUserConversation,
+    setOnlineUsers,
+    setUsers,
+    deleteUser,
+    setUserUnreadMessages
 } = userSlice.actions
 export default userSlice.reducer

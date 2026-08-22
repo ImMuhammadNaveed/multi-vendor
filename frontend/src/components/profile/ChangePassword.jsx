@@ -1,10 +1,11 @@
 import { AiTwotoneDelete } from "react-icons/ai";
 import axios from "axios";
-import { useContext, useState } from "react";
-import { userContext } from "../../context/UserContext";
+import { backend_url } from "../../server";
+import { useState } from "react";
+import { toast } from "react-toastify";
 function ChangePassword() {
 
-    const { backend_url } = useContext(userContext)
+    // const { backend_url } = useContext(userContext)
     const [oldPassword, setOldPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
@@ -13,21 +14,23 @@ function ChangePassword() {
         e.preventDefault()
         try {
             const { data } = await axios.put(backend_url + "/api/user/change-password", { oldPassword, newPassword, confirmPassword }, { withCredentials: true })
-            alert(data.message)
             if (data.success) {
                 setOldPassword("")
                 setNewPassword("")
                 setConfirmPassword("")
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
             }
         } catch (error) {
-            alert(error.response.data.message)
+            toast.error(error.response.data.message)
         }
     }
     return (
         <div className="flex justify-center">
             <form
                 action=""
-                className="flex flex-col gap-2 bg-white w-[60%] overflow-y-auto p-2 rounded-sm"
+                className="flex flex-col gap-2 bg-white w-90 overflow-y-auto p-2 rounded-sm"
                 onSubmit={handleSubmit}
             >
                 <h1 className="text-center text-xl font-bold">Change Password</h1>

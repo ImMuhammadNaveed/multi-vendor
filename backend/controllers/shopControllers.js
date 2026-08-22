@@ -4,6 +4,7 @@ const { emailSign, emailVerify, authSign } = require('../middlewares/auth')
 const fs = require('fs')
 const { sendEmail } = require("../middlewares/email")
 const path = require("path")
+const { default: mongoose } = require("mongoose")
 
 async function createShop(req, res) {
     try {
@@ -13,8 +14,8 @@ async function createShop(req, res) {
         const newShop = await shopModel.findOne({ email: email })
         if (newShop) {
             if (req.file) {
-                const fileName = req.file? req.file.filename : ""
-                const filePath = fileName? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
+                const fileName = req.file ? req.file.filename : ""
+                const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
                 fs.unlink(filePath, (error) => {
                     if (error) {
                         console.log(error)
@@ -47,6 +48,18 @@ async function createShop(req, res) {
         sendEmail(senderEmail, 'Shop Activation', `Your shop creatioon request received, please click on the link below to verify: \n ${activationLink}`)
         res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
+        if (req.file) {
+            const fileName = req.file ? req.file.filename : ""
+            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log(error)
+                    return res.status(500).json({ success: false, message: error.message })
+                } else {
+                    console.log("unused file deleted successfully")
+                }
+            })
+        }
         return res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -111,13 +124,13 @@ async function loginShop(req, res) {
 
 async function info(req, res) {
     try {
-        const shopId = req.params.id
+        const id = req.params.id
         // console.log(shopId)
-        const shop = await shopModel.findById(shopId).select("-password")
+        const shop = await shopModel.findById(new mongoose.Types.ObjectId(id)).select("-password")
         // console.log('this is shop info :',shop)
         res.status(200).json({ success: true, shopData: shop })
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
+        return res.status(500).json({ success: false, message: "shopInfo: " + error.message })
     }
 }
 
@@ -129,7 +142,7 @@ async function getSeller(req, res) {
         // console.log('this is shop info :',shop)
         res.status(200).json({ success: true, shopData: shop })
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
+        return res.status(500).json({ success: false, message: "getSeller :" + error.message })
     }
 }
 
@@ -156,7 +169,7 @@ async function updateSeller(req, res) {
         seller.address = address
         seller.phoneNumber = phoneNumber
         seller.zipCode = zipCode
-        
+
         if (req.file) {
             // delete old image from record
             const path = "uploads/" + seller.avator
@@ -173,6 +186,18 @@ async function updateSeller(req, res) {
         res.status(200).json({ success: true, message: "seller info successfully updated!" })
     } catch (error) {
         console.log(error.message)
+        if (req.file) {
+            const fileName = req.file ? req.file.filename : ""
+            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log(error)
+                    return res.status(500).json({ success: false, message: error.message })
+                } else {
+                    console.log("unused file deleted successfully")
+                }
+            })
+        }
         return res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -181,11 +206,73 @@ async function logout(req, res) {
     try {
         res.clearCookie("shopToken")
         // res.cookie({"shopToken": null},{expires: Date.now()})
-        res.status(200).json({success: true, message: "shop successfully logged out!"})
+        res.status(200).json({ success: true, message: "shop successfully logged out!" })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
 }
+
+async function getAllSellers(req, res) {
+    try {
+        const allSellers = await shopModel.find()
+        if (!allSellers || allSellers.length === 0) {
+            return res.status(400).json({ success: false, message: "sellers not found!" })
+        }
+        return res.status(200).json({ success: true, sellers: allSellers })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+async function deleteSeller(req, res) {
+    try {
+        const id = req.params.id
+        console.log(id)
+        const objectId = new mongoose.Types.ObjectId(id)
+        const deletedShop = await shopModel.findByIdAndDelete(objectId)
+        if (!deletedShop) {
+            return res.status(400).json({ success: false, message: "shop not found!" })
+        }
+        if (deletedShop) {
+            // delete old image from record
+            const path = "uploads/" + deletedShop.avator
+            fs.unlink(path, (err) => {
+                if (err) {
+                    console.log(err.message)
+                }
+            })
+        }
+        return res.status(200).json({ success: true, message: "shop successfully deleted!" })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
+
+async function deleteWithdrawMethod(req, res) {
+    try {
+        const seller = await shopModel.findByIdAndUpdate(req.shopId, { withdrawMethod: null })
+        return res.status(200).json({ success: true, message: "withdraw method successfully deleted!" })
+    } catch (error) {
+        return req.status(500).json({ success: false, message: error.message })
+    }
+}
+
+async function addWithdrawMethod(req, res) {
+    try {
+        const sellerId = req.shopId
+        const { withdrawMethod } = req.body
+        const seller = await shopModel.findByIdAndUpdate(sellerId, { withdrawMethod: withdrawMethod })
+        return res.status(200).json({ success: true, message: 'withdraw method successfully updated!' })
+    } catch (error) {
+        return req.status(500).json({ success: false, message: error.message })
+    }
+}
+
+
+
+
+
+
 module.exports = {
     createShop,
     activateShop,
@@ -193,5 +280,9 @@ module.exports = {
     info,
     getSeller,
     updateSeller,
-    logout
+    logout,
+    getAllSellers,
+    deleteSeller,
+    deleteWithdrawMethod,
+    addWithdrawMethod
 }

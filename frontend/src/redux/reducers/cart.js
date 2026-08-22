@@ -23,3 +23,4 @@ export function addToCartReducer(state, action) {
 export function removeFromCartReducer(state, action) {
     state.cart = state.cart.filter((item) => item.product._id !== action.payload._id)
 }
+

@@ -1,5 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { setCartReducer, addToCartReducer, removeFromCartReducer } from '../reducers/cart'
+import { 
+    setCartReducer, 
+    addToCartReducer, 
+    removeFromCartReducer 
+} from '../reducers/cart'
 
 const initialState = {
     cart: [],

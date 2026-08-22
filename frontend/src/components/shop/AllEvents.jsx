@@ -1,6 +1,5 @@
 import axios from "axios"
-import { useContext, useEffect, useState } from "react"
-import { generalContext } from "../../context/Context"
+import { useEffect, useState } from "react"
 import { AiOutlineEye } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
@@ -32,7 +31,7 @@ function AllEvents() {
                 const event_name = d.replace(' ', '-')
                 return (
                     <>
-                        <Link to={`/events/${event_name}`} className="h-full flex justify-center items-center">
+                        <Link to={`/products/${params.row.id}?isEvent=true`} className="h-full flex justify-center items-center">
                             <AiOutlineEye size={20} />
                         </Link>
                     </>

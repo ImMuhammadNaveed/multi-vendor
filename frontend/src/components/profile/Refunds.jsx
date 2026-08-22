@@ -1,13 +1,12 @@
-import { useContext, useEffect } from "react"
-import { userContext } from "../../context/UserContext"
+import { useEffect } from "react"
 import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
 import { useSelector } from "react-redux";
-import { getUserOrdersAction } from "../../redux/actions/user";
+import { getUserOrdersAction } from "../../redux/actions/order";
 
 function Refunds() {
-    const orders = useSelector(state=>state.user.orders)
+    const orders = useSelector(state=>state.order.userOrders)
     useEffect(() => { getUserOrdersAction() }, [])
     const refundOrders = orders && orders.filter((order) => order.status === 'Processing refund')
     const rows = refundOrders&&refundOrders.map((item) => ({
@@ -40,13 +39,13 @@ function Refunds() {
         },
     ]
     return (
-        <div style={{ width: '100%', height: 400 }}>
+        <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
             <DataGrid
-                className="text-right"
+                // className="text-right"
                 columns={columns}
                 rows={rows}
-                pageSize={10}
-                autoHeight
+                pageSize={5}
+                // autoHeight = {refundOrders.length===0}
             />
         </div>
     )

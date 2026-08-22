@@ -8,7 +8,7 @@ function Cart({ setOpenCart }) {
     const cart = useSelector(state=> state.cart.cart)
     return (
         <div className="fixed inset-0 bg-black/40 z-60">
-            <div className="fixed z-51 w-[25%] bg-white top-0 right-0 h-screen overflow-y-scroll scrollbar-hide">
+            <div className="fixed z-51 lg:w-[25%] w-[70%] bg-white top-0 right-0 h-screen overflow-y-scroll scrollbar-hide">
                 <div className="flex justify-end mr-3 mt-3">
                     <RxCross1
                         onClick={() => { setOpenCart(false) }}
@@ -33,6 +33,7 @@ function Cart({ setOpenCart }) {
                     <Link
                         className='bg-red-500 text-white font-bold px-4 py-2 rounded-md w-full text-center'
                         to='/shipping'
+                        onClick={()=>setOpenCart(false)}
                     >Check Out</Link>
                 </div>
 
@@ -61,8 +62,8 @@ function CartItem({ item }) {
     const dispatch = useDispatch()
     return (
         <div>
-            <div className="flex items-center justify-between pt-3 pl-3 pb-3">
-                <div className="flex flex-col gap-1 items-center">
+            <div className="flex lg:flex-row flex-col items-center justify-between pt-3 pl-3 pb-3">
+                <div className="flex lg:flex-col flex-row gap-1 items-center">
                     <button
                         onClick={() => dispatch(increaseQuantityAction(item.product._id, cart, userData))}
                         className="p-1 rounded-full bg-red-500 text-white cursor-pointer"
@@ -75,10 +76,10 @@ function CartItem({ item }) {
                 <div className="w-16">
                     <img
                         src={`${backend_url}/uploads/` + item.product.images[0]}
-                        className="w-full object-contain"
+                        className="lg:w-70 w-50 p-2 object-contain"
                         alt="" />
                 </div>
-                <div>
+                <div className="lg:w-50 w-full">
                     <p className="text-sm">{item.product.name}</p>
                     <p className="font-normal text-[#7D7D7D] text-md">${item.product.price} * {item.quantity}</p>
                     <p className="font-bold text-[#D02222] mt-1">US ${item.product.price * item.quantity}</p>

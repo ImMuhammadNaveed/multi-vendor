@@ -2,6 +2,7 @@ import { useContext, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { backend_url } from "../server"
+import { toast } from "react-toastify"
 // import { shopContext } from "../context/ShopContext"
 
 function CreateShop() {
@@ -29,12 +30,16 @@ function CreateShop() {
         formData.append("image", image)
         try {
             const { data } = await axios.post(backend_url + "/api/shop/create-shop", formData, { withCredentials: true })
-            console.log(data)
-            alert(data.message)
+            // console.log(data)
+            if(data.success){
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
+            }
             
         } catch (error) {
             if (error.response) {
-                alert(error.response.data.message)
+                toast.error(error.response.data.message)
             }
             console.log(error)
         }
@@ -42,7 +47,7 @@ function CreateShop() {
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-[40%] m-auto border border-gray-200 rounded-lg p-5 my-10">
+            <form className="flex flex-col items-center w-102 m-auto border border-gray-200 rounded-lg p-5 my-10">
                 <p className="text-2xl font-bold">Register as a seller</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Shop Name</p>

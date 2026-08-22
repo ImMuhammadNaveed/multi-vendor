@@ -1,8 +1,8 @@
-import { useContext, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from 'axios'
-import { generalContext } from "../context/Context"
-import { userContext } from "../context/UserContext"
+import { backend_url } from '../server'
+import { toast } from "react-toastify"
 
 function Register() {
 
@@ -12,8 +12,6 @@ function Register() {
     const [image, setImage] = useState(false)
     const [showPassword, setShowPassword] = useState(true)
     const navigate = useNavigate()
-    const {backend_url} = useContext(generalContext)
-    const {getUserData, setUserLoggedIn} = useContext(userContext)
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -26,15 +24,15 @@ function Register() {
             const {data} = await axios.post(backend_url+"/api/user/register", formData, {withCredentials: true})
             console.log(data)
             if(data.success){
-                await getUserData()
-                setUserLoggedIn(true)
+                dispatch(getUserAction())
+                setUserLogin(true)
                 navigate("/")
             }else{
-                alert(data.message)
+                toast.error(data.message)
             }
         } catch (error) {
             if(error.response){
-                alert(error.response.data.message)
+                toast.error(error.response.data.message)
             }
             console.log(error)
         }
@@ -42,7 +40,7 @@ function Register() {
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-[30%] m-auto border border-gray-200 rounded-lg p-5">
+            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5">
                 <p className="text-2xl font-bold">Register as a new user</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Full Name</p>

@@ -1,9 +1,11 @@
-import { useContext, useState } from "react"
+import { useState } from "react"
 import { categoriesData } from "../../static/data"
 import { MdAddCircleOutline } from "react-icons/md";
-import { productContext } from "../../context/ProductContext";
 import axios from 'axios'
 import { backend_url } from "../../server";
+import { MdOutlineCancel } from "react-icons/md";
+import { toast } from "react-toastify";
+
 
 function CreateEvent() {
 
@@ -43,9 +45,13 @@ function CreateEvent() {
         try {
             e.preventDefault()
             const { data } = await axios.post(backend_url + "/api/event/create-event", form, { withCredentials: true })
-            alert(data.message)
+            if(data.success){
+                toast.success(data.message)
+            }else{
+                toast.error(data.message)
+            }
         } catch (error) {
-            alert(error.response.data.message)
+            toast.error(error.response?.data?.message)
         }
     }
     function getMiniEndingDate(startDate) {
@@ -61,152 +67,159 @@ function CreateEvent() {
     }
     return (
         <>
-        <div className="flex mx-auto items-center">
-            <form
-                className="w-120 bg-white mx-auto p-3 h-115 overflow-y-auto scrollbar-hide rounded-md"
-                onSubmit={handleSubmittion}
-            >
-                <div className="text-center">
-                    <p className="text-2xl font-semibold mb-2">Create Event</p>
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Name <span className="text-red-500">*</span></p>
-                    <input
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event name..."
-                        value={name}
-                        onChange={(e) => {
-                            setName(e.target.value)
-                        }}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Description <span className="text-red-500">*</span></p>
-                    <textarea
-                        rows={5}
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event description..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    >
-                    </textarea>
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Category <span className="text-red-500">*</span></p>
-                    <select
-                        name=""
-                        id=""
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        // defaultValue="cosmetics and body care"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                    >
-                        {categoriesData.map((item) =>
-                            <option key={item.id} value={item.title}>{item.title}</option>
-                        )}
-                    </select>
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Tags</p>
-                    <input
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event tags..."
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Original Price</p>
-                    <input
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event price..."
-                        value={originalPrice}
-                        onChange={(e) => setOriginalPrice(e.target.value)}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Price (With Discount) <span className="text-red-500">*</span></p>
-                    <input
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event price with discount..."
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Event Stock <span className="text-red-500">*</span></p>
-                    <input
-                        type="text"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event stock..."
-                        value={stock}
-                        onChange={(e) => setStock(e.target.value)}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Starting Date</p>
-                    <input
-                        type="date"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event starting date..."
-                        value={startingDate}
-                        min={getTodayDate()}
-                        onChange={(e) => {
-                            setStartingDate(e.target.value)
-                            setEndingDate("")
-                        }}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Ending Date</p>
-                    <input
-                        type="date"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
-                        placeholder="Enter your event ending date..."
-                        min={getMiniEndingDate(startingDate)}
-                        value={endingDate}
-                        onChange={(e) => setEndingDate(e.target.value)}
-                    />
-                </div>
-                <div className="mb-4">
-                    <p className="mb-1 text-sm font-semibold">Upload Images <span className="text-red-500">*</span></p>
-                    <div className="flex items-center">
-                        <label htmlFor="images" className="w-10 flex justify-center">
-                            <MdAddCircleOutline />
-                            <input
-                                type="file"
-                                id="images"
-                                hidden
-                                onChange={handleImages}
-                            />
-                        </label>
-                        {
-                            previewImages.map((item, index) =>
-                                <img
-                                    key={index}
-                                    src={item}
-                                    alt=""
-                                    className="w-15 h-15 object-cover"
-
-                                />
-                            )
-                        }
+            <div className="flex mx-auto items-center">
+                <form
+                    className="w-120 bg-white mx-auto p-3 lg:h-115 h-full overflow-y-auto scrollbar-hide rounded-md"
+                    onSubmit={handleSubmittion}
+                >
+                    <div className="text-center">
+                        <p className="text-2xl font-semibold mb-2">Create Event</p>
                     </div>
-                </div>
-                <div >
-                    <button
-                        type="submit"
-                        className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm cursor-pointer"
-                    >
-                        Create
-                    </button>
-                </div>
-            </form>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Name <span className="text-red-500">*</span></p>
+                        <input
+                            type="text"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event name..."
+                            value={name}
+                            onChange={(e) => {
+                                setName(e.target.value)
+                            }}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Description <span className="text-red-500">*</span></p>
+                        <textarea
+                            rows={5}
+                            type="text"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event description..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        >
+                        </textarea>
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Category <span className="text-red-500">*</span></p>
+                        <select
+                            name=""
+                            id=""
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            // defaultValue="cosmetics and body care"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
+                            {categoriesData.map((item) =>
+                                <option key={item.id} value={item.title}>{item.title}</option>
+                            )}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Tags</p>
+                        <input
+                            type="text"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event tags..."
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Original Price</p>
+                        <input
+                            type="number"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event price..."
+                            value={originalPrice}
+                            onChange={(e) => setOriginalPrice(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Price (With Discount) <span className="text-red-500">*</span></p>
+                        <input
+                            type="number"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event price with discount..."
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Event Stock <span className="text-red-500">*</span></p>
+                        <input
+                            type="number"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event stock..."
+                            value={stock}
+                            onChange={(e) => setStock(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Starting Date</p>
+                        <input
+                            type="date"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event starting date..."
+                            value={startingDate}
+                            min={getTodayDate()}
+                            onChange={(e) => {
+                                setStartingDate(e.target.value)
+                                setEndingDate("")
+                            }}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Ending Date</p>
+                        <input
+                            type="date"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
+                            placeholder="Enter your event ending date..."
+                            min={getMiniEndingDate(startingDate)}
+                            value={endingDate}
+                            onChange={(e) => setEndingDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <p className="mb-1 text-sm font-semibold">Upload Images <span className="text-red-500">*</span></p>
+                        <div className="flex items-center">
+                            <label htmlFor="images" className="w-10 flex justify-center cursor-pointer">
+                                <MdAddCircleOutline />
+                                <input
+                                    type="file"
+                                    id="images"
+                                    hidden
+                                    onChange={handleImages}
+                                />
+                            </label>
+                            {
+                                previewImages.map((item, index) =>
+                                    <div key={index} className="relative w-20 h-20">
+                                        <MdOutlineCancel
+                                            className="absolute -top-2 -right-2 cursor-pointer z-10"
+                                            onClick={() => {
+                                                setPreviewImages((prev) => prev.filter((_, i) => i !== index))
+                                                setImages((prev) => prev.filter((_, i) => i !== index))
+                                            }}
+                                        />
+                                        <img
+                                            src={item}
+                                            alt=""
+                                            className="w-20 h-20 object-cover rounded"
+                                        />
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
+                    <div >
+                        <button
+                            type="submit"
+                            className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm cursor-pointer"
+                        >
+                            Create
+                        </button>
+                    </div>
+                </form>
             </div>
         </>
     )

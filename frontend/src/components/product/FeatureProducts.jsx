@@ -2,10 +2,11 @@ import { useSelector } from "react-redux"
 import { productData } from "../../static/data"
 // import { productContext } from "../../context/ProductContext"
 import Product from "./ProductCard"
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 
 function FeatureProducts() {
     const allProducts = useSelector(state=> state.product.allProducts)
+    // useEffect(()=>{console.log("all products at feature products: ",allProducts)}, [])
     const recentProducts = [...allProducts]
         .sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
         .slice(0, 10)

@@ -1,13 +1,14 @@
+const { couponModel } = require("../database/couponModel")
 const { orderModel } = require("../database/orderModel")
 const { productModel } = require("../database/productModel")
+const { shopModel } = require("../database/shopModel")
 
 async function createOrder(req, res) {
     try {
-        const { cart, shippingAddress, user, totalPrice, paymentInfo } = req.body
-        console.log("re.body at create order controller: ", req.body)
+        const { cart, shippingAddress, user, couponCode, paymentInfo } = req.body
+        console.log(req.body)
         const shopMap = new Map()
         cart.forEach(item => {
-            // console.log(item.product.shop._id)
             const shopId = item.product.shop._id
             if (!shopMap.has(shopId)) {
                 shopMap.set(shopId, [])
@@ -15,17 +16,36 @@ async function createOrder(req, res) {
             shopMap.get(shopId).push(item)
         });
         for (const [shopId, items] of shopMap) {
+            let shopTotal = 0
+            let productsOfShopOriginalPrice = 0
+            for (const item of items) {
+                shopTotal += item.product.price * item.quantity
+                console.log("shop total without shipping: ", shopTotal)
+            }
+            if (couponCode !== null || couponCode !== '') {
+                const coupon = await couponModel.findOne({ name: couponCode })
+                productsOfShopOriginalPrice = shopTotal
+                if (coupon) {
+                    shopTotal -= (shopTotal / 100) * coupon.value
+                    console.log("shop total with discount: ", shopTotal)
+                }
+            }
+
+            //add shipping price
+            shopTotal += (productsOfShopOriginalPrice / 100) * 10
+            console.log("shop total with shipping: ", shopTotal)
             const orderData = {
                 cart: items,
                 shippingAddress,
                 user,
-                totalPrice,
+                totalPrice: shopTotal,
                 paymentInfo
             };
             await orderModel.create(orderData)
         }
         return res.status(200).json({ success: true, message: "orders successfully placed" })
     } catch (error) {
+        console.log(error.message)
         return res.status(500).json({ success: false, message: error.message })
     }
 }
@@ -106,6 +126,8 @@ async function updateOrderStatus(req, res) {
         if (req.body.status === 'Delivered') {
             order.deliveredAt = Date.now();
             order.paymentInfo.status = "succeeded";
+            const serviceCharges = order.totalPrice * 0.1
+            await updateSeller(order.totalPrice - serviceCharges)
         }
 
         await order.save();
@@ -115,9 +137,14 @@ async function updateOrderStatus(req, res) {
             product.stock -= quantity
             await product.save()
         }
+        async function updateSeller(amount) {
+            const seller = await shopModel.findById(req.shopId)
+            seller.availableBalance = seller.availableBalance + amount
+            await seller.save()
+        }
         return res.status(200).json({
             success: true,
-            message: "Order status updated!"
+            orderData: order
         });
 
     } catch (error) {
@@ -189,6 +216,18 @@ async function refundSuccess(req, res) {
         });
     }
 }
+
+async function getAllOrders(req, res) {
+    try {
+        const allOrders = await orderModel.find()
+        if (!allOrders || allOrders.length === 0) {
+            return res.status(400).json({ success: false, message: "orders not found!" })
+        }
+        return res.status(200).json({ success: true, orders: allOrders })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
 module.exports = {
     createOrder,
     getUserOrders,
@@ -196,5 +235,6 @@ module.exports = {
     getSellerOrders,
     updateOrderStatus,
     refund,
-    refundSuccess
+    refundSuccess,
+    getAllOrders
 }

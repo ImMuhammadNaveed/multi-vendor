@@ -1,13 +1,12 @@
-import { useContext, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { generalContext } from "../context/Context"
+import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios"
-import { userContext } from "../context/UserContext"
 import { useDispatch } from "react-redux"
 import { loadWishlistAction } from "../redux/actions/wishlist"
 import { getUserAction } from "../redux/actions/user"
-import { userLogin } from "../redux/slices/user"
+import { setUserLogin } from "../redux/slices/user"
 import { backend_url } from "../server"
+import { toast } from "react-toastify"
 
 function Login() {
     const [email, setEmail] = useState("")
@@ -16,7 +15,8 @@ function Login() {
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
-
+    const location = useLocation()
+    const from = location.state?.from?.pathname || "/"
     async function handleSubmit(e) {
         e.preventDefault()
         try {
@@ -25,14 +25,14 @@ function Login() {
             if(data.success){
                 dispatch(getUserAction())
                 dispatch(loadWishlistAction(data.userData))
-                dispatch(userLogin(true))
-                navigate("/")
+                dispatch(setUserLogin(true))
+                navigate(from)
             }else{
-                alert(data.message)
+                toast.error(data.message)
             }
         } catch (error) {
             if(error.response){
-                alert(error.response.data.message)
+                toast.error(error.response.data.message)
             }
             console.log(error)
         }
@@ -40,7 +40,7 @@ function Login() {
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-[30%] m-auto border border-gray-200 rounded-lg p-5">
+            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5">
                 <p className="text-2xl font-bold">Login to your account</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Email address</p>

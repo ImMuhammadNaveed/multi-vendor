@@ -1,11 +1,11 @@
 const mongoose = require("mongoose")
 
 const shopSchema = mongoose.Schema({
-    name:{
+    name: {
         type: String,
         required: true
     },
-    email:{
+    email: {
         type: String,
         required: true
     },
@@ -23,7 +23,7 @@ const shopSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        default:"seller"
+        default: "seller"
     },
     avator: {
         type: String,
@@ -33,7 +33,7 @@ const shopSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    createdAt:{
+    createdAt: {
         type: Date,
         default: Date.now()
     },
@@ -46,7 +46,33 @@ const shopSchema = mongoose.Schema({
     restPasswordTime: {
         type: Date
     },
-}, {timestamps: true})
+    withdrawMethod: {
+        type: Object
+    },
+    transaction: [
+        {
+            amount: {
+                type: Number,
+                require: true
+            },
+            status: {
+                type: String,
+                default: "Processing"
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now()
+            },
+            updatedAt: {
+                type: Date
+            },
+        }
+    ],
+    availableBalance:{
+        type: Number,
+        default: 0
+    }
+}, { timestamps: true })
 const shopModel = mongoose.model("Shop", shopSchema)
 
 module.exports = {

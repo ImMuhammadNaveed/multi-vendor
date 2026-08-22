@@ -1,5 +1,3 @@
-import { setAllProducts } from "../slices/product";
-
 export function setAllProductsReducer(state, action){
     state.allProducts = action.payload
 }
@@ -7,3 +5,7 @@ export function setAllProductsReducer(state, action){
 export function setShopProductsReducer(state, action){
     state.shopProducts = action.payload
 } 
+
+export function deleteProductReducer(state, action) {
+    state.allProducts = state.allProducts.filter((product)=>product._id !== action.payload)
+}

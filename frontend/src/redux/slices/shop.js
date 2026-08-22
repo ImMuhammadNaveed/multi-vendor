@@ -2,19 +2,24 @@ import { createSlice } from '@reduxjs/toolkit'
 import {
     setShopReducer,
     setSellerReducer,
+    setAllSellersReducer,
     sellerLoginReducer,
-    setSellerOrderReducer,
+    sellerCheckedReducer,
     setSellerConversationsReducer,
-    updateConversationReducer,
+    updateSellerConversationReducer,
     setOnlineUsersReducer,
-    setEventsReducer
+    setEventsReducer,
+    deleteSellerReducer,
+    sellerLogoutReducer,
+    setSellerUnreadMessagesReducer
 } from '../reducers/shop'
 
 const initialState = {
     shop: {},
     seller: {},
+    allSellers: [],
     sellerLogin: false,
-    sellerOrders: [],
+    sellerChecked: false,
     sellerConversations: [],
     onlineUsers: [],
     events: []
@@ -26,22 +31,32 @@ const shopSlice = createSlice({
     reducers: {
         setShop: setShopReducer,
         setSeller: setSellerReducer,
+        setAllSellers: setAllSellersReducer,
         sellerLogin: sellerLoginReducer,
-        setSellerOrder: setSellerOrderReducer,
+        sellerChecked: sellerCheckedReducer,
+        sellerLogout: sellerLogoutReducer,
         setSellerConversations: setSellerConversationsReducer,
-        updateConversation: updateConversationReducer,
+        updateSellerConversation: updateSellerConversationReducer,
         setOnlineUsers: setOnlineUsersReducer,
-        setEvents: setEventsReducer
+        setEvents: setEventsReducer,
+        deleteSeller: deleteSellerReducer,
+        setSellerUnreadMessages: setSellerUnreadMessagesReducer
     }
 })
 
 export const {
     setShop,
     setSeller,
+    setAllSellers,
     sellerLogin,
+    sellerChecked,
+    sellerLogout,
     setSellerOrder,
     setSellerConversations,
+    updateSellerConversation,
     setOnlineUsers,
-    setEvents
+    setEvents,
+    deleteSeller,
+    setSellerUnreadMessages
 } = shopSlice.actions
 export default shopSlice.reducer

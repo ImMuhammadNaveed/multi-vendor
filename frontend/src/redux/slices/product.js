@@ -1,5 +1,9 @@
 import {createSlice} from '@reduxjs/toolkit'
-import { setAllProductsReducer, setShopProductsReducer } from '../reducers/product'
+import { 
+    deleteProductReducer,
+    setAllProductsReducer, 
+    setShopProductsReducer 
+} from '../reducers/product'
 
 const initialState = {
     shopProducts : [],
@@ -12,10 +16,11 @@ const productSlice = createSlice({
     initialState,
     reducers:{
         setAllProducts: setAllProductsReducer,
-        setShopProducts: setShopProductsReducer
+        setShopProducts: setShopProductsReducer,
+        deleteProduct: deleteProductReducer,
     }
 })
 
 
-export const {setAllProducts, setShopProducts} = productSlice.actions
+export const {setAllProducts, setShopProducts, deleteProduct} = productSlice.actions
 export default productSlice.reducer

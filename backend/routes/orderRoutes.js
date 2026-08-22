@@ -5,23 +5,26 @@ const { createOrder,
     getSellerOrders, 
     updateOrderStatus, 
     refund,
-    refundSuccess
+    refundSuccess,
+    getAllOrders
 } = require("../controllers/orderController")
 
-const { userLoginCheck, 
-    shopLoginCheck 
+const { 
+    userLoginCheck, 
+    shopLoginCheck,
+    authorization
 } = require("../middlewares/auth")
 
 const orderRouter = express.Router()
 
-orderRouter.post("/create-order", createOrder)
+orderRouter.post("/create-order", userLoginCheck, createOrder)
 orderRouter.get("/user-orders", userLoginCheck, getUserOrders)
-orderRouter.get("/order-details/:id", userLoginCheck, orderDetails)
+orderRouter.get("/order-details/:id", orderDetails)
 orderRouter.get("/seller-orders", shopLoginCheck, getSellerOrders)
-orderRouter.post("/update-order-status/:id",  updateOrderStatus)
+orderRouter.post("/update-order-status/:id", shopLoginCheck, updateOrderStatus)
 orderRouter.post("/process-refund/:id", refund)
-orderRouter.post("/refund-success/:id", refundSuccess)
-
+orderRouter.post("/refund-success/:id", shopLoginCheck, refundSuccess)
+orderRouter.get("/all-orders", userLoginCheck, authorization(["Admin"]), getAllOrders)
 
 module.exports = {
     orderRouter

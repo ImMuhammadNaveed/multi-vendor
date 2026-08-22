@@ -1,24 +1,28 @@
 import { useEffect, useState } from "react"
 import { Country, State, City } from 'country-state-city'
-import { useContext } from "react"
-import { userContext } from '../../context/UserContext'
-import { cartContext } from '../../context/CartContext'
+import { backend_url } from "../../server"
 import axios from "axios"
+import { useDispatch, useSelector } from "react-redux"
+import { toast } from 'react-toastify'
 
-function ShippingDetails() {
-    const { backend_url } = useContext(userContext)
-    const { cart } = useContext(cartContext)
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
-    const [phoneNumber, setPhoneNumber] = useState("")
-    const [country, setCountry] = useState("")
-    const [city, setCity] = useState("")
-    const [addressType, setAddressType] = useState('')
-    const [zipCode, setZipCode] = useState('')
-    const [address1, setAddress1] = useState('')
-    const [address2, setAddress2] = useState('')
+function ShippingDetails({
+    couponCode, setCouponCode, 
+    stage, setStage,
+    name, setName, 
+    email, setEmail, 
+    phoneNumber, setPhoneNumber, 
+    country, setCountry, 
+    city, setCity,
+    addressType, setAddressType,
+    zipCode, setZipCode,
+    address1, setAddress1,
+    address2, setAddress2
+}) {
+    const dispatch = useDispatch()
+    const { cart } = useSelector(state => state.cart)
+    
 
-    const { userData } = useContext(userContext)
+    const userData = useSelector(state => state.user.user)
     useEffect(() => {
         setName(userData.name || "")
         setEmail(userData.email || "")
@@ -45,7 +49,7 @@ function ShippingDetails() {
     const [totalSubPrice, setTotalSubPrice] = useState(0)
     const [shippingPrice, setShippingPrice] = useState(0)
     const [discount, setDiscount] = useState(0)
-    const [couponCode, setCouponCode] = useState("")
+    
 
     useEffect(() => {
         const totalSPrice = cart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0)
@@ -56,61 +60,31 @@ function ShippingDetails() {
 
     async function applyCoupon() {
         try {
-            const { data } = await axios.get(backend_url + `/api/coupon/find-coupon/${couponCode}`, { withCredentials: true })
+            const { data } = await axios.post(backend_url + `/api/coupon/find-coupon/${couponCode}`, {cart:cart}, { withCredentials: true })
             if (data.success) {
-                const productsoOfSameShop = cart.filter((item) => item.product.shop._id === data.data.shop._id)
-                console.log(productsoOfSameShop)
-                if (productsoOfSameShop.length !== 0) {
-                    const price = productsoOfSameShop.reduce((acc, item) => acc + (item.product.price * item.quantity), 0)
-                    const couponValue = data.data.value
-                    const discountAmount = (price / 100) * couponValue
-                    setDiscount(discountAmount)
-                } else {
-                    setDiscount(0)
-                    alert("Coupon is not valid for these products")
-                }
+                setDiscount(data.discount)
             } else {
                 setDiscount(0)
-                alert(data.message)
+                toast.error("Coupon is not valid for these products")
             }
         } catch (error) {
             setDiscount(0)
-            console.log(error.response?.data?.message)
+            toast.error(error.response?.data?.message)
         }
     }
 
-    async function placeOrder() {
-        const shippingAddress = {
-            zipCode,
-            country,
-            city,
-            address1,
-            address2
-        }
-        const totalPrice = totalSubPrice + shippingPrice - discount
-        const paymentInfo = 'pending'
-        console.log("placing order")
-        try {
-            const { data } = await axios.post(backend_url + "/api/order/create-order",
-                { cart, shippingAddress, user:userData, totalPrice, paymentInfo },
-                { withCredentials: true }
-            )
-        } catch (error) {
-            console.log(error.response?.data?.message)
-            // console.log(error.response)
-        }
-    }
+    
     return (
         <>
-            <div className="w-[80%] flex justify-center gap-4">
-                <div className="bg-white p-4 rounded-md w-[70%] ">
+            <div className="lg:w-[80%] w-[92%] flex lg:flex-row flex-col justify-center gap-4">
+                <div className="bg-white p-4 rounded-md lg:w-[70%] w-full">
                     <h2 className="text-lg font-semibold mb-4">Shipping Address</h2>
                     <form
                         action=""
                         className="bg-white w-full overflow-y-auto rounded-sm"
                         onSubmit={handleSubmit}
                     >
-                        <div className="flex gap-4">
+                        <div className="flex lg:flex-row flex-col lg:gap-4 gap-2">
                             <div className="flex flex-col gap-2 flex-1">
                                 <div>
                                     <p>Full Name</p>
@@ -245,7 +219,7 @@ function ShippingDetails() {
                 </div >
 
                 {/* pricing */}
-                <div className="w-[30%] flex flex-col gap-4 bg-white p-4 rounded-md">
+                <div className="lg:w-[30%] w-full flex flex-col gap-4 bg-white p-4 rounded-md">
                     <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-600">subtotal:</p>
                         <p className="font-bold">{totalSubPrice}</p>
@@ -284,7 +258,7 @@ function ShippingDetails() {
                 <button
                     // onClick={() => setStage(2)}
                     className="bg-black text-white px-12 py-2 rounded-md cursor-pointer"
-                    onClick={placeOrder}
+                    onClick={()=>setStage(2)}
                 >Go to Payment</button>
             </div>
         </>
