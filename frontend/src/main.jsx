@@ -6,11 +6,13 @@ import { Provider } from 'react-redux'
 import { store } from './redux/store.js'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
+import ScrollToTop from './hooks/ScrollToTop.jsx'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 createRoot(document.getElementById('root')).render(
   <Elements stripe={stripePromise}>
     <BrowserRouter>
+    <ScrollToTop/>
       <Provider store={store}>
         <App />
       </Provider>

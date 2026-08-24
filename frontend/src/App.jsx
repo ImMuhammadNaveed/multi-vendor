@@ -74,7 +74,7 @@ import { getAllEventsAction } from './redux/actions/event'
 
 import { AdminProtectedRoute, SellerProtectedRoute, UserProtectedRoute } from './routes/Auth'
 import { socket } from './socket/Socket'
-
+import { motion, AnimatePresence } from 'framer-motion'
 
 
 
@@ -186,73 +186,86 @@ function App() {
     location.pathname.startsWith('/user/order/') ||
     location.pathname.startsWith('/conversation') ||
     location.pathname.startsWith('/admin-dashboard')
+
+    const topLevelKey = location.pathname.split('/')[1] || 'home'
   return (
     <>
       {!hideLayout && <Header />}
-      <Routes>
-        {/* public routes */}
-        <Route path='/' element={<Home />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/verify-account' element={<VerifyAccount />} />
-        <Route path='/best-selling' element={<BestSelling />} />
-        <Route path='/products' element={<Products />} />
-        <Route path='/products/:id' element={<ProductFullDetails />} />
-        <Route path='/events' element={<Events />} />
-        <Route path='/faq' element={<FAQ />} />
-        {/* User routes */}
-        <Route element={<UserProtectedRoute />}>
-          <Route path='/profile' element={<Profile />} >
-            <Route index element={<ChangeProfile />} />
-            <Route path='orders' element={<Orders />} />
-            <Route path='refunds' element={<Refunds />} />
-            <Route path='inbox' element={<UserInbox />} />
-            <Route path='track-orders' element={<TrackOrders />} />
-            <Route path='change-password' element={<ChangePassword />} />
-            <Route path='address' element={<Address />} />
-          </Route>
-          <Route path='/inbox' element={<UserInbox />} />
-          <Route path='/conversation/:id' element={<UserConversation />} />
-          <Route path='/shipping' element={<Shipping />} />
-          <Route path='/user/order/:id' element={<UserOrderDetails />} />
-          <Route path='/user/track/order/:id' element={<TrackOrder />} />
-        </Route>
-        {/* shop routes */}
-        <Route path='/create-shop' element={<CreateShop />} />
-        <Route path='/login-shop' element={<LoginShop />} />
-        <Route path='/verify-shop' element={<VerifyShop />} />
-        <Route path='/shop/:shopId' element={<Shop />} />
-        {/* shop protected routes */}
-        <Route element={<SellerProtectedRoute />}>
-          <Route path='/shop/order/:id' element={<ShopOrderDetails />} />
-          <Route path='/shop-dashboard' element={<ShopDashboard />}>
-            <Route index element={<Dashboard />} />
-            <Route path='all-orders' element={<ShopOrders />} />
-            <Route path='all-products' element={<AllProducts />} />
-            <Route path='create-product' element={<CreateProduct />} />
-            <Route path='all-events' element={<AllEvents />} />
-            <Route path='create-event' element={<CreateEvent />} />
-            <Route path='withdraw-money' element={<WithdrawMoney />} />
-            <Route path='messages' element={<AllConversations />} />
-            <Route path='coupons' element={<CreateCoupon />} />
-            <Route path='refunds' element={<ShopRefunds />} />
-            <Route path='settings' element={<Settings />} />
-          </Route>
-        </Route>
-        {/* admin routes */}
-        <Route element={<AdminProtectedRoute />}>
-          <Route path='/admin-dashboard' element={<AdminDashboard />}>
-            <Route index element={<AdminDashboardContent />} />
-            <Route path='all-orders' element={<AdminAllOrders />} />
-            <Route path='all-sellers' element={<AdminAllSellers />} />
-            <Route path='all-users' element={<AdminAllUsers />} />
-            <Route path='all-products' element={<AdminAllProducts />} />
-            <Route path='all-events' element={<AdminAllEvents />} />
-            <Route path='withdraw-request' element={<AdminWithdrawRequest />} />
-            {/* <Route path='settings' element={<Settings />} /> */}
-          </Route>
-        </Route>
-      </Routes>
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key={topLevelKey}
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -12 }}
+          transition={{ duration: 0.25, ease: 'easeInOut' }}
+        >
+          <Routes location={location}>
+            {/* public routes */}
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+            <Route path='/verify-account' element={<VerifyAccount />} />
+            <Route path='/best-selling' element={<BestSelling />} />
+            <Route path='/products' element={<Products />} />
+            <Route path='/products/:id' element={<ProductFullDetails />} />
+            <Route path='/events' element={<Events />} />
+            <Route path='/faq' element={<FAQ />} />
+            {/* User routes */}
+            <Route element={<UserProtectedRoute />}>
+              <Route path='/profile' element={<Profile />} >
+                <Route index element={<ChangeProfile />} />
+                <Route path='orders' element={<Orders />} />
+                <Route path='refunds' element={<Refunds />} />
+                <Route path='inbox' element={<UserInbox />} />
+                <Route path='track-orders' element={<TrackOrders />} />
+                <Route path='change-password' element={<ChangePassword />} />
+                <Route path='address' element={<Address />} />
+              </Route>
+              <Route path='/inbox' element={<UserInbox />} />
+              <Route path='/conversation/:id' element={<UserConversation />} />
+              <Route path='/shipping' element={<Shipping />} />
+              <Route path='/user/order/:id' element={<UserOrderDetails />} />
+              <Route path='/user/track/order/:id' element={<TrackOrder />} />
+            </Route>
+            {/* shop routes */}
+            <Route path='/create-shop' element={<CreateShop />} />
+            <Route path='/login-shop' element={<LoginShop />} />
+            <Route path='/verify-shop' element={<VerifyShop />} />
+            <Route path='/shop/:shopId' element={<Shop />} />
+            {/* shop protected routes */}
+            <Route element={<SellerProtectedRoute />}>
+              <Route path='/shop/order/:id' element={<ShopOrderDetails />} />
+              <Route path='/shop-dashboard' element={<ShopDashboard />}>
+                <Route index element={<Dashboard />} />
+                <Route path='all-orders' element={<ShopOrders />} />
+                <Route path='all-products' element={<AllProducts />} />
+                <Route path='create-product' element={<CreateProduct />} />
+                <Route path='all-events' element={<AllEvents />} />
+                <Route path='create-event' element={<CreateEvent />} />
+                <Route path='withdraw-money' element={<WithdrawMoney />} />
+                <Route path='messages' element={<AllConversations />} />
+                <Route path='coupons' element={<CreateCoupon />} />
+                <Route path='refunds' element={<ShopRefunds />} />
+                <Route path='settings' element={<Settings />} />
+              </Route>
+            </Route>
+            {/* admin routes */}
+            <Route element={<AdminProtectedRoute />}>
+              <Route path='/admin-dashboard' element={<AdminDashboard />}>
+                <Route index element={<AdminDashboardContent />} />
+                <Route path='all-orders' element={<AdminAllOrders />} />
+                <Route path='all-sellers' element={<AdminAllSellers />} />
+                <Route path='all-users' element={<AdminAllUsers />} />
+                <Route path='all-products' element={<AdminAllProducts />} />
+                <Route path='all-events' element={<AdminAllEvents />} />
+                <Route path='withdraw-request' element={<AdminWithdrawRequest />} />
+                {/* <Route path='settings' element={<Settings />} /> */}
+              </Route>
+            </Route>
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+
       <
         ToastContainer
         position='top-right'

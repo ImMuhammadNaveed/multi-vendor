@@ -47,7 +47,7 @@ function CreateShop() {
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-102 m-auto border border-gray-200 rounded-lg p-5 my-10">
+            <form className="flex flex-col items-center w-102 md:w-120 m-auto border border-gray-200 rounded-lg p-5 my-10">
                 <p className="text-2xl font-bold">Register as a seller</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Shop Name</p>

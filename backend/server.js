@@ -36,6 +36,7 @@ app.use('/api/conversation', conversationRouter)
 app.use('/api/message', messageRouter)
 app.use('/api/withdraw', withdrawRouter)
 app.use('/api/payment', paymentRouter)
+app.use('/', (req, res)=>res.send("multi-vender is running"))
 
 databaseConnection()
 
@@ -44,5 +45,5 @@ databaseConnection()
 
 
 
-const backend_port = process.env.PORT
+const backend_port = process.env.PORT || 5000
 app.listen(backend_port, ()=>{console.log("Server started!")})

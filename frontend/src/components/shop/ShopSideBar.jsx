@@ -17,6 +17,7 @@ function ShopSideBar({ shopData, shopProducts, owner, shopRating }) {
                 dispatch(sellerLogout())
                 socket.emit("logout", shopData?._id)
                 toast.success(data.message)
+                window.location.href = '/'
             }
         } catch (error) {
             toast.error(error.response?.data?.message)
