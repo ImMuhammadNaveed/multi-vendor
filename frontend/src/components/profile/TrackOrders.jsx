@@ -4,9 +4,11 @@ import { Link } from "react-router-dom"
 import { MdOutlineTrackChanges } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { getUserOrdersAction } from "../../redux/actions/order";
+import OrderAnimation from '../../assets/OrderAnimation'
 
 function TrackOrders() {
     const orders  = useSelector(state=> state.order.userOrders)
+    const loading = useSelector(state=> state.order.loading)
     const dispatch = useDispatch()
     const rows = orders.length!==0&&orders.map((item) => ({
         id: item._id,
@@ -37,6 +39,9 @@ function TrackOrders() {
             }
         },
     ]
+    if(loading){
+        return <OrderAnimation/>
+    }
     return (
         <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
             <DataGrid

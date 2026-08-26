@@ -36,7 +36,7 @@ app.use('/api/conversation', conversationRouter)
 app.use('/api/message', messageRouter)
 app.use('/api/withdraw', withdrawRouter)
 app.use('/api/payment', paymentRouter)
-app.use('/', (req, res)=>res.send("multi-vender is running"))
+app.get('/', (req, res)=>res.send("multi-vender is running"))
 
 databaseConnection()
 

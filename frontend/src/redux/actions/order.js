@@ -1,5 +1,6 @@
 import {
     setAllOrders, 
+    setLoading, 
     setSellerOrders, 
     setUserOrders
 } from "../slices/order"
@@ -9,6 +10,7 @@ import { backend_url } from "../../server"
 export function getAllOrdersAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/order/all-orders", { withCredentials: true })
             // console.log("all orders: ", data)
             if (data.success) {
@@ -16,6 +18,8 @@ export function getAllOrdersAction() {
             }
         } catch (error) {
             console.log(error.response)
+        }finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -23,6 +27,7 @@ export function getAllOrdersAction() {
 export function getSellerOrdersAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/order/seller-orders", { withCredentials: true })
             // console.log(data)
             if (data.success) {
@@ -30,6 +35,8 @@ export function getSellerOrdersAction() {
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -37,6 +44,7 @@ export function getSellerOrdersAction() {
 export function getUserOrdersAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/order/user-orders", { withCredentials: true })
             console.log("user orders: ", data)
             if (data.success) {
@@ -44,6 +52,8 @@ export function getUserOrdersAction() {
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }

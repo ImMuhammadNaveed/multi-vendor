@@ -18,11 +18,6 @@ function Dashboard() {
             dispatch(getShopProductsAction(sellerData._id))
         }
     }, [sellerData])
-
-    // const deliveredOrders = orders && orders.filter((order)=>order.status==="Delivered")
-    // const totalPrice = deliveredOrders && deliveredOrders.reduce((acc, item)=>acc+item.totalPrice,0)
-    // const serviceCharges = totalPrice&&totalPrice*0.1
-    // const availableBalance = totalPrice - serviceCharges
     return (
         <>
             <div className="w-full py-4 lg:px-8 px-2">

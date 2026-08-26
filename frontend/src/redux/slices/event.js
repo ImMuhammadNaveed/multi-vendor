@@ -1,6 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit'
 import {
-    setAllEventsReducer
+    setAllEventsReducer,
+    setLoadingReducer
 } from '../reducers/event'
 
 const initialState = {
@@ -12,10 +13,11 @@ const eventSlice = createSlice({
     name: 'event',
     initialState,
     reducers:{
-        setAllEvents: setAllEventsReducer
+        setAllEvents: setAllEventsReducer,
+        setLoading: setLoadingReducer
     }
 })
 
 
-export const {setAllEvents} = eventSlice.actions
+export const {setAllEvents, setLoading} = eventSlice.actions
 export default eventSlice.reducer

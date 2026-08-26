@@ -3,8 +3,10 @@ import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
 import { backend_url } from "../../server";
 import { useSelector } from "react-redux";
+import OrderAnimation from '../../assets/OrderAnimation'
 function ShopRefunds() {
     const orders = useSelector(state=> state.order.sellerOrders)
+    const loading = useSelector(state=> state.order.loading)
     const refOrders = orders && orders.filter((order)=>order.status==="Processing refund")
 
     const rows = refOrders && refOrders.map((item) => ({
@@ -36,6 +38,9 @@ function ShopRefunds() {
             }
         },
     ]
+    if(loading){
+        return <OrderAnimation/>
+    }
     return (
         <div style={{ width: '100%', height: 400 }}>
             <DataGrid

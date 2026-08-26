@@ -9,3 +9,7 @@ export function setShopProductsReducer(state, action){
 export function deleteProductReducer(state, action) {
     state.allProducts = state.allProducts.filter((product)=>product._id !== action.payload)
 }
+
+export function setLoadingReducer(state, action) {
+    state.loading = action.payload
+}

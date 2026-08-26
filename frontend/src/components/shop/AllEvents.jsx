@@ -6,10 +6,11 @@ import { Link } from "react-router-dom";
 import { backend_url } from "../../server";
 import { useDispatch, useSelector } from "react-redux";
 import { getEventsAction } from "../../redux/actions/shop"; 
-
+import OrderAnimation from '../../assets/OrderAnimation'
 function AllEvents() {
     const sellerData = useSelector(state=> state.shop.seller)
     const shopEvents = useSelector(state=> state.shop.events)
+    const loading = useSelector(state=>state.event.loading)
     const dispatch = useDispatch()
 
     useEffect(()=>{
@@ -46,6 +47,9 @@ function AllEvents() {
         stock: item.stock,
         sold: item.soldOut
     }))
+    if (loading) {
+        <OrderAnimation/>
+    }
     return (
         <>
             <DataGrid

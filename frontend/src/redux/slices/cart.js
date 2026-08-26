@@ -6,8 +6,7 @@ import {
 } from '../reducers/cart'
 
 const initialState = {
-    cart: [],
-    loading: true
+    cart: []
 }
 
 export const cartSlice = createSlice({

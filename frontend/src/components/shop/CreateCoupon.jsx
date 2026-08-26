@@ -8,6 +8,7 @@ import { backend_url } from "../../server";
 import { DataGrid } from '@mui/x-data-grid'
 import { useEffect } from "react";
 import { toast } from "react-toastify";
+import OrderAnimation from "../../assets/OrderAnimation";
 
 function CreateCoupon() {
     const [open, setOpen] = useState(false)
@@ -50,8 +51,10 @@ function CreateCoupon() {
     }
 
     useEffect(() => { handleGetAllCoupons() }, [])
+    const [loading, setLoading] = useState(false)
     async function handleGetAllCoupons() {
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + "/api/coupon/all-coupons", { withCredentials: true })
             console.log(data)
             if (data.success) {
@@ -59,6 +62,8 @@ function CreateCoupon() {
             }
         } catch (error) {
             console.log(error)
+        } finally{
+            setLoading(false)
         }
     }
     const rows = coupons && coupons.map((item) => ({
@@ -102,7 +107,9 @@ function CreateCoupon() {
                     >Create new coupon
                     </button>
                 </div>
-                <div style={{ width: '100%', height: 400 }}>
+                {loading
+                ?<OrderAnimation/>
+                :<div style={{ width: '100%', height: 400 }}>
                     <DataGrid
                         className="text-right"
                         columns={columns}
@@ -111,6 +118,8 @@ function CreateCoupon() {
                         autoHeight
                     />
                 </div>
+                }
+                
             </div>
 
             {

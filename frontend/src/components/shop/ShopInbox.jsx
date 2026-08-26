@@ -11,6 +11,7 @@ function AllConversations() {
     const conversations = useSelector(state => state.shop.sellerConversations)
     const onlineUsers = useSelector(state => state.shop.onlineUsers)
     const sellerData = useSelector(state => state.shop.seller)
+    const loading = useSelector(state => state.shop.loading)
     const [selectedConversation, setSelectedConversation] = useState(null)
     const [selectedUser, setSelectedUser] = useState(null)
 
@@ -32,17 +33,19 @@ function AllConversations() {
                         <p className="text-2xl font-semibold text-center py-4">All Messages</p>
                         <div>
                             {
-                                conversations && conversations.map((conversation) => (
-                                    <Conversation
-                                        setOpenMessage={setOpenMessage}
-                                        key={conversation._id}
-                                        conversation={conversation}
-                                        setSelectedConversation={setSelectedConversation}
-                                        setSelectedUser={setSelectedUser}
-                                        online={checkOnline(conversation)}
-                                        sellerData={sellerData}
-                                    />
-                                ))
+                                loading
+                                    ? <ConversationAnimation />
+                                    : conversations && conversations.map((conversation) => (
+                                        <Conversation
+                                            setOpenMessage={setOpenMessage}
+                                            key={conversation._id}
+                                            conversation={conversation}
+                                            setSelectedConversation={setSelectedConversation}
+                                            setSelectedUser={setSelectedUser}
+                                            online={checkOnline(conversation)}
+                                            sellerData={sellerData}
+                                        />
+                                    ))
                             }
                         </div>
                     </div>
@@ -147,6 +150,8 @@ import { useMessageSeen } from "../../hooks/useMessageSeen"
 import { useChatSocket } from "../../hooks/useChatSocket"
 import { MdOutlineCancel } from "react-icons/md"
 import { IoCheckmark, IoCheckmarkDoneOutline } from "react-icons/io5";
+import ConversationAnimation from "../../assets/ConversationAnimation"
+import SellerMessagesAnimation from '../../assets/SellerMessagesAnimation'
 function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, sellerData, online }) {
     const [images, setImages] = useState([])
     const [previewImages, setPreviewImages] = useState([])
@@ -154,7 +159,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
     const [image, setImage] = useState(null)
     const dispatch = useDispatch()
     const [newMessage, setNewMessage] = useState("")
-    const { messages, setMessages } = useMessages(selectedConversation?._id)
+    const { messages, setMessages, loading } = useMessages(selectedConversation?._id)
     const markSeen = useMessageSeen(selectedConversation, sellerData, selectedUser)
     useChatSocket(selectedUser, selectedConversation, setMessages, (m) => dispatch(updateSellerConversation({ conversationId: m.conversationId, lastMessage: m.text, sender: m.sender })), markSeen)
     const ref = useAutoScroll(messages, selectedConversation)
@@ -240,48 +245,52 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                 {/* messages area */}
                 <div className="relative flex-1 min-h-0">
                     <div className="absolute inset-0 overflow-y-auto scrollbar-hide px-3">
-                        {messages?.map((message) => (
-                            <div
-                                className={`flex items-center gap-2 my-3 ${message.sender === sellerData._id ? "justify-end" : "justify-start"}`}
-                                key={message._id}>
-                                <div className="flex gap-2">
-                                    {
-                                        message.sender === sellerData._id
-                                            ? ""
-                                            : <img src={`${backend_url}/uploads/` + selectedUser.avator}
-                                                alt=""
-                                                className="w-9 h-9 object-cover rounded-full"
-                                            />
-                                    }
-                                    <div>
-                                        <div className={`p-2 rounded-md inline-block ${message.sender === sellerData._id ? "bg-green-200" : "bg-blue-200"}`}>
-                                            {message.images?.map((image, index) => (
-                                                <img
-                                                    key={index}
-                                                    onClick={() => {
-                                                        setOpenImage(true)
-                                                        setImage(image)
-                                                    }}
-                                                    src={`${backend_url}/uploads/${image}`}
-                                                    alt=""
-                                                    className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
-                                                />
-                                            ))}
-                                            <div className="w-40 flex items-end justify-between">
-                                                <p className="break-words min-w-0">{message.text}</p>
-                                                {
-                                                    message.sender === sellerData._id
-                                                        ? <p>{message.seen ? <IoCheckmarkDoneOutline size={20} color="blue" /> : <IoCheckmark size={20} color="gray" />}</p>
-                                                        : ''
-                                                }
-                                            </div>
+                        {
+                            loading
+                                ? <SellerMessagesAnimation />
+                                : messages?.map((message) => (
+                                    <div
+                                        className={`flex items-center gap-2 my-3 ${message.sender === sellerData._id ? "justify-end" : "justify-start"}`}
+                                        key={message._id}>
+                                        <div className="flex gap-2">
+                                            {
+                                                message.sender === sellerData._id
+                                                    ? ""
+                                                    : <img src={`${backend_url}/uploads/` + selectedUser.avator}
+                                                        alt=""
+                                                        className="w-9 h-9 object-cover rounded-full"
+                                                    />
+                                            }
+                                            <div>
+                                                <div className={`p-2 rounded-md inline-block ${message.sender === sellerData._id ? "bg-green-200" : "bg-blue-200"}`}>
+                                                    {message.images?.map((image, index) => (
+                                                        <img
+                                                            key={index}
+                                                            onClick={() => {
+                                                                setOpenImage(true)
+                                                                setImage(image)
+                                                            }}
+                                                            src={`${backend_url}/uploads/${image}`}
+                                                            alt=""
+                                                            className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
+                                                        />
+                                                    ))}
+                                                    <div className="w-40 flex items-end justify-between">
+                                                        <p className="break-words min-w-0">{message.text}</p>
+                                                        {
+                                                            message.sender === sellerData._id
+                                                                ? <p>{message.seen ? <IoCheckmarkDoneOutline size={20} color="blue" /> : <IoCheckmark size={20} color="gray" />}</p>
+                                                                : ''
+                                                        }
+                                                    </div>
 
+                                                </div>
+                                                <p className="text-xs">{format(message.createdAt)}</p>
+                                            </div>
                                         </div>
-                                        <p className="text-xs">{format(message.createdAt)}</p>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
+                                ))
+                            }
                         <div ref={ref}></div>
                     </div>
                     {/* send images preview */}

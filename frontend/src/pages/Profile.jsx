@@ -28,7 +28,7 @@ function Profile() {
                                 initial={{ opacity: 0, x: 8 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -8 }}
-                                transition={{ duration: 0.25, ease: 'easeOut' }}
+                                transition={{ duration: 0.25, ease: 'easeInOut' }}
                             >
                                 <Outlet />
                             </motion.div>

@@ -9,3 +9,7 @@ export function setSellerOrdersReducer(state, action) {
 export function setUserOrdersReducer(state, action) {
     state.userOrders = action.payload
 }
+
+export function setLoadingReducer(state, action) {
+    state.loading = action.payload
+}

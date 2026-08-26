@@ -6,9 +6,11 @@ import { useLocation } from "react-router-dom"
 import { socket } from "../../socket/Socket"
 import { backend_url } from "../../server"
 import { useDispatch, useSelector } from "react-redux"
+import ConversationAnimation from '../../assets/ConversationAnimation'
 
 function UserInbox() {
     const conversations = useSelector(state => state.user.userConversations)
+    const loading = useSelector(state=> state.user.loading)
     const onlineUsers = useSelector(state => state.user.onlineUsers)
     const userData = useSelector(state => state.user.user)
     // const shopData = useSelector(state => state.shop.shop)
@@ -32,7 +34,9 @@ function UserInbox() {
                     <p className="text-2xl font-semibold py-4 text-center">All Messages</p>
                     <div>
                         {
-                            conversations && conversations.map((conversation) => (
+                            loading
+                            ?<ConversationAnimation/>
+                            :conversations && conversations.map((conversation) => (
                                 <Conversation
                                     // setOpenMessage={setOpenMessage}
                                     key={conversation._id}

@@ -11,7 +11,8 @@ import {
     setEventsReducer,
     deleteSellerReducer,
     sellerLogoutReducer,
-    setSellerUnreadMessagesReducer
+    setSellerUnreadMessagesReducer,
+    setLoadingReducer
 } from '../reducers/shop'
 
 const initialState = {
@@ -22,7 +23,8 @@ const initialState = {
     sellerChecked: false,
     sellerConversations: [],
     onlineUsers: [],
-    events: []
+    events: [],
+    loading: false
 }
 
 const shopSlice = createSlice({
@@ -40,7 +42,8 @@ const shopSlice = createSlice({
         setOnlineUsers: setOnlineUsersReducer,
         setEvents: setEventsReducer,
         deleteSeller: deleteSellerReducer,
-        setSellerUnreadMessages: setSellerUnreadMessagesReducer
+        setSellerUnreadMessages: setSellerUnreadMessagesReducer,
+        setLoading: setLoadingReducer
     }
 })
 
@@ -57,6 +60,7 @@ export const {
     setOnlineUsers,
     setEvents,
     deleteSeller,
-    setSellerUnreadMessages
+    setSellerUnreadMessages,
+    setLoading
 } = shopSlice.actions
 export default shopSlice.reducer

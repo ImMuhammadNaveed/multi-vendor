@@ -2,6 +2,7 @@ import {createSlice} from '@reduxjs/toolkit'
 import { 
     deleteProductReducer,
     setAllProductsReducer, 
+    setLoadingReducer, 
     setShopProductsReducer 
 } from '../reducers/product'
 
@@ -18,9 +19,10 @@ const productSlice = createSlice({
         setAllProducts: setAllProductsReducer,
         setShopProducts: setShopProductsReducer,
         deleteProduct: deleteProductReducer,
+        setLoading: setLoadingReducer
     }
 })
 
 
-export const {setAllProducts, setShopProducts, deleteProduct} = productSlice.actions
+export const {setAllProducts, setShopProducts, deleteProduct, setLoading} = productSlice.actions
 export default productSlice.reducer

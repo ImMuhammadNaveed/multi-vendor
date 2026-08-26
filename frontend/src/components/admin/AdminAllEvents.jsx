@@ -6,6 +6,7 @@ import { getAllEventsAction } from '../../redux/actions/event';
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import OrderAnimation from '../../assets/OrderAnimation'
 
 function AdminAllEvents(params) {
     const dispatch = useDispatch()
@@ -13,6 +14,7 @@ function AdminAllEvents(params) {
         dispatch(getAllEventsAction())
     }, [dispatch])
     const events = useSelector(state => state.event.allEvents)
+    const loading = useSelector(state=> state.event.loading)
 
     const rows = events && events.map((item) => ({
         id: item._id,
@@ -47,6 +49,11 @@ function AdminAllEvents(params) {
             }
         }
     ]
+    if (loading) {
+        return (
+            <OrderAnimation />
+        )
+    }
     return (
         <div style={{ width: '100%', height: 400 }}>
             <DataGrid

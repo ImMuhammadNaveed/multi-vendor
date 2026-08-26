@@ -4,9 +4,11 @@ import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
 import { useSelector } from "react-redux";
 import { getUserOrdersAction } from "../../redux/actions/order";
+import OrderAnimation from '../../assets/OrderAnimation'
 
 function Refunds() {
     const orders = useSelector(state=>state.order.userOrders)
+    const loading = useSelector(state=> state.order.loading)
     useEffect(() => { getUserOrdersAction() }, [])
     const refundOrders = orders && orders.filter((order) => order.status === 'Processing refund')
     const rows = refundOrders&&refundOrders.map((item) => ({
@@ -38,6 +40,9 @@ function Refunds() {
             }
         },
     ]
+    if(loading){
+        return <OrderAnimation/>
+    }
     return (
         <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
             <DataGrid

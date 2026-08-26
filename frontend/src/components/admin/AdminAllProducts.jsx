@@ -6,6 +6,7 @@ import { deleteProductAction, getAllProductsAction } from '../../redux/actions/p
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import OrderAnimation from '../../assets/OrderAnimation'
 
 function AdminAllProducts(params) {
     const [isDelete, setIsDelete] = useState(false)
@@ -15,6 +16,7 @@ function AdminAllProducts(params) {
         dispatch(getAllProductsAction())
     }, [dispatch])
     const products = useSelector(state => state.product.allProducts)
+    const loading = useSelector(state=> state.product.loading)
 
     const rows = products && products.map((item) => ({
         id: item._id,
@@ -70,6 +72,11 @@ function AdminAllProducts(params) {
             }
         }
     ]
+    if (loading) {
+        return (
+            <OrderAnimation />
+        )
+    }
     return (
         <div style={{ width: '100%', height: 400 }}>
             {

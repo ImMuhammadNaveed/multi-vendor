@@ -6,7 +6,8 @@ import {
     setOnlineUsers,
     setUsers,
     deleteUser,
-    setUserUnreadMessages
+    setUserUnreadMessages,
+    setLoading
 } from '../slices/user'
 import { socket } from '../../socket/Socket'
 import { backend_url } from '../../server'
@@ -16,6 +17,7 @@ import { toast } from 'react-toastify'
 export function getUserAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/user/info", { withCredentials: true })
             if (data.success) {
                 dispatch(setUser(data.userData))
@@ -25,6 +27,7 @@ export function getUserAction() {
             console.log(error)
         } finally {
             dispatch(setUserChecked(true))
+            dispatch(setLoading(false))
         }
     }
 }
@@ -32,13 +35,15 @@ export function getUserAction() {
 export function getUserConversationsAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/conversation/get-user-conversations", { withCredentials: true })
-            // console.log("user conversations: ", data)
             if (data.success) {
                 dispatch(setUserConversations(data.conversationsData))
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -64,12 +69,15 @@ export function sendMessageAction(userData, data, navigate) {
 export function getAllUsersAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + '/api/user/all-users', { withCredentials: true })
             if (data.success) {
                 dispatch(setUsers(data.users))
             }
         } catch (error) {
             console.log(error.response)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -77,6 +85,7 @@ export function getAllUsersAction() {
 export function deleteUserAction(id) {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.delete(backend_url + `/api/user/delete-user/${id}`, { withCredentials: true })
             // console.log(data)
             if (data.success) {
@@ -86,6 +95,8 @@ export function deleteUserAction(id) {
         } catch (error) {
             toast.error(error.response?.data?.message)
             return { success: false, message: error.response?.data?.message }
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }

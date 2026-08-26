@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom'
 import Product from '../product/ProductCard'
 import { useEffect, useState } from 'react'
 import ShopReviews from './ShopReviews'
+import { useSelector } from 'react-redux'
+import ProductCardAnimation from '../../assets/ProductCardAnimation'
 
 function ShopProfileData({ shopProducts, owner, shopEvents }) {
     const [active, setActive] = useState(1)
     const shopReviews = shopProducts && shopProducts.map((product) => product.reviews).flat()
+    const loadingP = useSelector(state=> state.product.loading)
+    const loadingE = useSelector(state=> state.event.loading)
 
     return shopProducts && (
         <>
@@ -32,8 +36,10 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
                     active === 1 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
                         {
                             shopProducts.map((item) =>
-                                    <Product item={item} key={item._id} />
-                                
+                                loadingP
+                                    ? <ProductCardAnimation />
+                                    : <Product item={item} key={item._id} />
+
                             )
                         }
                     </div>
@@ -44,7 +50,9 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
                             ? <div className='grid grid-cols-3 gap-7'>
                                 {
                                     shopEvents && shopEvents.map((item) =>
-                                        <Product item={item} isEvent={true} key={item._id} />
+                                        loadingE
+                                            ? <ProductCardAnimation />
+                                            : <Product item={item} key={item._id} />
                                     )
                                 }
                             </div>

@@ -19,6 +19,7 @@ import { getShopAction } from "../redux/actions/shop";
 import { setUserUnreadMessages } from '../redux/slices/user'
 import { MdOutlineCancel } from "react-icons/md"
 import { IoCheckmark, IoCheckmarkDoneOutline } from "react-icons/io5";
+import UserMessagesAnimation from "../assets/UserMessagesAnimation";
 
 function UserConversation() {
     const { id } = useParams()
@@ -42,7 +43,7 @@ function UserConversation() {
     const onlineUsers = useSelector(state => state.user.onlineUsers)
     const userData = useSelector(state => state.user.user)
 
-    const { messages, setMessages } = useMessages(conversation?._id)
+    const { messages, setMessages, loading } = useMessages(conversation?._id)
     const markSeen = useMessageSeen(conversation, userData, shopData)
     useChatSocket(userData, conversation, setMessages, (m) => dispatch(updateUserConversation({ conversationId: m.conversationId, lastMessage: m.text, sender: m.sender })), markSeen)
     const ref = useAutoScroll(messages, conversation)
@@ -112,132 +113,6 @@ function UserConversation() {
         if (!conversation) return
         dispatch(setUserUnreadMessages({ conversationId: conversation._id, count: 0 }))
     }, [])
-    // return (
-    //     <>
-    //         <div className="h-[100vh] flex flex-col justify-between">
-    //             <div>
-    //                 <div>
-    //                     <div className="flex items-center justify-between bg-gray-300 py-2 px-3">
-    //                         <div className="flex items-center">
-    //                             <img src={`${backend_url}/uploads/` + (shopData?.avator || "")}
-    //                                 alt=""
-    //                                 className="w-12 h-12 object-cover rounded-full" />
-    //                             <div className="ml-2">
-    //                                 <p className="font-[600] text-sm">{shopData && shopData.name}</p>
-    //                                 {
-    //                                     conversation && checkOnline(conversation)
-    //                                         ? <p className="text-xs">Active now</p>
-    //                                         : ""
-    //                                 }
-
-    //                             </div>
-    //                         </div>
-    //                         <GoArrowRight
-    //                             size={20}
-    //                             onClick={() => navigate('/profile/inbox')}
-    //                             className="cursor-pointer"
-    //                         />
-    //                     </div>
-    //                     <div className="overflow-y-scroll scrollbar-hide m-2 h-95">
-    //                         {
-    //                             userData && shopData && messages.length > 0 && (
-    //                                 <div >
-    //                                     {messages.map((message) => (
-    //                                         <div
-    //                                             className={`flex items-center gap-2 my-3 ${message.sender === userData._id ? "justify-end" : "justify-start"}`}
-    //                                             key={message._id}>
-    //                                             <div className="flex gap-2">
-    //                                                 {
-    //                                                     message.sender === userData._id
-    //                                                         ? ""
-    //                                                         : <img src={`${backend_url}/uploads/` + shopData.avator}
-    //                                                             alt=""
-    //                                                             className="w-9 h-9 object-cover rounded-full"
-    //                                                         />
-    //                                                 }
-    //                                                 <div>
-    //                                                     <div className={`p-2 rounded-md inline-block ${message.sender === userData._id ? "bg-green-200" : "bg-blue-200"}`}>
-    //                                                         {message.images?.map((image, index) => (
-    //                                                             <img
-    //                                                                 key={index}
-    //                                                                 src={`${backend_url}/uploads/${image}`}
-    //                                                                 alt=""
-    //                                                                 className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
-    //                                                                 onClick={() => {
-    //                                                                     setOpenImage(true)
-    //                                                                     setImage(image)
-    //                                                                 }}
-    //                                                             />
-    //                                                         ))}
-    //                                                         <div className="flex justify-between items-end w-40">
-    //                                                             <p className="break-words min-w-0">{message.text}</p>
-    //                                                             {
-    //                                                                 message.sender === userData._id
-    //                                                                     ? <p>{message.seen ? <IoCheckmarkDoneOutline size={20} color="blue" /> : <IoCheckmark size={20} color="gray" />}</p>
-    //                                                                     : ''
-    //                                                             }
-    //                                                         </div>
-
-    //                                                     </div>
-    //                                                     <p className="text-xs">{format(message.createdAt)}</p>
-    //                                                 </div>
-    //                                             </div>
-    //                                         </div>
-    //                                     ))}
-    //                                     <div ref={ref}></div>
-    //                                 </div>
-    //                             )
-    //                         }
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //             <div className="flex justify-center overflow-x-scroll scrollbar-hide h-21 inset-0">
-    //                 {
-    //                     previewImages.map((item, index) =>
-    //                         <div key={index} className="relative w-20 h-20 m-1">
-    //                             <MdOutlineCancel
-    //                                 className="absolute -top-0 -right-0 cursor-pointer z-10 bg-white rounded-full"
-    //                                 onClick={() => setPreviewImages(previewImages.filter((i) => i !== item))}
-    //                             />
-    //                             <img
-    //                                 src={item}
-    //                                 alt=""
-    //                                 className="w-20 h-20 object-cover rounded"
-    //                             />
-    //                         </div>
-    //                     )
-    //                 }
-    //             </div>
-    //             <form
-    //                 className="relative flex justify-end items-center mx-4 pb-3"
-    //                 onSubmit={handleFormSubmit}
-    //             >
-    //                 <label htmlFor="image">
-    //                     <TfiGallery
-    //                         className="mr-2 cursor-pointer"
-    //                         size={20}
-    //                     />
-    //                 </label>
-    //                 <input type="file" id='image' hidden onChange={handleImages} />
-    //                 <input
-    //                     type="text"
-    //                     required
-    //                     className="border border-gray-300 w-full h-8 rounded-md p-1 focus:outline-none"
-    //                     placeholder="Enter your message..."
-    //                     value={newMessage}
-    //                     onChange={(e) => setNewMessage(e.target.value)}
-    //                 />
-    //                 <button type="submit" className="absolute">
-    //                     <LuSendHorizontal
-    //                         className=" mr-1 cursor-pointer"
-    //                         size={20}
-    //                     />
-    //                 </button>
-    //             </form>
-    //         </div>
-    //         {openImage && <PreviewImage image={image} setOpenImage={setOpenImage} />}
-    //     </>
-    // )
     return (
     <>
         <div className="h-screen flex flex-col overflow-hidden">
@@ -263,7 +138,9 @@ function UserConversation() {
             <div className="relative flex-1 min-h-0">
                 <div className="absolute inset-0 overflow-y-auto scrollbar-hide px-3">
                     {
-                        userData && shopData && messages.length > 0 && (
+                        loading
+                        ?<UserMessagesAnimation/>
+                        :userData && shopData && messages.length > 0 && (
                             <div>
                                 {messages.map((message) => (
                                     <div

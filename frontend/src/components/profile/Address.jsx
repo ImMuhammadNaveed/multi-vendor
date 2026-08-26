@@ -7,6 +7,7 @@ import { backend_url } from '../../server';
 import axios from 'axios';
 import { setUser } from '../../redux/slices/user'
 import { toast } from 'react-toastify';
+import AddressAnimation from '../../assets/AddressAnimation';
 
 function Address() {
     const dispatch = useDispatch()
@@ -177,7 +178,7 @@ function Address() {
                             </div>
                         ))}
                     </div>
-                    : ""
+                    : <AddressAnimation/>
             }
 
 

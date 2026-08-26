@@ -6,6 +6,8 @@ import { deleteSellerAction, getAllSellersAction } from '../../redux/actions/sho
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import OrderAnimation from '../../assets/OrderAnimation'
+
 
 function AdminAllSellers(params) {
     const [isDelete, setIsDelete] = useState(false)
@@ -15,7 +17,7 @@ function AdminAllSellers(params) {
         dispatch(getAllSellersAction())
     }, [dispatch])
     const sellers = useSelector(state => state.shop.allSellers)
-
+    const loading = useSelector(state => state.shop.loading)
     const rows = sellers && sellers.map((item) => ({
         id: item._id,
         name: item.name,
@@ -66,6 +68,11 @@ function AdminAllSellers(params) {
             }
         }
     ]
+    if (loading) {
+        return (
+            <OrderAnimation />
+        )
+    }
     return (
         <div style={{ width: '100%', height: 400 }}>
             {

@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react"
-import ProductCard from "../components/product/ProductCard"
+import Product from "../components/product/ProductCard"
 import { useSelector } from "react-redux"
 import { useSearchParams } from "react-router-dom"
 
 function Products() {
     const [data, setData] = useState([])
     const allProducts = useSelector(state => state.product.allProducts)
+    const loading = useSelector(state => state.product.loading)
     const [searchParams] = useSearchParams()
     const category = searchParams.get('category')
 
@@ -32,7 +33,9 @@ function Products() {
                 <div className="w-[90%] m-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
                     {
                         data.map((item) =>
-                            <ProductCard item={item} key={item._id} />
+                            loading
+                                ? <ProductCardAnimation />
+                                : <Product item={item} key={item._id} />
                         )
                     }
                 </div>

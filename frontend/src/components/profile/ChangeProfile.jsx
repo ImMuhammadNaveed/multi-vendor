@@ -3,9 +3,10 @@ import { IoCameraOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { backend_url } from "../../server";
 import { toast } from "react-toastify";
-
+import ProfileAnimation from '../../assets/ProfileAnimation'
 function ChangeProfile() {
     const userData = useSelector(state => state.user.user)
+    const loading = useSelector(state=> state.user.loading)
 
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
@@ -50,6 +51,9 @@ function ChangeProfile() {
         }
     }
 
+    if(loading){
+        return <ProfileAnimation/>
+    }
     return userData && (
         <form onSubmit={handleSubmit} className="w-full ">
             <div className="relative w-36 h-36 mx-auto">

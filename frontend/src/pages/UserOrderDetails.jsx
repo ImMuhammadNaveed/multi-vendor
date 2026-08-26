@@ -10,6 +10,7 @@ import { backend_url } from "../server";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessageAction } from "../redux/actions/user";
 import { toast } from "react-toastify";
+import OrderDetailsAnimation from '../assets/OrderDetailsAnimation'
 
 function UserOrderDetails() {
     const { id } = useParams()
@@ -18,19 +19,22 @@ function UserOrderDetails() {
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
     async function getOrderDetails() {
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + `/api/order/order-details/${id}`, { withCredentials: true })
             if (data.success) {
-                // console.log(data)
                 setData(data.data)
             }
         } catch (error) {
             console.log(error.response.data.message)
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -40,16 +44,16 @@ function UserOrderDetails() {
     async function processRefund() {
         try {
             const { data } = await axios.post(backend_url + `/api/order/process-refund/${id}`, { withCredentials: true })
-            if(data.success){
+            if (data.success) {
                 toast.error(data.message)
-            }else{
+            } else {
                 toast.error(data.message)
             }
         } catch (error) {
             toast.error(error.response.data.message)
         }
     }
-    return data && (
+    return(
         <>
             {openReview && (
                 <ReviewForm
@@ -64,86 +68,90 @@ function UserOrderDetails() {
                 />
             )}
             <Header />
-            <div className="w-[90%] mx-auto my-8">
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <IoBag
-                            size={35}
-                            color="#DB5079"
-                        />
-                        <p className="text-xl font-bold">Order Details</p>
+            {loading
+                ? <OrderDetailsAnimation />
+                : data&&<div className="w-[90%] mx-auto my-8">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <IoBag
+                                size={35}
+                                color="#DB5079"
+                            />
+                            <p className="text-xl font-bold">Order Details</p>
+                        </div>
                     </div>
-                </div>
-                <div className="flex items-center justify-between my-6">
-                    <p className="text-gray-500">Order ID: #{data._id}</p>
-                    <p className="text-gray-500">Placed on: {data.createdAt.split("T")[0]}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-4 flex-1">
-                        {
-                            data.cart.map((item) => (
-                                <div key={item._id} className="flex gap-2 justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <img
-                                            src={`${backend_url}/uploads/` + item.product.images[0]}
-                                            alt=""
-                                            className="w-12 bg-white"
-                                        />
+                    <div className="flex items-center justify-between my-6">
+                        <p className="text-gray-500">Order ID: #{data._id}</p>
+                        <p className="text-gray-500">Placed on: {data.createdAt.split("T")[0]}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-4 flex-1">
+                            {
+                                data.cart.map((item) => (
+                                    <div key={item._id} className="flex gap-2 justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <img
+                                                src={`${backend_url}/uploads/` + item.product.images[0]}
+                                                alt=""
+                                                className="w-12 bg-white"
+                                            />
+                                            <div>
+                                                <p className="lg:w-full w-48">{item.product.name}</p>
+                                                <p className="text-gray-500">{item.quantity} * ${item.product.price}</p>
+                                            </div>
+                                        </div>
                                         <div>
-                                            <p className="lg:w-full w-48">{item.product.name}</p>
-                                            <p className="text-gray-500">{item.quantity} * ${item.product.price}</p>
+                                            {
+                                                data.status === "Delivered" && !item.isReviewed
+                                                    ? <button
+                                                        className=" bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
+                                                        onClick={() => {
+                                                            setSelectedProduct(item.product)
+                                                            setOpenReview(true)
+                                                        }}>
+                                                        Write review
+                                                    </button>
+                                                    : ""
+                                            }
                                         </div>
                                     </div>
-                                    <div>
-                                        {
-                                            data.status === "Delivered" && !item.isReviewed
-                                                ? <button
-                                                    className=" bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
-                                                    onClick={() => {
-                                                        setSelectedProduct(item.product)
-                                                        setOpenReview(true)
-                                                    }}>
-                                                    Write review
-                                                </button>
-                                                : ""
-                                        }
-                                    </div>
-                                </div>
-                            ))
-                        }
+                                ))
+                            }
+                        </div>
+
                     </div>
 
+                    <hr className="text-gray-300 my-4" />
+                    <div className="flex justify-end mb-8">
+                        <p>Total Price: <span className="font-bold">${data.totalPrice}</span></p>
+                    </div>
+                    <div className="flex justify-between">
+                        <div>
+                            <p className="text-lg font-semibold">Shipping Address:</p>
+                            <p>{data.shippingAddress.address1}</p>
+                            <p>{data.shippingAddress.country}</p>
+                            <p>{data.shippingAddress.city}</p>
+                            <p>{data.user.phoneNumber}</p>
+                        </div>
+                        <div>
+                            <p className="text-lg font-semibold">Payment Info:</p>
+                            <p>Status: {data.status ? data.status : "not paid"}</p>
+                            <button
+                                className="bg-black text-white px-6 py-2 rounded-lg absolute my-8 cursor-pointer"
+                                onClick={processRefund}
+                            >
+                                Refund
+                            </button>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => dispatch(sendMessageAction(data.user, data.cart[0].product, navigate))}
+                        className="bg-black text-white px-6 py-2 rounded-lg absolute my-8">
+                        Send Message
+                    </button>
                 </div>
+            }
 
-                <hr className="text-gray-300 my-4" />
-                <div className="flex justify-end mb-8">
-                    <p>Total Price: <span className="font-bold">${data.totalPrice}</span></p>
-                </div>
-                <div className="flex justify-between">
-                    <div>
-                        <p className="text-lg font-semibold">Shipping Address:</p>
-                        <p>{data.shippingAddress.address1}</p>
-                        <p>{data.shippingAddress.country}</p>
-                        <p>{data.shippingAddress.city}</p>
-                        <p>{data.user.phoneNumber}</p>
-                    </div>
-                    <div>
-                        <p className="text-lg font-semibold">Payment Info:</p>
-                        <p>Status: {data.status ? data.status : "not paid"}</p>
-                        <button
-                            className="bg-black text-white px-6 py-2 rounded-lg absolute my-8 cursor-pointer"
-                            onClick={processRefund}
-                        >
-                            Refund
-                        </button>
-                    </div>
-                </div>
-                <button
-                    onClick={() => dispatch(sendMessageAction(data.user, data.cart[0].product, navigate))}
-                    className="bg-black text-white px-6 py-2 rounded-lg absolute my-8">
-                    Send Message
-                </button>
-            </div>
         </>
     )
 }
@@ -184,7 +192,7 @@ function ReviewForm({
             if (res.data.success) {
                 getOrderDetails()
                 toast.success(res.data.message)
-            }else{
+            } else {
                 toast.error(res.data.message)
             }
             setOpenReview(false)

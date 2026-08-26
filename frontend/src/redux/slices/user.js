@@ -8,7 +8,8 @@ import {
     setOnlineUsersReducer,
     setUsersReducer,
     deleteUserReducer,
-    setUserUnreadMessagesReducer
+    setUserUnreadMessagesReducer,
+    setLoadingReducer
 } from '../reducers/user'
 
 const initialState = {
@@ -17,7 +18,8 @@ const initialState = {
     userChecked: false,
     userConversations: [],
     onlineUsers: [],
-    allUsers: []
+    allUsers: [],
+    loading: false
 }
 
 const userSlice = createSlice({
@@ -32,7 +34,8 @@ const userSlice = createSlice({
         setOnlineUsers: setOnlineUsersReducer,
         setUsers: setUsersReducer,
         deleteUser: deleteUserReducer,
-        setUserUnreadMessages: setUserUnreadMessagesReducer
+        setUserUnreadMessages: setUserUnreadMessagesReducer,
+        setLoading: setLoadingReducer
     }
 })
 
@@ -46,6 +49,7 @@ export const {
     setOnlineUsers,
     setUsers,
     deleteUser,
-    setUserUnreadMessages
+    setUserUnreadMessages,
+    setLoading
 } = userSlice.actions
 export default userSlice.reducer

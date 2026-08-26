@@ -6,6 +6,7 @@ import { deleteUserAction, getAllUsersAction } from '../../redux/actions/user';
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import OrderAnimation from '../../assets/OrderAnimation'
 
 function AdminAllUsers(params) {
     const [isDelete, setIsDelete] = useState(false)
@@ -15,6 +16,7 @@ function AdminAllUsers(params) {
         dispatch(getAllUsersAction())
     }, [dispatch])
     const users = useSelector(state => state.user.allUsers)
+    const loading = useSelector(state=> state.user.loading)
 
     const rows = users && users.map((item) => ({
         id: item._id,
@@ -52,6 +54,11 @@ function AdminAllUsers(params) {
             }
         }
     ]
+    if (loading) {
+        return (
+            <OrderAnimation />
+        )
+    }
     return (
         <div style={{ width: '100%', height: 400 }}>
             {

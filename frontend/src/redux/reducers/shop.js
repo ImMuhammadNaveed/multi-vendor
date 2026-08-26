@@ -59,3 +59,7 @@ export function setSellerUnreadMessagesReducer(state, action) {
             : conv
     )
 }
+
+export function setLoadingReducer(state, action) {
+    state.loading = action.payload
+}

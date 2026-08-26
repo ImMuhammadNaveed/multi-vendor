@@ -2,12 +2,13 @@ import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { backend_url } from '../../server';
 import { getUserOrdersAction } from '../../redux/actions/order';
 import { useSelector } from 'react-redux';
+import OrderAnimation from '../../assets/OrderAnimation'
 function Orders() {
     useEffect(() => { getUserOrdersAction() }, [])
     const orders = useSelector(state=> state.order.userOrders)
+    const loading = useSelector(state=> state.order.loading)
 
     const rows = orders && orders.map((item) => ({
         id: item._id,
@@ -38,6 +39,9 @@ function Orders() {
             }
         },
     ]
+    if(loading){
+        return <OrderAnimation/>
+    }
     return (
             <div className='w-full max-w-[350px] md:max-w-none flex items-center justify-center' style={{height: 408}}>
                 <DataGrid

@@ -5,6 +5,7 @@ import axios from "axios"
 import { backend_url } from "../../server"
 import { GiConfirmed } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
+import OrderAnimation from '../../assets/OrderAnimation'
 
 
 
@@ -12,17 +13,21 @@ function AdminWithdrawRequest(params) {
     const [isDelete, setIsDelete] = useState(false)
     const [withdraw, setWithdraw] = useState(null)
     const [requests, setRequests] = useState(null)
+    const [loading , setLoading] = useState(false)
     // const seller = useSelector(state => state.shop.seller)
 
 
     async function getAllRequests() {
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + "/api/withdraw/get-all-withdraw-requests", { withCredentials: true })
             if (data.success) {
                 setRequests(data.allWithdraws)
             }
         } catch (error) {
             console.log(error)
+        } finally{
+            setLoading(false)
         }
 
     }
@@ -72,6 +77,11 @@ function AdminWithdrawRequest(params) {
             }
         }
     ]
+    if (loading) {
+        return (
+            <OrderAnimation />
+        )
+    }
     return requests && (
         <div style={{ width: '100%', height: 400 }}>
             {

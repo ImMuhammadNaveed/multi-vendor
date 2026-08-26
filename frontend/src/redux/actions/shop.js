@@ -11,7 +11,8 @@ import {
     setOnlineUsers,
     setEvents,
     deleteSeller,
-    setSellerUnreadMessages
+    setSellerUnreadMessages,
+    setLoading
 } from "../slices/shop"
 import { socket } from '../../socket/Socket'
 import { toast } from 'react-toastify'
@@ -19,12 +20,15 @@ import { toast } from 'react-toastify'
 export function getShopAction(id) {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + `/api/shop/info-shop/${id}`, { withCredentials: true })
             if (data.success) {
                 dispatch(setShop(data.shopData))
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -32,6 +36,7 @@ export function getShopAction(id) {
 export function getSellerAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + '/api/shop/get-seller', { withCredentials: true })
             if (data.success) {
                 dispatch(setSeller(data.shopData))
@@ -42,6 +47,7 @@ export function getSellerAction() {
             console.log(error.response?.data?.message)
         }finally{
             dispatch(sellerChecked(true))
+            dispatch(setLoading(false))
         }
     }
 }
@@ -49,6 +55,7 @@ export function getSellerAction() {
 export function getAllSellersAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + '/api/shop/all-sellers', { withCredentials: true })
             // console.log("all sellers: ", data)
             if (data.success) {
@@ -56,6 +63,8 @@ export function getAllSellersAction() {
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -63,12 +72,15 @@ export function getAllSellersAction() {
 export function getSellerConversationsAction() {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + "/api/conversation/get-seller-conversations", { withCredentials: true })
             if (data.success) {
                 dispatch(setSellerConversations(data.conversationsData))
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -91,12 +103,15 @@ export function getOnlineSellersAction() {
 export function getEventsAction(id) {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.get(backend_url + `/api/event/events-of-shop/${id}`, { withCredentials: true })
             if (data.success) {
                 dispatch(setEvents(data.data))
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
@@ -104,6 +119,7 @@ export function getEventsAction(id) {
 export function deleteSellerAction(id) {
     return async function (dispatch) {
         try {
+            dispatch(setLoading(true))
             const { data } = await axios.delete(backend_url + `/api/shop/delete-seller/${id}`, { withCredentials: true })
             // console.log("deleteSeller: ", data)
             if (data.success) {
@@ -116,6 +132,8 @@ export function deleteSellerAction(id) {
                 success: false,
                 message: error.response?.data?.message
             };
+        } finally{
+            dispatch(setLoading(false))
         }
     }
 }
