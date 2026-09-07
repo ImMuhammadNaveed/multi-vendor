@@ -2,21 +2,22 @@ const { default: mongoose } = require("mongoose")
 const { productModel } = require("../database/productModel")
 const { shopModel } = require("../database/shopModel")
 const { orderModel } = require("../database/orderModel")
+const fs = require("fs");
+const path = require("path");
+const catchAsyncError = require("../middlewares/catchAsyncErrors")
+const ErrorHandler = require("../utils/ErrorHandler")
 
-async function createProduct(req, res) {
+const createProduct = catchAsyncError(async (req, res) => {
     try {
         console.log("this create product controller")
         const shopId = req.shopId
         const shop = await shopModel.findById(shopId)
         if (!shop) {
-            return res.status(400).json({ success: false, message: "shop not found!" })
+            throw new ErrorHandler("shop not found!", 400)
         }
-        const images = req.files
-        // console.log("images", images)
+        const images = req.files || []
         const imagesNames = images.map((image) => image.filename)
-        // console.log(imagesNames)
         const productData = req.body
-        // console.log(productData)
         productData.images = imagesNames
         productData.shop = shop
         console.log(productData)
@@ -24,51 +25,43 @@ async function createProduct(req, res) {
         await newProduct.save()
         return res.status(200).json({ success: true, message: "product created!" })
     } catch (error) {
-        req.files.forEach(file => {
-            console.log(file)
-            const filepath = path.join(file.destination +"\\"+ file.filename)
-            fs.unlink(filepath, (err)=>
-                console.log(err)
-            )
-        });
-        return res.status(500).json({ success: false, message: error.message })
+        if (req.files) {
+            req.files.forEach(file => {
+                const filepath = path.join(file.destination, file.filename)
+                fs.unlink(filepath, (err) =>
+                    console.log(err)
+                )
+            });
+        }
+        throw error
     }
-}
+})
 
-async function allProductsOfShop(req, res) {
-    try {
+const allProductsOfShop = catchAsyncError(async (req, res) => {
         const shopId = req.params.id
         // console.log(typeof(shopId))
         // console.log("shop id at all-products controller: ", shopId)
         const allProducts = await productModel.find({ "shop._id": new mongoose.Types.ObjectId(shopId) })
         // console.log("all fetched products of the shop: ", allProducts)
         return res.status(200).json({ success: true, data: allProducts })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function allProducts(req, res) {
-    try {
+const allProducts = catchAsyncError(async (req, res) => {
         const allProducts = await productModel.find({})
         if (!allProducts || allProducts.length === 0) {
-            return res.status(400).json({ success: false, message: "products not found!" })
+            throw new ErrorHandler("products not found!", 400)
         }
         return res.status(200).json({ success: true, products: allProducts })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function deleteProduct(req, res) {
-    try {
+const deleteProduct = catchAsyncError(async (req, res) => {
         const pId = req.params.id
         console.log(pId)
         const objectId = new mongoose.Types.ObjectId(pId)
         console.log(objectId)
         const deletedProduct = await productModel.findByIdAndDelete(objectId)
         if (!deletedProduct) {
-            return res.status(400).json({ success: false, message: "product not found!" })
+            throw new ErrorHandler("product not found!", 400)
         }
         if (deletedProduct.images && deletedProduct.images.length > 0) {
 
@@ -81,22 +74,18 @@ async function deleteProduct(req, res) {
             }
         }
         res.status(200).json({ success: true, message: "product successfully deleted!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function addReview(req, res) {
-    try {
+const addReview = catchAsyncError(async (req, res) => {
         // console.log("req.body at add revi/ews: ", req.body)
         const { productId, comment, rating, user, orderId } = req.body
         const product = await productModel.findById(productId)
         if (!product) {
-            return res.status(400).json({ success: false, message: "product not found!" })
+            throw new ErrorHandler("product not found!", 400)
         }
         // console.log(product.reviews)
         const isReviewed = product.reviews.find(rev => rev.user._id.toString() === user._id.toString())
-        console.log("isreviewed: ",isReviewed)
+        console.log("isreviewed: ", isReviewed)
         if (isReviewed) {
             product.reviews.forEach(element => {
                 if (element.user._id === user._id) {
@@ -124,13 +113,10 @@ async function addReview(req, res) {
         product.reviews.forEach(rev => {
             avg += rev.rating
         })
-        product.ratings = avg / product.reviews.length
-        await product.save()
-        res.status(200).json({ success: true, message: "review added successfully" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+    product.ratings = avg / product.reviews.length
+    await product.save()
+    res.status(200).json({ success: true, message: "review added successfully" })
+})
 
 
 module.exports = {

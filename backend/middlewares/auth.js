@@ -28,7 +28,7 @@ function shopLoginCheck(req, res, next) {
             return res.status(400).json({ success: false, message: "shop token not found!" })
         }
         const shopData = authVerify(sToken)
-        req.shopId = shopData.data._id
+        req.shopId = shopData.data
         next()
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })

@@ -5,6 +5,7 @@ import axios from 'axios'
 import { backend_url } from "../../server";
 import { MdOutlineCancel } from "react-icons/md";
 import { toast } from "react-toastify";
+import LoadingButton from "../loading/LoadingButton";
 
 
 function CreateEvent() {
@@ -20,6 +21,7 @@ function CreateEvent() {
     const [endingDate, setEndingDate] = useState("")
     const [images, setImages] = useState([])
     const [previewImages, setPreviewImages] = useState([])
+    const [submitting, setSubmitting] = useState(false)
 
     function handleImages(e) {
         const files = Array.from(e.target.files)
@@ -44,6 +46,7 @@ function CreateEvent() {
         // console.log(form)
         try {
             e.preventDefault()
+            setSubmitting(true)
             const { data } = await axios.post(backend_url + "/api/event/create-event", form, { withCredentials: true })
             if(data.success){
                 toast.success(data.message)
@@ -52,6 +55,8 @@ function CreateEvent() {
             }
         } catch (error) {
             toast.error(error.response?.data?.message)
+        } finally {
+            setSubmitting(false)
         }
     }
     function getMiniEndingDate(startDate) {
@@ -67,7 +72,7 @@ function CreateEvent() {
     }
     return (
         <>
-            <div className="flex mx-auto items-center">
+            <div className="flex items-center mx-auto my-auto">
                 <form
                     className="w-120 bg-white mx-auto p-3 lg:h-115 h-full overflow-y-auto scrollbar-hide rounded-md"
                     onSubmit={handleSubmittion}
@@ -212,12 +217,13 @@ function CreateEvent() {
                         </div>
                     </div>
                     <div >
-                        <button
+                        <LoadingButton
+                            loading={submitting}
                             type="submit"
                             className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm cursor-pointer"
                         >
                             Create
-                        </button>
+                        </LoadingButton>
                     </div>
                 </form>
             </div>

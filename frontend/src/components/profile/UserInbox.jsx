@@ -2,23 +2,24 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import { useLocation } from "react-router-dom"
-import { socket } from "../../socket/Socket"
 import { backend_url } from "../../server"
 import { useDispatch, useSelector } from "react-redux"
 import ConversationAnimation from '../../assets/ConversationAnimation'
+import ConversationRowAnimation from '../../assets/ConversationRowAnimation'
+import { getUserConversations } from '../../redux/thunks/user'
 
 function UserInbox() {
     const conversations = useSelector(state => state.user.userConversations)
-    const loading = useSelector(state=> state.user.loading)
+    const loading = useSelector(state => state.user.userConversationsLoading)
     const onlineUsers = useSelector(state => state.user.onlineUsers)
     const userData = useSelector(state => state.user.user)
-    // const shopData = useSelector(state => state.shop.shop)
-    const [selectedConversation, setSelectedConversation] = useState(null)
-    const [selectedSeller, setSelectedSeller] = useState(null)
-    // const [openMessage, setOpenMessage] = useState(false)
-    const location = useLocation()
-
+    const userLogin = useSelector(state=> state.user.userLogin)
+    const dispatch = useDispatch()
+    useEffect(() => {
+        if (userLogin) {
+          dispatch(getUserConversations())
+        }
+      }, [userLogin])
 
     function checkOnline(item) {
         const person = item.members[1]
@@ -29,7 +30,7 @@ function UserInbox() {
 
     return (
         <>
-            <div className="bg-white flex-1 h-full rounded-md">
+            <div className="bg-white h-[408px] flex-1 rounded-md overflow-y-scroll">
                 <div>
                     <p className="text-2xl font-semibold py-4 text-center">All Messages</p>
                     <div>
@@ -42,8 +43,6 @@ function UserInbox() {
                                     key={conversation._id}
                                     userData={userData}
                                     conversation={conversation}
-                                    setSelectedConversation={setSelectedConversation}
-                                    setSelectedSeller={setSelectedSeller}
                                     online={checkOnline(conversation)}
                                 />
                             ))
@@ -57,12 +56,14 @@ function UserInbox() {
 export default UserInbox
 
 
-import { getUserUnreadMessage } from "../../redux/actions/user"
-function Conversation({ userData, conversation, setSelectedConversation, online }) {
+import { getUserUnreadMessages } from "../../redux/thunks/user"
+function Conversation({ userData, conversation, online }) {
     const [shop, setShop] = useState(null)
+    const [loading, setLoading] = useState(true)
     const dispatch = useDispatch()
     async function getShop() {
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + `/api/shop/info-shop/${conversation.members[1]}`, { withCredentials: true })
             if (data.success) {
                 setShop(data.shopData)
@@ -71,14 +72,20 @@ function Conversation({ userData, conversation, setSelectedConversation, online 
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
-    useEffect(() => { getShop() }, [conversation])
+    useEffect(() => { getShop() }, [conversation.members[1]])
 
     useEffect(() => {
         if (!conversation?._id || !userData?._id) return
-        dispatch(getUserUnreadMessage(conversation._id, userData._id))
+        dispatch(getUserUnreadMessages({conversationId: conversation._id, recipientId: userData._id}))
     }, [conversation?._id, userData?._id])
+    if (loading) {
+        return <ConversationRowAnimation />
+    }
+
     return shop && (
         <Link
             className="flex items-center relative bg-gray-100 py-3 px-2 my-2 cursor-"

@@ -1,17 +1,29 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
-import { getUserOrdersAction } from '../redux/actions/order'
+import { getUserOrders } from '../redux/thunks/order'
+import TrackOrderAnimation from '../assets/TrackOrderAnimation'
 
 function TrackOrder() {
     const { id } = useParams()
     const dispatch = useDispatch()
-    useEffect(() => { dispatch(getUserOrdersAction()) }, [])
+    useEffect(() => { dispatch(getUserOrders()) }, [])
 
     const orders = useSelector(state=> state.order.userOrders)
+    const loading = useSelector(state => state.order.userOrdersLoading)
     const reqOrder = orders && orders.find((order) => order._id === id)
 
-    useEffect(() => { console.log(reqOrder) }, [])
+    if (loading) {
+        return <TrackOrderAnimation />
+    }
+
+    if (!reqOrder) {
+        return (
+            <div className="h-60 flex items-center justify-center">
+                <h1 className="text-xl font-[600]">Order not found!</h1>
+            </div>
+        )
+    }
 
     if (reqOrder && reqOrder.status === 'Processing') {
         return (

@@ -1,9 +1,12 @@
 //seller side
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { socket } from "../../socket/Socket"
 import { backend_url } from "../../server"
-import { getSellerUnreadMessage } from '../../redux/actions/shop'
+import { getSellerUnreadMessages } from '../../redux/thunks/shop'
+import { useDispatch, useSelector } from "react-redux"
+import ConversationAnimation from '../../assets/ConversationAnimation'
+import ConversationRowAnimation from '../../assets/ConversationRowAnimation'
 
 
 function AllConversations() {
@@ -11,7 +14,7 @@ function AllConversations() {
     const conversations = useSelector(state => state.shop.sellerConversations)
     const onlineUsers = useSelector(state => state.shop.onlineUsers)
     const sellerData = useSelector(state => state.shop.seller)
-    const loading = useSelector(state => state.shop.loading)
+    const loading = useSelector(state => state.shop.sellerConversationsLoading)
     const [selectedConversation, setSelectedConversation] = useState(null)
     const [selectedUser, setSelectedUser] = useState(null)
 
@@ -72,10 +75,12 @@ function AllConversations() {
 function Conversation({ setOpenMessage, conversation, setSelectedConversation, setSelectedUser, online, sellerData }) {
     const dispatch = useDispatch()
     const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(true)
 
     async function getUser() {
         if (!conversation) return
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + `/api/user/any-user-info/${conversation?.members[0]}`, { withCredentials: true })
             if (data.success) {
                 setUser(data.userData)
@@ -83,7 +88,9 @@ function Conversation({ setOpenMessage, conversation, setSelectedConversation, s
                 console.log(data.message)
             }
         } catch (error) {
-            console.log(error.response)
+            console.log(error.response.data)
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -94,8 +101,12 @@ function Conversation({ setOpenMessage, conversation, setSelectedConversation, s
 
     useEffect(() => {
         if (!conversation?._id || !sellerData?._id) return
-        dispatch(getSellerUnreadMessage(conversation._id, sellerData._id))
+        dispatch(getSellerUnreadMessages({conversationId:conversation._id, recipientId:sellerData._id}))
     }, [conversation?._id, sellerData?._id])
+    if (loading) {
+        return <ConversationRowAnimation />
+    }
+
     return user && (
         <div
             className="flex items-center relative bg-gray-100 py-3 pl-2 my-2 cursor-pointer"
@@ -142,7 +153,6 @@ import { GoArrowRight } from "react-icons/go";
 import { LuSendHorizontal } from "react-icons/lu";
 import { TfiGallery } from "react-icons/tfi";
 import { format } from "timeago.js"
-import { useDispatch, useSelector } from "react-redux"
 import { updateSellerConversation, setSellerUnreadMessages } from "../../redux/slices/shop"
 import { useAutoScroll } from "../../hooks/useAutoScroll"
 import { useMessages } from "../../hooks/useMessages"
@@ -150,8 +160,8 @@ import { useMessageSeen } from "../../hooks/useMessageSeen"
 import { useChatSocket } from "../../hooks/useChatSocket"
 import { MdOutlineCancel } from "react-icons/md"
 import { IoCheckmark, IoCheckmarkDoneOutline } from "react-icons/io5";
-import ConversationAnimation from "../../assets/ConversationAnimation"
 import SellerMessagesAnimation from '../../assets/SellerMessagesAnimation'
+import ButtonSpinner from '../loading/ButtonSpinner'
 function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, sellerData, online }) {
     const [images, setImages] = useState([])
     const [previewImages, setPreviewImages] = useState([])
@@ -159,9 +169,16 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
     const [image, setImage] = useState(null)
     const dispatch = useDispatch()
     const [newMessage, setNewMessage] = useState("")
+    const [sendingMessage, setSendingMessage] = useState(false)
     const { messages, setMessages, loading } = useMessages(selectedConversation?._id)
     const markSeen = useMessageSeen(selectedConversation, sellerData, selectedUser)
-    useChatSocket(selectedUser, selectedConversation, setMessages, (m) => dispatch(updateSellerConversation({ conversationId: m.conversationId, lastMessage: m.text, sender: m.sender })), markSeen)
+    useChatSocket(
+        selectedUser, 
+        selectedConversation, 
+        setMessages, 
+        (m) => dispatch(updateSellerConversation({ conversationId: m.conversationId, lastMessage: m.text, sender: m.sender })), 
+        markSeen
+    )
     const ref = useAutoScroll(messages, selectedConversation)
 
     function handleImages(e) {
@@ -189,8 +206,9 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
         form.append("conversationId", selectedConversation._id)
         form.append("sender", sellerData._id)
         form.append("text", newMessage)
-        form.append("images", images.forEach((image) => { form.append("images", image) }))
+        images.forEach((image) => form.append("images", image))
         try {
+            setSendingMessage(true)
             const { data } = await axios.post(backend_url + "/api/message/create-new-message", form, { withCredentials: true })
             if (data.success) {
                 updateLastMessage()
@@ -208,13 +226,15 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
             }
         } catch (error) {
             console.log(error.response)
+        } finally {
+            setSendingMessage(false)
         }
     }
 
     useEffect(() => {
         if (!selectedConversation) return
         dispatch(setSellerUnreadMessages({ conversationId: selectedConversation._id, count: 0 }))
-    }, [])
+    }, [selectedConversation])
 
 
     return selectedUser && (
@@ -290,7 +310,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                                         </div>
                                     </div>
                                 ))
-                            }
+                        }
                         <div ref={ref}></div>
                     </div>
                     {/* send images preview */}
@@ -341,7 +361,12 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                     />
-                    <button type="submit" className="absolute">
+                    <button
+                        type="submit"
+                        className="absolute disabled:opacity-60"
+                        disabled={sendingMessage}
+                    >
+                        {sendingMessage && <ButtonSpinner size={16} />}
                         <LuSendHorizontal
                             className=" mr-1 cursor-pointer"
                             size={20}

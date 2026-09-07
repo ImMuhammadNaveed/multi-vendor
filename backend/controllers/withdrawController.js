@@ -1,10 +1,10 @@
 const {withdrawModel} = require('../database/withdrawModel')
 const {shopModel} = require("../database/shopModel")
 const {sendEmail} = require("../middlewares/email")
+const catchAsyncError = require("../middlewares/catchAsyncErrors")
 
 // seller --create withdraw
-async function createWithdraw(req, res) {
-    try {
+const createWithdraw = catchAsyncError(async (req, res) => {
         const seller = await shopModel.findById(req.shopId)
         // console.log("seller at create withdraw: ", seller)
         const {amount} = req.body
@@ -18,14 +18,10 @@ async function createWithdraw(req, res) {
             console.log(error)
         }
         return res.status(200).json({success: true, message:'withdraw successfully created!'})
-    } catch (error) {
-        return res.status(500).json({success: false, message: error.message})
-    }
-}
+})
 
 // admin --update withdraw request
-async function updateWithdrawRequest(req, res) {
-    try {
+const updateWithdrawRequest = catchAsyncError(async (req, res) => {
         // console.log(req.params.id)
         const withdraw = await withdrawModel.findByIdAndUpdate(req.params.id, {status: "Succeed", updatedAt: Date.now()})
         const {sellerId} = req.body
@@ -41,20 +37,13 @@ async function updateWithdrawRequest(req, res) {
         await seller.save()
         sendEmail(seller.email, "Payment Confirmation!", `Hello ${seller.name}, Your withdraw request of ${withdraw.amount}$ is on the way. Delivery time depends on your bank's rules it usually takes 3days to 7days.`)
         return res.status(200).json({success: true, message: "withdraw request successfully updated!"})
-    } catch (error) {
-        return res.status(500).json({success: false, message: error.message})
-    }
-}
+})
 
 // admin --get all withdraw requests
-async function getAllWithdrawRequests(req, res) {
-    try {
-        const allWithdraws = await withdrawModel.find({})
+const getAllWithdrawRequests = catchAsyncError(async (req, res) => {
+        const allWithdraws = await withdrawModel.find({}).select("-password")
         return res.status(200).json({success: true, allWithdraws: allWithdraws})
-    } catch (error) {
-        return res.status(500).json({success: false, message: error.message})
-    }
-}
+})
 
 module.exports = {
     createWithdraw,

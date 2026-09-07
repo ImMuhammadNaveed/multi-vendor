@@ -2,9 +2,10 @@ const { couponModel } = require("../database/couponModel")
 const { orderModel } = require("../database/orderModel")
 const { productModel } = require("../database/productModel")
 const { shopModel } = require("../database/shopModel")
+const catchAsyncError = require("../middlewares/catchAsyncErrors")
+const ErrorHandler = require("../utils/ErrorHandler")
 
-async function createOrder(req, res) {
-    try {
+const createOrder = catchAsyncError(async (req, res) => {
         const { cart, shippingAddress, user, couponCode, paymentInfo } = req.body
         console.log(req.body)
         const shopMap = new Map()
@@ -22,7 +23,7 @@ async function createOrder(req, res) {
                 shopTotal += item.product.price * item.quantity
                 console.log("shop total without shipping: ", shopTotal)
             }
-            if (couponCode !== null || couponCode !== '') {
+            if (couponCode !== null && couponCode !== '') {
                 const coupon = await couponModel.findOne({ name: couponCode })
                 productsOfShopOriginalPrice = shopTotal
                 if (coupon) {
@@ -44,75 +45,42 @@ async function createOrder(req, res) {
             await orderModel.create(orderData)
         }
         return res.status(200).json({ success: true, message: "orders successfully placed" })
-    } catch (error) {
-        console.log(error.message)
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function getUserOrders(req, res) {
-    try {
-        const userId = req.userId
-        const userOrders = await orderModel.find({ "user._id": userId })
-        if (userOrders.length === 0) {
-            return res.status(400).json({ success: false, message: "user orders not found!" })
-        }
-        res.status(200).json({ success: true, data: userOrders })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
-
-async function orderDetails(req, res) {
-    try {
+const orderDetails = catchAsyncError(async (req, res) => {
         const orderId = req.params.id
         const orderDetails = await orderModel.findById(orderId)
         if (!orderDetails) {
-            return res.status(500).json({ success: false, message: "user order not found!" })
+            throw new ErrorHandler("user order not found!", 500)
         }
         res.status(200).json({ success: true, data: orderDetails })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function getUserOrders(req, res) {
-    try {
+const getUserOrders = catchAsyncError(async (req, res) => {
         const userId = req.userId
         const userOrders = await orderModel.find({ "user._id": userId })
         if (userOrders.length === 0) {
-            return res.status(400).json({ success: false, message: "user orders not found!" })
+            throw new ErrorHandler("user orders not found!", 400)
         }
         res.status(200).json({ success: true, data: userOrders })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function getSellerOrders(req, res) {
-    try {
+const getSellerOrders = catchAsyncError(async (req, res) => {
         const sellerId = req.shopId
         const sellerOrders = await orderModel.find({ "cart.product.shop._id": sellerId })
         if (sellerOrders.length === 0) {
-            return res.status(400).json({ success: false, message: "seller orders not found!" })
+            throw new ErrorHandler("seller orders not found!", 400)
         }
         res.status(200).json({ success: true, data: sellerOrders })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function updateOrderStatus(req, res) {
-    try {
+const updateOrderStatus = catchAsyncError(async (req, res) => {
         const id = req.params.id;
 
         const order = await orderModel.findById(id);
 
         if (!order) {
-            return res.status(400).json({
-                success: false,
-                message: "order not found!"
-            });
+            throw new ErrorHandler("order not found!", 400);
         }
 
         order.status = req.body.status;
@@ -146,23 +114,12 @@ async function updateOrderStatus(req, res) {
             success: true,
             orderData: order
         });
+})
 
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-}
-
-async function refund(req, res) {
-    try {
+const refund = catchAsyncError(async (req, res) => {
         const order = await orderModel.findById(req.params.id)
         if (!order) {
-            return res.status(400).json({
-                success: false,
-                message: "order not found!"
-            });
+            throw new ErrorHandler("order not found!", 400)
         }
         order.status = "Processing refund"
         await order.save()
@@ -170,24 +127,14 @@ async function refund(req, res) {
             success: true,
             message: "Order status updated!"
         });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-}
+})
 
-async function refundSuccess(req, res) {
-    try {
+const refundSuccess = catchAsyncError(async (req, res) => {
         const { status } = req.body
         // console.log(status)
         const order = await orderModel.findById(req.params.id)
         if (!order) {
-            return res.status(400).json({
-                success: false,
-                message: "order not found!"
-            });
+            throw new ErrorHandler("order not found!", 400)
         }
         if (status === 'Refund success') {
             for (const item of order.cart) {
@@ -209,25 +156,15 @@ async function refundSuccess(req, res) {
             success: true,
             message: "Order status updated!"
         });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-}
+})
 
-async function getAllOrders(req, res) {
-    try {
+const getAllOrders = catchAsyncError(async (req, res) => {
         const allOrders = await orderModel.find()
         if (!allOrders || allOrders.length === 0) {
-            return res.status(400).json({ success: false, message: "orders not found!" })
+            throw new ErrorHandler("orders not found!", 400)
         }
         return res.status(200).json({ success: true, orders: allOrders })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 module.exports = {
     createOrder,
     getUserOrders,

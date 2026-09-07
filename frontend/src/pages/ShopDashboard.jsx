@@ -2,10 +2,20 @@ import DashboardSideBar from "../components/shop/DashboardSideBar"
 import Header from "../components/shop/Header"
 import { Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from "framer-motion"
+import { useDispatch, useSelector } from "react-redux"
+import { getSellerOrders } from "../redux/thunks/order"
+import { useEffect } from "react"
+import { getSellerConversations } from "../redux/thunks/shop"
 
 
 function ShopDashboard() {
     const location = useLocation()
+    const dispatch = useDispatch()
+    const sellerLogin = useSelector(state=> state.shop.sellerLogin)
+    useEffect(() => {
+        dispatch(getSellerOrders())
+        dispatch(getSellerConversations())
+    }, [sellerLogin])
     return (
         <>
             <div className="bg-gray-100 h-screen flex flex-col">

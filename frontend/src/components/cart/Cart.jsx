@@ -1,6 +1,5 @@
 import { RxCross1 } from "react-icons/rx";
 import { IoBagHandleOutline } from "react-icons/io5";
-import cart_pic from '../../static/cart-item.png'
 import { Link } from 'react-router-dom'
 import { useSelector } from "react-redux";
 
@@ -22,13 +21,17 @@ function Cart({ setOpenCart }) {
                 </p>
                 <hr className="text-[#E5E7EB]" />
                 {
-                    cart.map((item) =>
-                        <CartItem
-                            item={item}
-                            key={item.product._id}
-                        />
-                    )
-                }
+    cart && cart.map((item) => {
+        console.log(item);
+
+        return (
+            <CartItem
+                item={item}
+                key={item.product._id}
+            />
+        );
+    })
+}
                 <div className="flex justify-center my-4 mx-2">
                     <Link
                         className='bg-red-500 text-white font-bold px-4 py-2 rounded-md w-full text-center'
@@ -52,7 +55,7 @@ import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
-import { removeFromCartAction, increaseQuantityAction, decreaseQuantityAction } from "../../redux/actions/cart";
+import { removeFromCart, increaseQuantity, decreaseQuantity } from "../../redux/slices/cart";
 import { backend_url } from "../../server";
 
 function CartItem({ item }) {
@@ -65,12 +68,12 @@ function CartItem({ item }) {
             <div className="flex lg:flex-row flex-col items-center justify-between pt-3 pl-3 pb-3">
                 <div className="flex lg:flex-col flex-row gap-1 items-center">
                     <button
-                        onClick={() => dispatch(increaseQuantityAction(item.product._id, cart, userData))}
+                        onClick={() => dispatch(increaseQuantity(item.product._id))}
                         className="p-1 rounded-full bg-red-500 text-white cursor-pointer"
                     ><FaPlus size={10} /></button>
                     <p>{item.quantity}</p>
                     <button
-                        onClick={() => dispatch(decreaseQuantityAction(item.product._id, cart, userData))}
+                        onClick={() => dispatch(decreaseQuantity(item.product._id))}
                         className="p-1 rounded-full bg-[#E4E5E7] text-[#7D879C] cursor-pointer"><FaMinus size={10} /></button>
                 </div>
                 <div className="w-16">
@@ -88,7 +91,7 @@ function CartItem({ item }) {
                     <RxCross1
                         // size={20}
                         className="w-full cursor-pointer"
-                        onClick={() => dispatch(removeFromCartAction(item.product, userData))}
+                        onClick={() => dispatch(removeFromCart(item.product._id))}
                     />
                 </div>
 

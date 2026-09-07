@@ -2,16 +2,17 @@ import { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useDispatch } from "react-redux"
-import { loadWishlistAction } from "../redux/actions/wishlist"
-import { getUserAction } from "../redux/actions/user"
-import { setUserLogin } from "../redux/slices/user"
+import { loadWishlist } from "../redux/slices/wishlist"
+import { getUser } from "../redux/thunks/user"
 import { backend_url } from "../server"
 import { toast } from "react-toastify"
+import LoadingButton from "../components/loading/LoadingButton"
 
 function Login() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -20,12 +21,12 @@ function Login() {
     async function handleSubmit(e) {
         e.preventDefault()
         try {
+            setSubmitting(true)
             const {data} = await axios.post(backend_url+"/api/user/login", {email, password}, {withCredentials: true})
             console.log(data)
             if(data.success){
-                dispatch(getUserAction())
-                dispatch(loadWishlistAction(data.userData))
-                dispatch(setUserLogin(true))
+                dispatch(getUser())
+                dispatch(loadWishlist(data.userData))
                 navigate(from)
             }else{
                 toast.error(data.message)
@@ -35,12 +36,14 @@ function Login() {
                 toast.error(error.response.data.message)
             }
             console.log(error)
+        } finally {
+            setSubmitting(false)
         }
     }
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5">
+            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5" onSubmit={handleSubmit}>
                 <p className="text-2xl font-bold">Login to your account</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Email address</p>
@@ -79,7 +82,11 @@ function Login() {
                         </div>
                         <p className="text-blue-600 text-sm font-semibold cursor-pointer">forgot your password?</p>
                     </div>
-                    <button onClick={handleSubmit} className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer">Submit</button>
+                    <LoadingButton
+                        type="submit"
+                        loading={submitting}
+                        className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer"
+                    >Submit</LoadingButton>
                     <p className="text-sm mt-3">Not have any account? <span className="text-blue-600 cursor-pointer" onClick={()=>navigate("/register")}>Sign Up</span></p>
                 </div>
             </form>

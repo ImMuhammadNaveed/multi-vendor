@@ -3,16 +3,19 @@ import axios from "axios";
 import { backend_url } from "../../server";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import LoadingButton from "../loading/LoadingButton";
 function ChangePassword() {
 
     // const { backend_url } = useContext(userContext)
     const [oldPassword, setOldPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
+    const [submitting, setSubmitting] = useState(false)
 
     async function handleSubmit(e) {
         e.preventDefault()
         try {
+            setSubmitting(true)
             const { data } = await axios.put(backend_url + "/api/user/change-password", { oldPassword, newPassword, confirmPassword }, { withCredentials: true })
             if (data.success) {
                 setOldPassword("")
@@ -24,6 +27,8 @@ function ChangePassword() {
             }
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setSubmitting(false)
         }
     }
     return (
@@ -61,7 +66,11 @@ function ChangePassword() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                 </div>
-                <button type="submit" className="w-full rounded-sm bg-gray-700 cursor-pointer text-white font-bold text-lg mt-2 h-8">Update</button>
+                <LoadingButton
+                    type="submit"
+                    loading={submitting}
+                    className="w-full rounded-sm bg-gray-700 cursor-pointer text-white font-bold text-lg mt-2 h-8"
+                >Update</LoadingButton>
             </form>
 
 

@@ -6,6 +6,7 @@ import { backend_url } from "../../server"
 import { GiConfirmed } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import OrderAnimation from '../../assets/OrderAnimation'
+import LoadingButton from '../loading/LoadingButton'
 
 
 
@@ -13,7 +14,7 @@ function AdminWithdrawRequest(params) {
     const [isDelete, setIsDelete] = useState(false)
     const [withdraw, setWithdraw] = useState(null)
     const [requests, setRequests] = useState(null)
-    const [loading , setLoading] = useState(false)
+    const [loading , setLoading] = useState(true)
     // const seller = useSelector(state => state.shop.seller)
 
 
@@ -112,9 +113,11 @@ export default AdminWithdrawRequest
 
 
 function DeletePopup({ setIsDelete, withdraw, getAllRequests }) {
+    const [updating, setUpdating] = useState(false)
     useEffect(()=>{console.log(withdraw)},[])
     async function handleUpdateRequest(withdraw) {
         try {
+            setUpdating(true)
             console.log(withdraw.id)
             const { data } = await axios.put(backend_url + `/api/withdraw/update-withdraw-request/${withdraw.id}`, { sellerId: withdraw.shopId }, { withCredentials: true })
             if (data.success) {
@@ -124,6 +127,8 @@ function DeletePopup({ setIsDelete, withdraw, getAllRequests }) {
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setUpdating(false)
         }
     }
     return (
@@ -141,7 +146,11 @@ function DeletePopup({ setIsDelete, withdraw, getAllRequests }) {
                     >Do you want to confirm this withdraw?</p>
                     <div className='mt-4'>
                         <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={() => setIsDelete(false)}>cancel</button>
-                        <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={()=>handleUpdateRequest(withdraw)}>confirm</button>
+                        <LoadingButton
+                            loading={updating}
+                            className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer'
+                            onClick={()=>handleUpdateRequest(withdraw)}
+                        >confirm</LoadingButton>
                     </div>
                 </div>
 

@@ -8,7 +8,7 @@ import OrderAnimation from '../../assets/OrderAnimation'
 
 function ShopOrders() {
     const orders = useSelector(state=> state.order.sellerOrders)
-    const loading = useSelector(state=> state.order.loading)
+    const loading = useSelector(state => state.order.sellerOrdersLoading)
     
     const rows = orders && orders.map((item) => ({
         id: item._id,
@@ -40,7 +40,7 @@ function ShopOrders() {
         },
     ]
     if (loading) {
-        <OrderAnimation/>
+        return <OrderAnimation/>
     }
     return (
         <div style={{ width: '100%', height: 400 }}>

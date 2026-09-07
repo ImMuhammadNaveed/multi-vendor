@@ -6,21 +6,27 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { backend_url } from "../server";
 import { toast } from "react-toastify";
+import OrderDetailsAnimation from '../assets/OrderDetailsAnimation'
+import LoadingButton from '../components/loading/LoadingButton'
 
 function ShopOrderDetails() {
     const { id } = useParams()
-    const orders = useSelector(state=> state.order.sellerOrders)
     const [data, setData] = useState(null)
     const [status, setStatus] = useState('Processing')
+    const [loading, setLoading] = useState(true)
+    const [updatingStatus, setUpdatingStatus] = useState(false)
 
     async function getOrderDetails() {
         try {
+            setLoading(true)
             const { data } = await axios.get(backend_url + `/api/order/order-details/${id}`, { withCredentials: true })
             if (data.success) {
                 setData(data.data)
             }
         } catch (error) {
             console.log(error.response.data.message)
+        } finally {
+            setLoading(false)
         }
     }
     useEffect(() => {
@@ -29,12 +35,15 @@ function ShopOrderDetails() {
 
     async function updateStatus() {
         try {
+            setUpdatingStatus(true)
             const { data } = await axios.post(backend_url + `/api/order/update-order-status/${id}`, { status: status }, { withCredentials: true })
             if(data.success){
                 setData(data.orderData)
             }
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setUpdatingStatus(false)
         }
     }
     const isRefundFlow =
@@ -42,6 +51,7 @@ function ShopOrderDetails() {
         data?.status === "Refund Success";
     async function refundOrderUpdateHandler() {
         try {
+            setUpdatingStatus(true)
             const { data } = await axios.post(backend_url + `/api/order/refund-success/${id}`, { status: status }, { withCredentials: true })
             if(data.success){
                 toast.success(data.message)
@@ -50,7 +60,12 @@ function ShopOrderDetails() {
             }
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setUpdatingStatus(false)
         }
+    }
+    if(loading){
+        return <OrderDetailsAnimation/>
     }
     return data && (
         <>
@@ -152,12 +167,13 @@ function ShopOrderDetails() {
                     )
                 }
                 <br />
-                <button
+                <LoadingButton
+                    loading={updatingStatus}
                     className="bg-[#F7D3E0] text-[#CA385C] px-6 py-2 rounded-md font-bold cursor-pointer mt-2"
                     onClick={isRefundFlow ? refundOrderUpdateHandler : updateStatus}
                 >
                     Update Status
-                </button>
+                </LoadingButton>
             </div>
         </>
     )

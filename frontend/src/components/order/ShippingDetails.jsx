@@ -4,6 +4,7 @@ import { backend_url } from "../../server"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from 'react-toastify'
+import LoadingButton from '../loading/LoadingButton'
 
 function ShippingDetails({
     couponCode, setCouponCode, 
@@ -49,6 +50,7 @@ function ShippingDetails({
     const [totalSubPrice, setTotalSubPrice] = useState(0)
     const [shippingPrice, setShippingPrice] = useState(0)
     const [discount, setDiscount] = useState(0)
+    const [applyingCoupon, setApplyingCoupon] = useState(false)
     
 
     useEffect(() => {
@@ -60,6 +62,7 @@ function ShippingDetails({
 
     async function applyCoupon() {
         try {
+            setApplyingCoupon(true)
             const { data } = await axios.post(backend_url + `/api/coupon/find-coupon/${couponCode}`, {cart:cart}, { withCredentials: true })
             if (data.success) {
                 setDiscount(data.discount)
@@ -70,6 +73,8 @@ function ShippingDetails({
         } catch (error) {
             setDiscount(0)
             toast.error(error.response?.data?.message)
+        } finally {
+            setApplyingCoupon(false)
         }
     }
 
@@ -246,12 +251,13 @@ function ShippingDetails({
                             onChange={(e) => setCouponCode(e.target.value)}
                         />
                     </div>
-                    <button
+                    <LoadingButton
+                        loading={applyingCoupon}
                         className="w-full border-[2px] border-red-100 text-red-600 rounded-xs cursor-pointer"
                         onClick={applyCoupon}
                     >
                         Apply Coupon
-                    </button>
+                    </LoadingButton>
                 </div>
             </div>
             <div>

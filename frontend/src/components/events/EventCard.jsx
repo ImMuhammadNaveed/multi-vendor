@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import mobile from '../../static/mobile.jpg'
 import { FaArrowRight } from "react-icons/fa6";
-import { addToCartAction } from '../../redux/actions/cart';
+import { addToCart } from '../../redux/slices/cart';
 import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
 import { backend_url } from '../../server';
@@ -33,7 +33,7 @@ function EventCard({ event }) {
     // useEffect(() => { calculateTime() }, [event])
     return event && (
         <>
-            <div className="bg-white lg:flex items-center p-5 rounded-lg">
+            <div className="bg-white lg:flex items-start p-5 rounded-lg">
                 <div className="w-full lg:w-[50%] p-12">
                     <img src={backend_url + `/uploads/${event.images[0]}`} alt="" />
                 </div>
@@ -52,7 +52,7 @@ function EventCard({ event }) {
                         <Link to={`/products/${event._id}?isEvent=true`} className='bg-black text-white px-7 py-3 rounded-lg cursor-pointer mr-10'>See Details</Link>
                         <button 
                         className='bg-black text-white px-7 py-3 rounded-lg cursor-pointer'
-                        onClick={()=>dispatch(addToCartAction(event))}
+                        onClick={()=>dispatch(addToCart(event))}
                         >Buy Now</button>
                     </div>
                     <div className='flex justify-end mt-5'>

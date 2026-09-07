@@ -15,11 +15,12 @@ import { useChatSocket } from "../hooks/useChatSocket";
 import { useMessageSeen } from "../hooks/useMessageSeen";
 import { socket } from "../socket/Socket";
 import { useMessages } from "../hooks/useMessages";
-import { getShopAction } from "../redux/actions/shop";
+import { getShop } from "../redux/thunks/shop";
 import { setUserUnreadMessages } from '../redux/slices/user'
 import { MdOutlineCancel } from "react-icons/md"
 import { IoCheckmark, IoCheckmarkDoneOutline } from "react-icons/io5";
 import UserMessagesAnimation from "../assets/UserMessagesAnimation";
+import ButtonSpinner from "../components/loading/ButtonSpinner";
 
 function UserConversation() {
     const { id } = useParams()
@@ -31,17 +32,18 @@ function UserConversation() {
     const [previewImages, setPreviewImages] = useState([])
     const [openImage, setOpenImage] = useState(false)
     const [image, setImage] = useState(null)
+    const [sendingMessage, setSendingMessage] = useState(false)
 
-    const { userConversations } = useSelector(state => state.user)
-    const conversation = useConversation(id)
+    const { conversation, loading: conversationLoading } = useConversation(id)
     useEffect(() => {
         if (!conversation) return
-        dispatch(getShopAction(conversation.members[1]))
+        dispatch(getShop(conversation.members[1]))
     }, [conversation])
 
-    const shopData = useSelector(state => state.shop.shop)
     const onlineUsers = useSelector(state => state.user.onlineUsers)
     const userData = useSelector(state => state.user.user)
+    const shopData = useSelector(state => state.shop.shop)
+    const shopLoading = useSelector(state => state.shop.shopLoading)
 
     const { messages, setMessages, loading } = useMessages(conversation?._id)
     const markSeen = useMessageSeen(conversation, userData, shopData)
@@ -83,11 +85,16 @@ function UserConversation() {
     async function handleFormSubmit(e) {
         e.preventDefault()
         const form = new FormData()
+
         form.append("conversationId", conversation._id)
         form.append("sender", userData._id)
         form.append("text", newMessage)
-        form.append("images", images.forEach((image) => { form.append("images", image) }))
+
+        images.forEach((image) => {
+            form.append("images", image)
+        })
         try {
+            setSendingMessage(true)
             const { data } = await axios.post(backend_url + "/api/message/create-new-message", form, { withCredentials: true })
             if (data.success) {
                 updateLastMessage()
@@ -105,6 +112,8 @@ function UserConversation() {
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setSendingMessage(false)
         }
     }
     const navigate = useNavigate()
@@ -114,131 +123,136 @@ function UserConversation() {
         dispatch(setUserUnreadMessages({ conversationId: conversation._id, count: 0 }))
     }, [])
     return (
-    <>
-        <div className="h-screen flex flex-col overflow-hidden">
-            {/* header - fixed */}
-            <div className="flex-none flex items-center justify-between bg-gray-300 py-2 px-3">
-                <div className="flex items-center">
-                    <img src={`${backend_url}/uploads/` + (shopData?.avator || "")}
-                        alt=""
-                        className="w-12 h-12 object-cover rounded-full" />
-                    <div className="ml-2">
-                        <p className="font-[600] text-sm">{shopData && shopData.name}</p>
-                        {conversation && checkOnline(conversation) ? <p className="text-xs">Active now</p> : ""}
-                    </div>
-                </div>
-                <GoArrowRight
-                    size={20}
-                    onClick={() => navigate('/profile/inbox')}
-                    className="cursor-pointer"
-                />
-            </div>
-
-            {/* messages - takes all remaining height */}
-            <div className="relative flex-1 min-h-0">
-                <div className="absolute inset-0 overflow-y-auto scrollbar-hide px-3">
-                    {
-                        loading
-                        ?<UserMessagesAnimation/>
-                        :userData && shopData && messages.length > 0 && (
-                            <div>
-                                {messages.map((message) => (
-                                    <div
-                                        className={`flex items-center gap-2 my-3 ${message.sender === userData._id ? "justify-end" : "justify-start"}`}
-                                        key={message._id}>
-                                        <div className="flex gap-2">
-                                            {
-                                                message.sender === userData._id
-                                                    ? ""
-                                                    : <img src={`${backend_url}/uploads/` + shopData.avator}
-                                                        alt=""
-                                                        className="w-9 h-9 object-cover rounded-full"
-                                                    />
-                                            }
-                                            <div>
-                                                <div className={`p-2 rounded-md inline-block ${message.sender === userData._id ? "bg-green-200" : "bg-blue-200"}`}>
-                                                    {message.images?.map((image, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={`${backend_url}/uploads/${image}`}
-                                                            alt=""
-                                                            className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
-                                                            onClick={() => {
-                                                                setOpenImage(true)
-                                                                setImage(image)
-                                                            }}
-                                                        />
-                                                    ))}
-                                                    <div className="flex justify-between items-end w-40">
-                                                        <p className="break-words min-w-0">{message.text}</p>
-                                                        {
-                                                            message.sender === userData._id
-                                                                ? <p>{message.seen ? <IoCheckmarkDoneOutline size={20} color="blue" /> : <IoCheckmark size={20} color="gray" />}</p>
-                                                                : ''
-                                                        }
-                                                    </div>
-                                                </div>
-                                                <p className="text-xs">{format(message.createdAt)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                                <div ref={ref}></div>
-                            </div>
-                        )
-                    }
-                </div>
-
-                {/* image preview overlays messages */}
-                {previewImages.length > 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-white/20 px-2 py-2">
-                        <div className="flex overflow-x-auto scrollbar-hide">
-                            {previewImages.map((item, index) =>
-                                <div key={index} className="relative flex-none w-20 h-20 mr-2">
-                                    <MdOutlineCancel
-                                        className="absolute -top-1 -right-1 cursor-pointer z-10 bg-white rounded-full"
-                                        onClick={() => {
-                                            setPreviewImages(previewImages.filter((i) => i !== item))
-                                            setImages(images.filter((_, i) => i !== index))
-                                        }}
-                                    />
-                                    <img
-                                        src={item}
-                                        alt=""
-                                        className="w-20 h-20 object-cover rounded"
-                                    />
-                                </div>
-                            )}
+        <>
+            <div className="h-screen flex flex-col overflow-hidden">
+                {/* header - fixed */}
+                <div className="flex-none flex items-center justify-between bg-gray-300 py-2 px-3">
+                    <div className="flex items-center">
+                        <img src={`${backend_url}/uploads/` + (shopData?.avator || "")}
+                            alt=""
+                            className="w-12 h-12 object-cover rounded-full" />
+                        <div className="ml-2">
+                            <p className="font-[600] text-sm">{shopData && shopData.name}</p>
+                            {conversation && checkOnline(conversation) ? <p className="text-xs">Active now</p> : ""}
                         </div>
                     </div>
-                )}
-            </div>
+                    <GoArrowRight
+                        size={20}
+                        onClick={() => navigate('/profile/inbox')}
+                        className="cursor-pointer"
+                    />
+                </div>
 
-            {/* send message - fixed */}
-            <form
-                className="flex-none flex items-center px-3 pb-2 "
-                onSubmit={handleFormSubmit}
-            >
-                <label htmlFor="image">
-                    <TfiGallery className="mr-2 cursor-pointer flex-none" size={20} />
-                </label>
-                <input type="file" id='image' hidden onChange={handleImages} />
-                <input
-                    type="text"
-                    required
-                    className="border border-gray-300 flex-1 h-8 rounded-md p-1 pr-8 focus:outline-none"
-                    placeholder="Enter your message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                />
-                <button type="submit" className="ml-[-28px] flex-none">
-                    <LuSendHorizontal className="cursor-pointer" size={20} />
-                </button>
-            </form>
-        </div>
-        {openImage && <PreviewImage image={image} setOpenImage={setOpenImage} />}
-    </>
-)
+                {/* messages - takes all remaining height */}
+                <div className="relative flex-1 min-h-0">
+                    <div className="absolute inset-0 overflow-y-auto scrollbar-hide px-3">
+                        {
+                            conversationLoading || shopLoading || loading
+                                ? <UserMessagesAnimation />
+                                : userData && shopData && messages.length > 0 && (
+                                    <div>
+                                        {messages.map((message) => (
+                                            <div
+                                                className={`flex items-center gap-2 my-3 ${message.sender === userData._id ? "justify-end" : "justify-start"}`}
+                                                key={message._id}>
+                                                <div className="flex gap-2">
+                                                    {
+                                                        message.sender === userData._id
+                                                            ? ""
+                                                            : <img src={`${backend_url}/uploads/` + shopData.avator}
+                                                                alt=""
+                                                                className="w-9 h-9 object-cover rounded-full"
+                                                            />
+                                                    }
+                                                    <div>
+                                                        <div className={`p-2 rounded-md inline-block ${message.sender === userData._id ? "bg-green-200" : "bg-blue-200"}`}>
+                                                            {message.images?.map((image, index) => (
+                                                                <img
+                                                                    key={index}
+                                                                    src={`${backend_url}/uploads/${image}`}
+                                                                    alt=""
+                                                                    className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
+                                                                    onClick={() => {
+                                                                        setOpenImage(true)
+                                                                        setImage(image)
+                                                                    }}
+                                                                />
+                                                            ))}
+                                                            <div className="flex justify-between items-end w-40">
+                                                                <p className="break-words min-w-0">{message.text}</p>
+                                                                {
+                                                                    message.sender === userData._id
+                                                                        ? <p>{message.seen ? <IoCheckmarkDoneOutline size={20} color="blue" /> : <IoCheckmark size={20} color="gray" />}</p>
+                                                                        : ''
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-xs">{format(message.createdAt)}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div ref={ref}></div>
+                                    </div>
+                                )
+                        }
+                    </div>
+
+                    {/* image preview overlays messages */}
+                    {previewImages.length > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-white/20 px-2 py-2">
+                            <div className="flex overflow-x-auto scrollbar-hide">
+                                {previewImages.map((item, index) =>
+                                    <div key={index} className="relative flex-none w-20 h-20 mr-2">
+                                        <MdOutlineCancel
+                                            className="absolute -top-1 -right-1 cursor-pointer z-10 bg-white rounded-full"
+                                            onClick={() => {
+                                                setPreviewImages(previewImages.filter((i) => i !== item))
+                                                setImages(images.filter((_, i) => i !== index))
+                                            }}
+                                        />
+                                        <img
+                                            src={item}
+                                            alt=""
+                                            className="w-20 h-20 object-cover rounded"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* send message - fixed */}
+                <form
+                    className="flex-none flex items-center px-3 pb-2 "
+                    onSubmit={handleFormSubmit}
+                >
+                    <label htmlFor="image">
+                        <TfiGallery className="mr-2 cursor-pointer flex-none" size={20} />
+                    </label>
+                    <input type="file" id='image' hidden onChange={handleImages} />
+                    <input
+                        type="text"
+                        required
+                        className="border border-gray-300 flex-1 h-8 rounded-md p-1 pr-8 focus:outline-none"
+                        placeholder="Enter your message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                    />
+                    <button
+                        type="submit"
+                        className="ml-[-28px] flex-none disabled:opacity-60"
+                        disabled={sendingMessage}
+                    >
+                        {sendingMessage && <ButtonSpinner size={16} />}
+                        <LuSendHorizontal className="cursor-pointer" size={20} />
+                    </button>
+                </form>
+            </div>
+            {openImage && <PreviewImage image={image} setOpenImage={setOpenImage} />}
+        </>
+    )
 }
 export default UserConversation
 

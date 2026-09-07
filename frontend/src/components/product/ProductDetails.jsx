@@ -4,31 +4,32 @@ import { GoHeart, GoHeartFill } from 'react-icons/go'
 import { useState } from "react";
 import { AiOutlineShoppingCart } from 'react-icons/ai'
 import { Link } from "react-router-dom";
-import { addToCartAction } from '../../redux/actions/cart'
+import { addToCart } from '../../redux/slices/cart'
 import { useDispatch, useSelector } from 'react-redux'
-import { addToWishlistAction, isInWishlistAction, removeFromWishlistAction } from "../../redux/actions/wishlist";
-import { sendMessageAction } from "../../redux/actions/user";
-import { getShopProductsAction } from "../../redux/actions/product";
+import { addToWishlist, isInWishlist, removeFromWishlist } from "../../redux/slices/wishlist";
+import { sendMessage } from "../../redux/thunks/user";
 import { backend_url } from "../../server";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import LoadingButton from "../loading/LoadingButton";
 
 function ProductDetails({ item, setShowProductDetails, addToWishlist }) {
     const [quantity, setQuantity] = useState(1)
+    const [sendingMessage, setSendingMessage] = useState(false)
     const userData = useSelector(state => state.user.user)
     const wishlist = useSelector(state => state.wishlist.wishlist)
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    useEffect(() => {
-        if (!item) return
-        dispatch(getShopProductsAction(item.shop._id))
-    }, [item, dispatch])
-    const shopProducts = useSelector(state => state.product.shopProducts)
+    async function handleSendMessage() {
+        try {
+            setSendingMessage(true)
+            await dispatch(sendMessage({userData:userData, data: item, navigate: navigate}))
+        } finally {
+            setSendingMessage(false)
+        }
+    }
 
-    const totalNumberOfReviews = shopProducts && shopProducts.reduce((acc, p) => acc + p.reviews.length, 0)
-    const totalRatings = shopProducts && shopProducts.reduce((acc, p) => acc + p.reviews.reduce((sum, r) => sum + r.rating, 0), 0)
-    const shopRating = totalNumberOfReviews / totalRatings
+    const isWishlist = isInWishlist(item._id, wishlist)
 
     return item && (
         <>
@@ -54,18 +55,19 @@ function ProductDetails({ item, setShowProductDetails, addToWishlist }) {
                                 </Link>
                                 <div className="ml-2">
                                     <Link to={`/shop/${item.shop._id}`} className="text-sm text-blue-500">{item.shop.name}</Link>
-                                    <p className="text-sm">({shopRating}) Ratings</p>
+                                    <p className="text-sm">({item.ratings || 0}) Ratings</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => dispatch(sendMessageAction(userData, item, navigate))}
+                            <LoadingButton
+                                loading={sendingMessage}
+                                onClick={handleSendMessage}
                                 className="text-white bg-black px-7 py-3 rounded-md flex items-center mt-5 cursor-pointer"
                             >Send Message
                                 <AiFillMessage
                                     size={20}
                                     className="ml-1"
                                 />
-                            </button>
+                            </LoadingButton>
                             <p className="text-red-500 mt-10">({item.soldOut}) Sold out</p>
                         </div>
                         <div className="lg:w-[50%] w-full">
@@ -92,14 +94,14 @@ function ProductDetails({ item, setShowProductDetails, addToWishlist }) {
                                     >+</button>
                                 </div>
                                 {
-                                    isInWishlistAction(wishlist, item._id)
-                                        ? <GoHeartFill color='red' className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(removeFromWishlistAction(item, userData))} />
-                                        : <GoHeart className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(addToWishlistAction(item, userData))} />
+                                    isWishlist
+                                        ? <GoHeartFill color='red' className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(removeFromWishlist(item))} />
+                                        : <GoHeart className='mb-2 cursor-pointer' size={25} onClick={() => dispatch(addToWishlist(item))} />
                                 }
                             </div>
                             <button
                                 className="bg-black text-white flex items-center px-7 py-3 rounded-md mt-5 cursor-pointer"
-                                onClick={() => dispatch(addToCartAction(item, userData, quantity))}
+                                onClick={() => dispatch(addToCart(item, quantity))}
                             >Add to cart
                                 <AiOutlineShoppingCart
                                     className='ml-1'

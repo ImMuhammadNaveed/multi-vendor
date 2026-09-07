@@ -2,14 +2,15 @@ import { useEffect } from "react"
 import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { GoArrowRight } from "react-icons/go";
-import { useSelector } from "react-redux";
-import { getUserOrdersAction } from "../../redux/actions/order";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserOrders } from "../../redux/thunks/order";
 import OrderAnimation from '../../assets/OrderAnimation'
 
 function Refunds() {
     const orders = useSelector(state=>state.order.userOrders)
-    const loading = useSelector(state=> state.order.loading)
-    useEffect(() => { getUserOrdersAction() }, [])
+    const loading = useSelector(state => state.order.userOrdersLoading)
+    const dispatch = useDispatch()
+    useEffect(() => { dispatch(getUserOrders()) }, [])
     const refundOrders = orders && orders.filter((order) => order.status === 'Processing refund')
     const rows = refundOrders&&refundOrders.map((item) => ({
         id: item._id,

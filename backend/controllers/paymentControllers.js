@@ -1,8 +1,8 @@
 const stripe = require('stripe')(process.env.STRIPE_API_KEY)
 const {couponModel} = require('../database/couponModel')
+const catchAsyncError = require("../middlewares/catchAsyncErrors")
 
-async function paymentProcess(req, res) {
-    try {
+const paymentProcess = catchAsyncError(async (req, res) => {
         const {cart, couponCode} = req.body
         let totalPrice = 0
         for (const item of cart){
@@ -24,10 +24,7 @@ async function paymentProcess(req, res) {
             metadata: {company: "M.Naveed"}
         })
         return res.status(200).json({success: true, clientSecret: myPayment.client_secret})
-    } catch (error) {
-        return res.status(500).json({success: false, message: error.message})
-    }
-}
+})
 
 
 

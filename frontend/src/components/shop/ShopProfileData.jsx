@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 // import {productData} from '../../static/data'
 import Product from '../product/ProductCard'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import ShopReviews from './ShopReviews'
 import { useSelector } from 'react-redux'
 import ProductCardAnimation from '../../assets/ProductCardAnimation'
@@ -9,10 +9,10 @@ import ProductCardAnimation from '../../assets/ProductCardAnimation'
 function ShopProfileData({ shopProducts, owner, shopEvents }) {
     const [active, setActive] = useState(1)
     const shopReviews = shopProducts && shopProducts.map((product) => product.reviews).flat()
-    const loadingP = useSelector(state=> state.product.loading)
-    const loadingE = useSelector(state=> state.event.loading)
+    const loadingP = useSelector(state => state.product.shopProductsLoading)
+    const loadingE = useSelector(state => state.event.shopEventsLoading)
 
-    return shopProducts && (
+    return (shopProducts || loadingP) && (
         <>
             <div className='w-full lg:mx-8'>
                 <div className='flex lg:flex-row flex-col-reverse items-center justify-between mb-8'>
@@ -35,31 +35,38 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
                 {
                     active === 1 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
                         {
-                            shopProducts.map((item) =>
-                                loadingP
-                                    ? <ProductCardAnimation />
-                                    : <Product item={item} key={item._id} />
-
-                            )
+                            loadingP
+                                ? Array.from({ length: 6 }, (_, index) => (
+                                      <ProductCardAnimation key={index} />
+                                  ))
+                                : shopProducts.map((item) => (
+                                      <Product item={item} key={item._id} />
+                                  ))
                         }
                     </div>
                 }
                 {
-                    active === 2 && <div >
-                        {shopEvents.length !== 0
-                            ? <div className='grid grid-cols-3 gap-7'>
-                                {
-                                    shopEvents && shopEvents.map((item) =>
-                                        loadingE
-                                            ? <ProductCardAnimation />
-                                            : <Product item={item} key={item._id} />
-                                    )
-                                }
-                            </div>
-                            : <div className='flex justify-center items-center w-full'>
-                                <p className='text-xl font-semibold'>We have currently no Events!</p>
-                            </div>
-
+                    active === 2 && <div>
+                        {
+                            loadingE
+                                ? <div className='grid grid-cols-3 gap-7'>
+                                    {
+                                        Array.from({ length: 6 }, (_, index) => (
+                                            <ProductCardAnimation key={index} />
+                                        ))
+                                    }
+                                </div>
+                                : shopEvents.length !== 0
+                                    ? <div className='grid grid-cols-3 gap-7'>
+                                        {
+                                            shopEvents.map((item) => (
+                                                <Product item={item} key={item._id} />
+                                            ))
+                                        }
+                                    </div>
+                                    : <div className='flex justify-center items-center w-full'>
+                                        <p className='text-xl font-semibold'>We have currently no Events!</p>
+                                    </div>
                         }
                     </div>
                 }

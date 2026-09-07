@@ -22,7 +22,7 @@ orderRouter.get("/user-orders", userLoginCheck, getUserOrders)
 orderRouter.get("/order-details/:id", orderDetails)
 orderRouter.get("/seller-orders", shopLoginCheck, getSellerOrders)
 orderRouter.post("/update-order-status/:id", shopLoginCheck, updateOrderStatus)
-orderRouter.post("/process-refund/:id", refund)
+orderRouter.post("/process-refund/:id", userLoginCheck, refund)
 orderRouter.post("/refund-success/:id", shopLoginCheck, refundSuccess)
 orderRouter.get("/all-orders", userLoginCheck, authorization(["Admin"]), getAllOrders)
 

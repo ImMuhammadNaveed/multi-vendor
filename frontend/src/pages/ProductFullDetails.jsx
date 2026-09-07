@@ -5,11 +5,14 @@ import { AiFillMessage } from "react-icons/ai";
 import { AiOutlineShoppingCart } from 'react-icons/ai'
 import Product from "../components/product/ProductCard"
 import { useSearchParams } from "react-router-dom";
-import { addToWishlistAction, isInWishlistAction, removeFromWishlistAction } from "../redux/actions/wishlist";
-import { sendMessageAction } from "../redux/actions/user";
-import { addToCartAction } from "../redux/actions/cart";
+import { addToWishlist, isInWishlist, removeFromWishlist } from "../redux/slices/wishlist";
+import { sendMessage } from "../redux/thunks/user";
+import { addToCart } from "../redux/slices/cart";
 import { useDispatch, useSelector } from "react-redux";
 import { backend_url } from "../server";
+import ProductDetailsAnimation from "../assets/ProductDetailsAnimation";
+import ProductCardAnimation from "../assets/ProductCardAnimation";
+import LoadingButton from "../components/loading/LoadingButton";
 
 
 function ProductFullDetails() {
@@ -18,15 +21,17 @@ function ProductFullDetails() {
     const [activeImage, setActiveImage] = useState(0)
     const [data, setData] = useState(null)
     const [quantity, setQuantity] = useState(1)
+    const [sendingMessage, setSendingMessage] = useState(false)
     const { id } = useParams()
     const allProducts = useSelector(state=> state.product.allProducts)
+    const allProductsLoading = useSelector(state => state.product.allProductsLoading)
     const wishlist = useSelector(state=> state.wishlist.wishlist)
     const dispatch = useDispatch()
     
     const [searchParams] = useSearchParams()
     const isEvent = searchParams.get("isEvent")
     const events = useSelector(state=> state.event.allEvents)
-
+    const allEventsLoading = useSelector(state => state.event.allEventsLoading)
     useEffect(() => {
         if (isEvent !== null) {
             const data = events && events.find((i) => i._id === id)
@@ -36,22 +41,42 @@ function ProductFullDetails() {
             const data = allProducts && allProducts.find((i) => i._id === id)
             setData(data)
         }
-    }, [allProducts, id])
+    }, [allProducts, events, id, isEvent])
 
     useEffect(() => {
         if(!data) return
-        dispatch(getShopProductsAction(data.shop._id))
+        dispatch(getShopProducts(data.shop._id))
     }, [data, dispatch])
     const shopProducts = useSelector(state=> state.product.shopProducts)
 
-    const totalNumberOfReviews = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.length, 0)
-    const totalRatings = shopProducts&&shopProducts.reduce((acc, p)=> acc+p.reviews.reduce((sum, r)=>sum+r.rating, 0), 0)
-    const shopRating = totalNumberOfReviews/totalRatings
+    const totalNumberOfReviews = shopProducts ? shopProducts.reduce((acc, p)=> acc+p.reviews.length, 0) : 0
+    const totalRatings = shopProducts ? shopProducts.reduce((acc, p)=> acc+p.reviews.reduce((sum, r)=>sum+r.rating, 0), 0) : 0
+    const shopRating = totalNumberOfReviews ? (totalRatings/totalNumberOfReviews).toFixed(1) : 0
 
-    function handleSendMessage() {
-        dispatch(sendMessageAction(userData, data, navigate))
+    async function handleSendMessage() {
+        try {
+            setSendingMessage(true)
+            await dispatch(sendMessage({userData:userData, data:data, navigate: navigate}))
+        } finally {
+            setSendingMessage(false)
+        }
     }
-    return data && (
+    const isWishlist = isInWishlist(data, wishlist)
+    const detailsLoading = isEvent ? allEventsLoading : allProductsLoading
+
+    if (detailsLoading || data === null) {
+        return <ProductDetailsAnimation />
+    }
+
+    if (!data) {
+        return (
+            <div className="flex min-h-60 items-center justify-center">
+                <p className="text-lg font-semibold">Product not found!</p>
+            </div>
+        )
+    }
+
+    return (
         <div>
             <div className="flex flex-col lg:flex-row lg:w-[80%] w-[92%] m-auto mt-5">
                 <div className="w-full lg:w-[50%]">
@@ -99,13 +124,13 @@ function ProductFullDetails() {
                         </div>
 
                         {
-                            isInWishlistAction(wishlist, data._id)
+                            isWishlist
                                 ? <GoHeartFill
                                     color='red'
                                     className='mb-2 cursor-pointer'
                                     size={25}
                                     onClick={(e) => {
-                                        dispatch(removeFromWishlistAction(data))
+                                        dispatch(removeFromWishlist(data))
                                         e.preventDefault()
                                         e.stopPropagation()
                                     }} />
@@ -113,7 +138,7 @@ function ProductFullDetails() {
                                     className='mb-2 cursor-pointer'
                                     size={25}
                                     onClick={(e) => {
-                                        dispatch(addToWishlistAction(data, userData))
+                                        dispatch(addToWishlist(data))
                                         e.preventDefault()
                                         e.stopPropagation()
                                     }} />
@@ -121,7 +146,7 @@ function ProductFullDetails() {
                     </div>
                     <button
                         className="bg-black text-white flex items-center px-7 py-3 rounded-md mt-5 cursor-pointer"
-                        onClick={() => dispatch(addToCartAction(data, userData, quantity))}
+                        onClick={() => dispatch(addToCart(data, quantity))}
                     >Add to cart
                         <AiOutlineShoppingCart
                             className='ml-1'
@@ -138,7 +163,8 @@ function ProductFullDetails() {
                                 <p className="text-sm">({shopRating}) Ratings</p>
                             </div>
                         </div>
-                        <button
+                        <LoadingButton
+                            loading={sendingMessage}
                             className="text-white bg-[#6443D1] px-7 py-3 rounded-md flex items-center ml-7 cursor-pointer"
                             onClick={handleSendMessage}
                         >
@@ -147,7 +173,7 @@ function ProductFullDetails() {
                                 size={20}
                                 className="ml-1"
                             />
-                        </button>
+                        </LoadingButton>
                     </div>
                 </div>
             </div>
@@ -246,15 +272,28 @@ function Details({ data, shopRating, shopProducts, totalNumberOfReviews}) {
 
 
 import Ratings from "../components/ratings/Ratings";
-import axios from "axios";
-import { getShopProductsAction } from "../redux/actions/product";
+import { getShopProducts } from "../redux/thunks/product";
 function RelatedProducts({ data }) {
-    const [sameCat, setSameCat] = useState(null)
     const allProducts = useSelector(state=> state.product.allProducts)
-    useEffect(() => {
-        const sameCatPro = allProducts.filter((i) => i.category === data.category)
-        setSameCat(sameCatPro)
-    }, [allProducts, data])
+    const allProductsLoading = useSelector(state => state.product.allProductsLoading)
+    const sameCat = allProducts.filter((item) => item.category === data.category)
+    if (allProductsLoading || sameCat === null) {
+        return (
+            <div className="bg-[#F5F6FB] pb-17 pt-5">
+                <div className="w-[90%] m-auto">
+                    <p className="text-3xl font-bold">Related Products</p>
+                    <hr className="text-[#E5E7EB] mt-8 mb-6" />
+                    <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-7 mx-auto">
+                        <ProductCardAnimation />
+                        <ProductCardAnimation />
+                        <ProductCardAnimation />
+                        <ProductCardAnimation />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return sameCat && (
         <div className="bg-[#F5F6FB] pb-17 pt-5">
             <div className="w-[90%] m-auto">

@@ -14,6 +14,7 @@ const { conversationRouter } = require("./routes/conversationRoutes")
 const { messageRouter } = require("./routes/messageRoutes")
 const { withdrawRouter } = require("./routes/withdrawRoutes")
 const { paymentRouter } = require("./routes/paymentRoutes")
+const errorHandler = require('./middlewares/error')
 
 const corsOption = {
     origin: process.env.FRONTEND_URL,
@@ -37,6 +38,7 @@ app.use('/api/message', messageRouter)
 app.use('/api/withdraw', withdrawRouter)
 app.use('/api/payment', paymentRouter)
 app.get('/', (req, res)=>res.send("multi-vender is running"))
+app.use(errorHandler)
 
 databaseConnection()
 

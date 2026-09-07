@@ -3,16 +3,19 @@ import { RxCross1 } from "react-icons/rx";
 import { useState } from 'react';
 import { AiTwotoneDelete } from "react-icons/ai";
 import { useDispatch, useSelector } from 'react-redux';
-import { backend_url } from '../../server';
-import axios from 'axios';
-import { setUser } from '../../redux/slices/user'
-import { toast } from 'react-toastify';
 import AddressAnimation from '../../assets/AddressAnimation';
+import { addUserAddress, deleteUserAddress } from '../../redux/thunks/user';
+import LoadingButton from '../loading/LoadingButton';
+import ButtonSpinner from '../loading/ButtonSpinner';
 
 function Address() {
     const dispatch = useDispatch()
     const userData = useSelector(state=> state.user.user)
+    const userLoading = useSelector(state => state.user.userLoading)
+    const addingAddress = useSelector(state => state.user.addUserAddressLoading)
+    const deletingAddress = useSelector(state => state.user.deleteUserAddressLoading)
     const [openAddressForm, setOpenAddressForm] = useState(false)
+    const [deletingAddressId, setDeletingAddressId] = useState(null)
 
     const [country, setCountry] = useState("")
     const [city, setCity] = useState("")
@@ -26,40 +29,35 @@ function Address() {
         { name: "Home" },
         { name: "Office" },
     ]
+    
     async function handleSubmit(e) {
         e.preventDefault()
-        try {
-            const { data } = await axios.post(backend_url + "/api/user/add-address", { addressType, city, country, zipCode, address1, address2 }, { withCredentials: true })
-            if (data.success) {
-                setOpenAddressForm(false)
-                dispatch(setUser(data.updatedUser))
-            }else{
-                toast.error(data.message)
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message)
-        }
+        await dispatch(addUserAddress({ addressType, city, country, zipCode, address1, address2 })).unwrap()
+        setOpenAddressForm(false)
     }
     async function deleteAddress(id) {
+        setDeletingAddressId(id)
         try {
-            const { data } = await axios.delete(backend_url + `/api/user/delete-address/${id}`, { withCredentials: true })
-            // console.log(data)
-            if(data.success){
-                dispatch(setUser(data.updatedUser))
-            }else{
-                toast.error(data.message)
-            }
-        } catch (error) {
-            console.log(error.response.data.message)
+            await dispatch(deleteUserAddress(id)).unwrap()
+        } finally {
+            setDeletingAddressId(null)
         }
     }
-    return userData && (
+    if (userLoading) {
+        return <AddressAnimation />
+    }
+
+    if (!userData) {
+        return null
+    }
+
+    return (
         <div>
             {openAddressForm &&
-                <div className="flex justify-center items-center bg-black/40 w-full h-screen fixed inset-0">
+                <div className="z-50 flex justify-center items-center bg-black/40 w-full h-screen fixed inset-0">
                     <form
                         action=""
-                        className="flex flex-col gap-2 bg-white w-[90%] lg:w-[35%] overflow-y-auto p-2 rounded-sm"
+                        className=" flex flex-col gap-2 bg-white w-[90%] lg:w-[35%] overflow-y-auto p-2 rounded-sm"
                         onSubmit={handleSubmit}
                     >
                         <div className="flex justify-end">
@@ -148,12 +146,16 @@ function Address() {
                                 }
                             </select>
                         </div>
-                        <button type="submit" className="w-full rounded-sm bg-gray-700 cursor-pointer text-white font-bold text-lg mt-2 h-8">Add</button>
+                        <LoadingButton
+                            type="submit"
+                            loading={addingAddress}
+                            className="w-full rounded-sm bg-gray-700 cursor-pointer text-white font-bold text-lg mt-2 h-8"
+                        >Add</LoadingButton>
                     </form>
                 </div>
             }{
                 userData?.addresses
-                    ? <div>
+                    ? <div className=''>
                         <div className="flex justify-between items-center">
                             <p className="text-3xl font-semibold">My Addresses</p>
                             <button className="bg-black text-white py-2 px-4 rounded-md cursor-pointer" onClick={() => setOpenAddressForm(true)}>Add New</button>
@@ -170,15 +172,19 @@ function Address() {
                                     <p>{userData.phoneNumber}</p>
                                 </div>
                                 <div className="w-15 cursor-pointer flex justify-end">
-                                    <AiTwotoneDelete
-                                        size={25}
-                                        onClick={() => deleteAddress(item._id)}
-                                    />
+                                    {deletingAddress && deletingAddressId === item._id
+                                        ? <ButtonSpinner size={22} className="text-gray-500" />
+                                        : <AiTwotoneDelete
+                                            size={25}
+                                            onClick={() => deleteAddress(item._id)}
+                                        />}
                                 </div>
                             </div>
                         ))}
                     </div>
-                    : <AddressAnimation/>
+                    : <div className="flex justify-center items-center min-h-40">
+                        <p className="text-lg font-semibold">No addresses added yet!</p>
+                    </div>
             }
 
 

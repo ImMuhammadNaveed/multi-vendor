@@ -2,14 +2,21 @@ import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUserOrdersAction } from '../../redux/actions/order';
-import { useSelector } from 'react-redux';
+import { getUserOrders } from '../../redux/thunks/order';
+import { useDispatch, useSelector } from 'react-redux';
 import OrderAnimation from '../../assets/OrderAnimation'
 function Orders() {
-    useEffect(() => { getUserOrdersAction() }, [])
+    const userLogin = useSelector(state=> state.user.userLogin)
+    const dispatch = useDispatch()
+    useEffect(() => {
+        if (userLogin) {
+          dispatch(getUserOrders())
+        }
+      }, [userLogin])
     const orders = useSelector(state=> state.order.userOrders)
-    const loading = useSelector(state=> state.order.loading)
+    const loading = useSelector(state => state.order.userOrdersLoading)
 
+    
     const rows = orders && orders.map((item) => ({
         id: item._id,
         status: item.status,

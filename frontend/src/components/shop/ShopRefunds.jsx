@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import OrderAnimation from '../../assets/OrderAnimation'
 function ShopRefunds() {
     const orders = useSelector(state=> state.order.sellerOrders)
-    const loading = useSelector(state=> state.order.loading)
+    const loading = useSelector(state => state.order.sellerOrdersLoading)
     const refOrders = orders && orders.filter((order)=>order.status==="Processing refund")
 
     const rows = refOrders && refOrders.map((item) => ({

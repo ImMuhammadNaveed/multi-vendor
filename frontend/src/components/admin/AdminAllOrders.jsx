@@ -1,16 +1,16 @@
 import { DataGrid } from '@mui/x-data-grid'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAllOrdersAction } from '../../redux/actions/order'
+import { getAllOrders } from '../../redux/thunks/order'
 import OrderAnimation from '../../assets/OrderAnimation'
 
 function AdminAllOrders() {
     const dispatch = useDispatch()
     useEffect(() => {
-        dispatch(getAllOrdersAction())
+        dispatch(getAllOrders())
     }, [])
     const orders = useSelector(state => state.order.allOrders)
-    const loading = useSelector(state => state.order.loading)
+    const loading = useSelector(state => state.order.allOrdersLoading)
     const rows = orders && orders.map((item) => ({
         id: item._id,
         status: item.status,

@@ -1,49 +1,53 @@
-import { useSearchParams } from "react-router-dom"
-import axios from 'axios'
+import axios from "axios"
 import { useEffect, useState } from "react"
-import { backend_url } from "../server"
+import { useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
+import { backend_url } from "../server"
+import VerificationAnimation from "../assets/VerificationAnimation"
 
 function VerifyAccount() {
-    const [loading, setLoading] = useState(false)
-    const [verified, setVerified] = useState(false)
     const [searchParams] = useSearchParams()
     const token = searchParams.get("token")
+    const [status, setStatus] = useState("loading")
 
-    async function verifyAccount() {
-        try {
-            setLoading(true)
-            const {data} = await axios.post(backend_url+"/api/user/verify-account", {token}, {withCredentials: true})
-            if(data.success){
-                setVerified(true)
-                toast.success(data.message)
+    useEffect(() => {
+        let cancelled = false
+
+        async function verifyAccount() {
+            try {
+                const { data } = await axios.post(
+                    backend_url + "/api/user/verify-account",
+                    { token },
+                    { withCredentials: true }
+                )
+
+                if (data.success) {
+                    if (!cancelled) setStatus("verified")
+                    toast.success(data.message)
+                } else {
+                    if (!cancelled) setStatus("failed")
+                    toast.error(data.message)
+                }
+            } catch (error) {
+                toast.error(error?.response?.data?.message)
+                if (!cancelled) setStatus("failed")
             }
-        } catch (error) {
-            if(error.response){
-                toast.error(error.response.data.message)
-            }
-        }finally{
-            setLoading(false)
         }
-    }
-    useEffect(()=>{verifyAccount()}, [])
-    if(loading){
-        return(
-            <>loading...</>
-        )
-    }
-    if(verified){
-        return(
-            <>Verified✅</>
-        )
-    }
-    return(
-        <>
 
-        </>
-    )    
+        verifyAccount()
+
+        return () => {
+            cancelled = true
+        }
+    }, [token])
+
+    if (status === "loading") {
+        return <VerificationAnimation />
+    }
+
+    return status === "verified"
+        ? <h1>Account Verified</h1>
+        : <h1>Account Verification failed</h1>
 }
-
-
 
 export default VerifyAccount

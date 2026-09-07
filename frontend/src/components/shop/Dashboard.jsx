@@ -3,8 +3,9 @@ import { RxBorderSplit } from "react-icons/rx";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { backend_url } from "../../server";
-import { getAllProductsAction } from "../../redux/actions/product";
 import { useDispatch, useSelector } from "react-redux";
+import SellerDashboardAnimation from "../../assets/SellerDashboardAnimation";
+import { getShopProducts } from "../../redux/thunks/product";
 
 function Dashboard() {
     const orders = useSelector(state=> state.order.sellerOrders)
@@ -12,12 +13,19 @@ function Dashboard() {
 
     const sellerData = useSelector(state=> state.shop.seller)
     const shopProducts = useSelector(state=> state.product.shopProducts)
+    const sellerOrdersLoading = useSelector(state => state.order.sellerOrdersLoading)
+    const shopProductsLoading = useSelector(state => state.product.shopProductsLoading)
     const dispatch = useDispatch()
     useEffect(() => {
         if (sellerData?._id) {
-            dispatch(getShopProductsAction(sellerData._id))
+            dispatch(getShopProducts(sellerData._id))
         }
     }, [sellerData])
+
+    if (sellerOrdersLoading || shopProductsLoading) {
+        return <SellerDashboardAnimation />
+    }
+
     return (
         <>
             <div className="w-full py-4 lg:px-8 px-2">
@@ -73,7 +81,6 @@ function Dashboard() {
 
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
-import { getShopProductsAction } from "../../redux/actions/product";
 function Orders({ topOrders }) {
     const rows = topOrders && topOrders.map((item) => ({
         id: item._id,

@@ -5,17 +5,19 @@ const { authSign, emailSign, emailVerify } = require("../middlewares/auth")
 const path = require("path")
 const fs = require("fs")
 const { default: mongoose } = require("mongoose")
+const catchAsyncError = require("../middlewares/catchAsyncErrors")
+const ErrorHandler = require("../utils/ErrorHandler")
 
-async function register(req, res) {
+const register = catchAsyncError(async (req, res) => {
     try {
         const { name, email, password } = req.body
         if (!name || !email || !password) {
-            return res.status(400).json({ success: false, message: "provide all fields" })
+            throw new ErrorHandler("provide all fields", 400)
         }
         console.log(name, email, password)
         const user = await userModel.findOne({ email: email })
         if (user) {
-            return res.status(400).json({ success: false, message: "email already exists" })
+            throw new ErrorHandler("email already exists", 400)
         }
         const salt = parseInt(process.env.SALT)
         const hashedPassword = bcrypt.hashSync(password, salt)
@@ -38,116 +40,83 @@ async function register(req, res) {
         if (req.file) {
             const fileName = req.file ? req.file.filename : ""
             const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (error) => {
-                if (error) {
-                    console.log(error)
-                    return res.status(500).json({ success: false, message: error.message })
+            fs.unlink(filePath, (unlinkError) => {
+                if (unlinkError) {
+                    console.log(unlinkError)
                 } else {
                     console.log("unused file deleted successfully")
                 }
             })
         }
-        return res.status(500).json({ success: false, message: error.message })
+        throw error
     }
-}
+})
 
-async function verifyEmail(req, res) {
-    try {
+const verifyEmail = catchAsyncError(async (req, res) => {
         const { token } = req.body
         const decoded = emailVerify(token)
         const user = await userModel.findById(decoded.data)
         if (!user) {
-            return res.status(400).json({ success: false, message: "Invalid user!" })
+            throw new ErrorHandler("Invalid user!", 400)
         }
         if (user.isVerified) {
-            return res.status(400).json({ success: false, message: "User already verified!" })
+            throw new ErrorHandler("User already verified!", 400)
         }
         user.isVerified = true
         await user.save()
         const uToken = authSign(user._id)
-        res.cookie("uToken", uToken)
+        res.cookie("uToken", uToken, {httpOnly: true, sameSite: "none", secure: true})
         res.status(200).json({ success: true, message: "user verified!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function login(req, res) {
-    try {
+const login = catchAsyncError(async (req, res) => {
         const { email, password } = req.body
         if (!email || !password) {
-            return res.status(400).json({ success: false, message: "provide all fields" })
+            throw new ErrorHandler("provide all fields", 400)
         }
         const user = await userModel.findOne({ email: email })
         if (!user) {
-            return res.status(400).json({ success: false, message: "user not found!" })
+            throw new ErrorHandler("user not found!", 400)
         }
         const isMatched = bcrypt.compareSync(password, user.password)
         if (!isMatched) {
-            return res.status(400).json({ success: false, message: "Incorrect password!" })
+            throw new ErrorHandler("Incorrect password!", 400)
         }
         if (!user.isVerified) {
-            return res.status(400).json({ success: false, message: "user not verified!" })
+            throw new ErrorHandler("user not verified!", 400)
         }
         const uToken = authSign(user._id)
-        res.cookie("uToken", uToken)
+        res.cookie("uToken", uToken, {httpOnly: true, sameSite: "none", secure: true})
         res.status(200).json({ success: true, userData: user })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function info(req, res) {
-    try {
+const info = catchAsyncError(async (req, res) => {
         const userId = req.userId
         // console.log("user id in info is: ", userId)
         const user = await userModel.findById(userId).select("-password")
         // console.log('this is shop info :',shop)
         res.status(200).json({ success: true, userData: user })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function anyUserInfo(req, res) {
-    try {
+const anyUserInfo = catchAsyncError(async (req, res) => {
         const userId = req.params.id
         console.log("user id in info is: ", userId)
         const user = await userModel.findById(userId).select("-password")
         // console.log('this is shop info :',shop)
         res.status(200).json({ success: true, userData: user })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function updateUser(req, res) {
+const updateUser = catchAsyncError(async (req, res) => {
     try {
         // console.log(req.body)
         const { name, email, phoneNumber, password } = req.body
         const user = await userModel.findOne({ email: email })
         if (!user) {
-            if (req.file) {
-                const path = 'uploads/' + req.file.filename
-                fs.unlink(path, (err) => {
-                    if (err) {
-                        console.log(err.message)
-                    }
-                })
-            }
-            return res.status(400).json({ success: false, message: "user not found!" })
+            throw new ErrorHandler("user not found!", 400)
         }
         const isPasswordMatched = bcrypt.compareSync(password, user.password)
         if (!isPasswordMatched) {
-            if (req.file) {
-                const path = 'uploads/' + req.file.filename
-                fs.unlink(path, (err) => {
-                    if (err) {
-                        console.log(err.message)
-                    }
-                })
-            }
-            return res.status(400).json({ success: false, message: "Incorrect password!" })
+            throw new ErrorHandler("Incorrect password!", 400)
         }
 
         // update data
@@ -173,40 +142,34 @@ async function updateUser(req, res) {
         if (req.file) {
             const fileName = req.file ? req.file.filename : ""
             const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (error) => {
-                if (error) {
-                    console.log(error)
-                    return res.status(500).json({ success: false, message: error.message })
+            fs.unlink(filePath, (unlinkError) => {
+                if (unlinkError) {
+                    console.log(unlinkError)
                 } else {
                     console.log("unused file deleted successfully")
                 }
             })
         }
-        return res.status(500).json({ success: false, message: error.message })
+        throw error
     }
-}
+})
 
-async function addAddress(req, res) {
-    try {
+const addAddress = catchAsyncError(async (req, res) => {
         console.log(req.body)
         const { addressType, country, city, address1, address2, zipCode } = req.body
         const user = await userModel.findById(req.userId)
         const sameTypeAddress = user.addresses.find((address) => address.addressType === addressType)
         if (sameTypeAddress) {
-            return res.status(400).json({ success: false, message: "same typed address already exists!" })
+            throw new ErrorHandler("same typed address already exists!", 400)
         }
 
         user.addresses.push(req.body)
 
         await user.save()
         return res.status(200).json({ success: true, updatedUser: user })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function deleteAddress(req, res) {
-    try {
+const deleteAddress = catchAsyncError(async (req, res) => {
         const addressId = req.params.id
         const user = await userModel.findById(req.userId)
 
@@ -214,86 +177,62 @@ async function deleteAddress(req, res) {
             (item) => item._id.toString() === addressId
         )
         if (!addressExists) {
-            return res.status(404).json({
-                success: false,
-                message: "Address not found!"
-            })
+            throw new ErrorHandler("Address not found!", 404)
         }
 
         user.addresses = user.addresses.filter((item) => item._id.toString() !== addressId)
         await user.save()
         res.status(200).json({ success: true, updatedUser: user })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function changePassword(req, res) {
-    try {
+const changePassword = catchAsyncError(async (req, res) => {
         const { oldPassword, newPassword, confirmPassword } = req.body
         // console.log(req.body)
         const user = await userModel.findById(req.userId)
         // console.log(user)
         const isMatched = bcrypt.compareSync(oldPassword, user.password)
         if (!isMatched) {
-            return res.status(400).json({ success: false, message: "incorrect old password!" })
+            throw new ErrorHandler("incorrect old password!", 400)
         }
         if (newPassword !== confirmPassword) {
-            return res.status(400).json({ success: false, message: "new password and confirm password are different!" })
+            throw new ErrorHandler("new password and confirm password are different!", 400)
         }
         const passwordToStore = bcrypt.hashSync(newPassword, parseInt(process.env.SALT))
         user.password = passwordToStore
         await user.save()
         res.status(200).json({ success: true, message: "password successfully changed!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function logout(req, res) {
-    try {
+const logout = catchAsyncError(async (req, res) => {
         res.clearCookie("uToken")
         res.status(200).json({ success: true, message: "user successfully logged out!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function getAllUsers(req, res) {
-    try {
+const getAllUsers = catchAsyncError(async (req, res) => {
         const allUsers = await userModel.find()
         if (!allUsers || allUsers.length === 0) {
-            return res.status(400).json({ success: false, message: "users not found!" })
+            throw new ErrorHandler("users not found!", 400)
         }
         return res.status(200).json({ success: true, users: allUsers })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
-async function deleteUser(req, res) {
-    try {
+const deleteUser = catchAsyncError(async (req, res) => {
         const id = req.params.id
         console.log(id)
         const objectId = new mongoose.Types.ObjectId(id)
         const deletedUser = await userModel.findByIdAndDelete(objectId)
         if (!deletedUser) {
-            return res.status(400).json({ success: false, message: "user not found!" })
+            throw new ErrorHandler("user not found!", 400)
         }
-        if (deletedUser) {
-            // delete old image from record
-            const path = "uploads/" + deletedUser.avator
-            fs.unlink(path, (err) => {
-                if (err) {
-                    console.log(err.message)
-                }
-            })
-        }
+        // delete old image from record
+        const path = "uploads/" + deletedUser.avator
+        fs.unlink(path, (err) => {
+            if (err) {
+                console.log(err.message)
+            }
+        })
         return res.status(200).json({ success: true, message: "user successfully deleted!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+})
 
 module.exports = {
     register,

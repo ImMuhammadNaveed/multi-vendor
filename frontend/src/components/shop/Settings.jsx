@@ -4,6 +4,7 @@ import axios from "axios";
 import { backend_url } from "../../server";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import LoadingButton from "../loading/LoadingButton";
 
 function Settings() {
     const sellerData = useSelector(state=> state.shop.seller)
@@ -16,6 +17,7 @@ function Settings() {
 
     const [image, setImage] = useState(null)
     const [previewImage, setPreviewImage] = useState("")
+    const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
         if (sellerData) {
@@ -39,6 +41,7 @@ function Settings() {
     async function handleSubmit(e) {
         try {
             e.preventDefault()
+            setSubmitting(true)
             const formData = new FormData()
             formData.append("name", name)
             formData.append("description", description)
@@ -54,11 +57,13 @@ function Settings() {
             }
         } catch (error) {
             console.log(error.response?.data?.message)
+        } finally {
+            setSubmitting(false)
         }
     }
 
     return sellerData && (
-        <div className="lg:w-120 w-full mx-auto flex items-center">
+        <div className="lg:w-120 w-full mx-auto my-auto flex items-center">
         <form
             onSubmit={handleSubmit}
             className="lg:h-115 h-full flex-1 bg-white p-3 rounded-md overflow-y-scroll scrollbar-hide"
@@ -126,10 +131,11 @@ function Settings() {
                         onChange={(e) => setZipCode(e.target.value)}
                     />
                 </div>
-                <button
+                <LoadingButton
+                    loading={submitting}
                     className="border h-8 border-purple-500 text-purple-500 w-full py-1 text-sm rounded-sm cursor-pointer"
                     type="submit"
-                >Update</button>
+                >Update</LoadingButton>
             </div>
         </form>
         </div>

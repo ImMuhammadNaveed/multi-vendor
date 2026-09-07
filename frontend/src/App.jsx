@@ -56,19 +56,22 @@ import AdminAllUsers from './components/admin/AdminAllUsers'
 import AdminWithdrawRequest from './components/admin/AdminWithdrawRequest'
 
 
-import { loadWishlistAction } from './redux/actions/wishlist'
+import { loadWishlist } from './redux/slices/wishlist'
 import { setWishlist } from './redux/slices/wishlist'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { loadCartAction } from './redux/actions/cart'
+import { loadCart } from './redux/slices/cart'
 import { setCart } from './redux/slices/cart'
-import { getAllProductsAction } from './redux/actions/product'
-import { getSellerConversationsAction, getSellerAction, getOnlineSellersAction, addOnlineSellersAction, getSellerUnreadMessage } from './redux/actions/shop'
+
+import { getAllProducts } from './redux/thunks/product'
+import { getAllEvents } from './redux/thunks/event'
+import { getSellerConversations, getOnlineSellers, addOnlineSellers, getSellerUnreadMessages } from './redux/thunks/shop'
 import { updateSellerConversation } from './redux/slices/shop'
-import { getUserAction, getUserConversationsAction, getOnlineUsersAction, addOnlineUsersAction, getUserUnreadMessage } from './redux/actions/user'
+import { getUser, getUserConversations, getOnlineUsers, addOnlineUsers, getUserUnreadMessages } from './redux/thunks/user'
 import { updateUserConversation } from './redux/slices/user'
-import { getUserOrdersAction, getSellerOrdersAction } from './redux/actions/order'
-import { getAllEventsAction } from './redux/actions/event'
+import { getSeller } from "./redux/thunks/shop"
+import { getUserOrders, getSellerOrders } from './redux/thunks/order'
+
 
 
 
@@ -86,72 +89,53 @@ function App() {
   const sellerData = useSelector(state => state.shop.seller)
   const sellerLogin = useSelector(state => state.shop.sellerLogin)
 
+  useEffect(()=>{
+    dispatch(getAllProducts())
+    dispatch(getAllEvents())
+  },[])
   useEffect(() => {
     if (userData) {
-      dispatch(loadWishlistAction(userData));
-      dispatch(loadCartAction(userData))
+      dispatch(loadWishlist());
+      dispatch(loadCart())
     } else {
       dispatch(setWishlist([]));
       dispatch(setCart([]))
     }
   }, [userData]);
-
+  
   useEffect(() => {
-    dispatch(getAllProductsAction())
-  }, [])
+    dispatch(addOnlineSellers(sellerData._id))
+  }, [sellerData._id])
+  
   useEffect(() => {
-    dispatch(getAllEventsAction())
-  }, [dispatch])
-
-  useEffect(() => {
-    dispatch(getSellerAction())
-  }, [sellerLogin])
-  useEffect(() => {
-    dispatch(getSellerOrdersAction())
-  }, [sellerLogin])
-  useEffect(() => {
-    dispatch(addOnlineSellersAction(sellerData._id))
-  }, [sellerData])
-  useEffect(() => {
-    dispatch(getSellerConversationsAction())
-  }, [sellerLogin])
-  useEffect(() => {
-    const cleanup = dispatch(getOnlineSellersAction())
+    const cleanup = dispatch(getOnlineSellers())
     return cleanup
   }, [])
 
 
 
   useEffect(() => {
-    dispatch(getUserAction())
-  }, [])
+    dispatch(getUser())
+    dispatch(getSeller())
+  }, [dispatch])
+  
+  
   useEffect(() => {
-    if (userLogin) {
-      dispatch(getUserConversationsAction())
-    }
-  }, [userLogin])
+    dispatch(addOnlineUsers(userData._id))
+  }, [userData._id])
   useEffect(() => {
-    if (userLogin) {
-      dispatch(getUserOrdersAction())
-    }
-  }, [userLogin])
-  useEffect(() => {
-    dispatch(addOnlineUsersAction(userData._id))
-  }, [userData])
-  useEffect(() => {
-    const cleanup = dispatch(getOnlineUsersAction())
+    const cleanup = dispatch(getOnlineUsers())
     return cleanup
   }, [])
 
   useEffect(() => {
     function handleGetMessage(m) {
-      // console.log("got msg", m, "userLogin=", userLogin, "sellerLogin=", sellerLogin)
       if (userLogin) {
-        dispatch(getUserUnreadMessage(m.conversationId, userData._id))
+        dispatch(getUserUnreadMessages({conversationId: m.conversationId, recipientId: userData._id}))
         dispatch(updateUserConversation({ conversationId: m.conversationId, lastMessage: m.text, lastMessageId: m.sender }))
       }
       if (sellerLogin) {
-        dispatch(getSellerUnreadMessage(m.conversationId, sellerData._id))
+        dispatch(getSellerUnreadMessages({conversationId: m.conversationId, recipientId: sellerData._id}))
         dispatch(updateSellerConversation({ conversationId: m.conversationId, lastMessage: m.text, lastMessageId: m.sender }))
       }
     }

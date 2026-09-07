@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { toast } from "react-toastify"
 import { useState } from "react"
 import { setCart } from "../../redux/slices/cart"
+import LoadingButton from "../loading/LoadingButton"
 
 
 function Payment({
@@ -152,12 +153,12 @@ function Payment({
             </div>
 
             <div className="flex items-center justify-center h-20">
-                <button
+                <LoadingButton
                     type="submit"
+                    loading={loading}
                     className={`py-2 px-8 bg-red-600 text-white rounded-full cursor-pointer disabled:opacity-50`}
-                    disabled={loading}
-                >{loading ? "Loading..." : "Proceed"}
-                </button>
+                >Proceed
+                </LoadingButton>
             </div>
 
         </form>

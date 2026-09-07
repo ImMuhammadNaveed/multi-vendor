@@ -3,22 +3,25 @@ import { useNavigate } from "react-router-dom"
 import { backend_url } from "../server"
 import axios from "axios"
 import { useDispatch } from "react-redux"
-import {getSellerAction} from '../redux/actions/shop'
+import {getSeller} from '../redux/thunks/shop'
 import { toast } from "react-toastify"
+import LoadingButton from "../components/loading/LoadingButton"
 
 function LoginShop() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
     async function handleSubmit(e) {
         e.preventDefault()
         try {
+            setSubmitting(true)
             const {data} = await axios.post(backend_url+"/api/shop/login-shop", {email, password}, {withCredentials: true})
             if(data.success){
-                dispatch(getSellerAction())
+                dispatch(getSeller())
                 navigate("/")
             }else{
                 toast.error(data.message)
@@ -28,6 +31,8 @@ function LoginShop() {
                 toast.error(error.response.data.message)
             }
             console.log(error)
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -72,7 +77,11 @@ function LoginShop() {
                         </div>
                         <p className="text-blue-600 text-sm font-semibold cursor-pointer">forgot your password?</p>
                     </div>
-                    <button type="submit" className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer">Submit</button>
+                    <LoadingButton
+                        type="submit"
+                        loading={submitting}
+                        className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer"
+                    >Submit</LoadingButton>
                     <p className="text-sm mt-3">Not have any account? <span className="text-blue-600 cursor-pointer" onClick={()=>navigate("/create-shop")}>Sign Up</span></p>
                 </div>
             </form>

@@ -2,7 +2,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { IoEyeOutline } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
-import { getAllEventsAction } from '../../redux/actions/event';
+import { getAllEvents } from '../../redux/thunks/event';
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,10 +11,10 @@ import OrderAnimation from '../../assets/OrderAnimation'
 function AdminAllEvents(params) {
     const dispatch = useDispatch()
     useEffect(() => {
-        dispatch(getAllEventsAction())
+        dispatch(getAllEvents())
     }, [dispatch])
     const events = useSelector(state => state.event.allEvents)
-    const loading = useSelector(state=> state.event.loading)
+    const loading = useSelector(state => state.event.allEventsLoading)
 
     const rows = events && events.map((item) => ({
         id: item._id,

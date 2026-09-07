@@ -5,6 +5,7 @@ import axios from 'axios'
 import { backend_url } from "../../server";
 import { MdOutlineCancel } from "react-icons/md";
 import { toast } from "react-toastify";
+import LoadingButton from "../loading/LoadingButton";
 
 function CreateProduct() {
 
@@ -17,6 +18,7 @@ function CreateProduct() {
     const [stock, setStock] = useState("")
     const [images, setImages] = useState([])
     const [previewImages, setPreviewImages] = useState([])
+    const [submitting, setSubmitting] = useState(false)
 
     function handleImages(e) {
         const files = Array.from(e.target.files)
@@ -39,6 +41,7 @@ function CreateProduct() {
         // console.log(form)
         try {
             e.preventDefault()
+            setSubmitting(true)
             const { data } = await axios.post(backend_url + "/api/product/create-product", form, { withCredentials: true })
             if (data.success) {
                 setName("")
@@ -56,12 +59,14 @@ function CreateProduct() {
             }
         } catch (error) {
             console.log(error.response.data.message)
+        } finally {
+            setSubmitting(false)
         }
     }
 
     return (
         <>
-            <div className="flex mx-auto items-center">
+            <div className="flex items-center mx-auto my-auto">
                 <form
                     className="w-120 bg-white mx-auto p-3 lg:h-115 h-full overflow-y-auto scrollbar-hide rounded-md"
                     onSubmit={handleSubmittion}
@@ -179,12 +184,13 @@ function CreateProduct() {
                         </div>
                     </div>
                     <div >
-                        <button
+                        <LoadingButton
+                            loading={submitting}
                             type="submit"
                             className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm cursor-pointer"
                         >
                             Create
-                        </button>
+                        </LoadingButton>
                     </div>
                 </form>
             </div>

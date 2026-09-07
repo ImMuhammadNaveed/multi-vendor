@@ -90,22 +90,22 @@ function ProductCardAnimation() {
                     }
                 `}
             </style>
-            <div class="product-card-skeleton">
+            <div className="product-card-skeleton">
                 {/* <!-- Product Image Placeholder --> */}
                 <div class="skeleton skeleton-image"></div>
 
-                <div class="product-details">
+                <div className="product-details">
                     {/* <!-- Product Brand/Category --> */}
-                    <div class="skeleton skeleton-text skeleton-brand"></div>
+                    <div className="skeleton skeleton-text skeleton-brand"></div>
 
                     {/* <!-- Product Title (Two Lines) --> */}
-                    <div class="skeleton skeleton-text skeleton-title"></div>
-                    <div class="skeleton skeleton-text skeleton-title short"></div>
+                    <div className="skeleton skeleton-text skeleton-title"></div>
+                    <div className="skeleton skeleton-text skeleton-title short"></div>
 
                     {/* <!-- Price & Button Container --> */}
-                    <div class="footer-container">
-                        <div class="skeleton skeleton-text skeleton-price"></div>
-                        <div class="skeleton skeleton-button"></div>
+                    <div className="footer-container">
+                        <div className="skeleton skeleton-text skeleton-price"></div>
+                        <div className="skeleton skeleton-button"></div>
                     </div>
                 </div>
             </div>

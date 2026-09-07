@@ -3,12 +3,12 @@ import { DataGrid } from "@mui/x-data-grid"
 import { Link } from "react-router-dom"
 import { MdOutlineTrackChanges } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
-import { getUserOrdersAction } from "../../redux/actions/order";
+import { getUserOrders } from "../../redux/thunks/order";
 import OrderAnimation from '../../assets/OrderAnimation'
 
 function TrackOrders() {
     const orders  = useSelector(state=> state.order.userOrders)
-    const loading = useSelector(state=> state.order.loading)
+    const loading = useSelector(state => state.order.userOrdersLoading)
     const dispatch = useDispatch()
     const rows = orders.length!==0&&orders.map((item) => ({
         id: item._id,

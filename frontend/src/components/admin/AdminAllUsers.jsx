@@ -2,21 +2,22 @@ import { DataGrid } from '@mui/x-data-grid'
 import { IoEyeOutline } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
-import { deleteUserAction, getAllUsersAction } from '../../redux/actions/user';
+import { deleteUser, getAllUsers } from '../../redux/thunks/user';
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import OrderAnimation from '../../assets/OrderAnimation'
+import LoadingButton from '../loading/LoadingButton'
 
-function AdminAllUsers(params) {
+function AdminAllUsers() {
     const [isDelete, setIsDelete] = useState(false)
     const [userId, setUserId] = useState(null)
     const dispatch = useDispatch()
     useEffect(() => {
-        dispatch(getAllUsersAction())
+        dispatch(getAllUsers())
     }, [dispatch])
     const users = useSelector(state => state.user.allUsers)
-    const loading = useSelector(state=> state.user.loading)
+    const loading = useSelector(state => state.user.allUsersLoading)
 
     const rows = users && users.map((item) => ({
         id: item._id,
@@ -81,12 +82,17 @@ export default AdminAllUsers
 
 function DeletePopup({ setIsDelete, userId }) {
     const dispatch = useDispatch()
+    const [deleting, setDeleting] = useState(false)
     // useEffect(()=>{console.log(userId)},[]
     async function handleDelete() {
-        const result = await dispatch(deleteUserAction(userId))
-        // console.log(result)
-        if(result.success){
+        try {
+            setDeleting(true)
+            await dispatch(deleteUser(userId)).unwrap()
             setIsDelete(false)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setDeleting(false)
         }
     }
     return (
@@ -104,7 +110,11 @@ function DeletePopup({ setIsDelete, userId }) {
                     >Do you want to delete this user?</p>
                     <div className='mt-4'>
                         <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={() => setIsDelete(false)}>cancel</button>
-                        <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={handleDelete}>confirm</button>
+                        <LoadingButton
+                            loading={deleting}
+                            className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer'
+                            onClick={handleDelete}
+                        >confirm</LoadingButton>
                     </div>
                 </div>
 

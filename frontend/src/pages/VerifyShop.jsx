@@ -1,48 +1,60 @@
 import axios from "axios"
-import { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
-import { backend_url } from "../server"
+import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
-import { getSellerAction } from '../redux/actions/shop'
 import { toast } from "react-toastify"
+import { getSeller } from "../redux/thunks/shop"
+import { backend_url } from "../server"
+import VerificationAnimation from "../assets/VerificationAnimation"
 
 function VerifyShop() {
     const dispatch = useDispatch()
-    const [activate, setActivate] = useState(null)
+    const navigate = useNavigate()
     const location = useLocation()
     const params = new URLSearchParams(location.search)
     const token = params.get("shopActivationToken")
-    async function activateShop() {
-        try {
-            const { data } = await axios.post(backend_url + '/api/shop/verify-shop', { token: token }, { withCredentials: true })
-            // console.log(response)
-            if (data.success) {
-                dispatch(getSellerAction())
-                setActivate(true)
-                navigate("/")
-                toast.success(data.message)
-            }else{
-                setActivate(false)
-                toast.error(data.message)
-            }
-        } catch (error) {
-            toast.error(error?.response?.data?.message)
-            console.log(error.response.data.message)
-            setActivate(false)
-        }
-    }
-    useEffect(() => {
-        activateShop()
-    }, [])
-    return (
-        <>{activate === null
-            ? (<h1>Verifing 🔃</h1>)
-            : activate
-                ? <h1>Shop Activated ✅</h1 >
-                : <h1>Shop Activation faied❌</h1>
-        } </>
-    )
-}
+    const [activate, setActivate] = useState(null)
 
+    useEffect(() => {
+        let cancelled = false
+
+        async function activateShop() {
+            try {
+                const { data } = await axios.post(
+                    backend_url + "/api/shop/verify-shop",
+                    { token },
+                    { withCredentials: true }
+                )
+
+                if (data.success) {
+                    dispatch(getSeller())
+                    if (!cancelled) setActivate(true)
+                    navigate("/")
+                    toast.success(data.message)
+                } else {
+                    if (!cancelled) setActivate(false)
+                    toast.error(data.message)
+                }
+            } catch (error) {
+                toast.error(error?.response?.data?.message)
+                if (!cancelled) setActivate(false)
+            }
+        }
+
+        activateShop()
+
+        return () => {
+            cancelled = true
+        }
+    }, [dispatch, navigate, token])
+
+    if (activate === null) {
+        return <VerificationAnimation />
+    }
+
+    return activate
+        ? <h1>Shop Activated</h1>
+        : <h1>Shop Activation failed</h1>
+}
 
 export default VerifyShop

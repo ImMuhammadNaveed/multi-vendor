@@ -8,9 +8,10 @@ import { AiOutlineStar } from "react-icons/ai";
 import { AiFillStar } from "react-icons/ai";
 import { backend_url } from "../server";
 import { useDispatch, useSelector } from "react-redux";
-import { sendMessageAction } from "../redux/actions/user";
+import { sendMessage } from "../redux/thunks/user";
 import { toast } from "react-toastify";
 import OrderDetailsAnimation from '../assets/OrderDetailsAnimation'
+import LoadingButton from '../components/loading/LoadingButton'
 
 function UserOrderDetails() {
     const { id } = useParams()
@@ -19,7 +20,9 @@ function UserOrderDetails() {
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState("")
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [requestingRefund, setRequestingRefund] = useState(false)
+    const [sendingMessage, setSendingMessage] = useState(false)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -43,6 +46,7 @@ function UserOrderDetails() {
 
     async function processRefund() {
         try {
+            setRequestingRefund(true)
             const { data } = await axios.post(backend_url + `/api/order/process-refund/${id}`, { withCredentials: true })
             if (data.success) {
                 toast.error(data.message)
@@ -51,8 +55,20 @@ function UserOrderDetails() {
             }
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setRequestingRefund(false)
         }
     }
+
+    async function handleSendMessage() {
+        try {
+            setSendingMessage(true)
+            await dispatch(sendMessage({userData: data.user, data: data.cart[0].product, navigate: navigate}))
+        } finally {
+            setSendingMessage(false)
+        }
+    }
+
     return(
         <>
             {openReview && (
@@ -136,19 +152,21 @@ function UserOrderDetails() {
                         <div>
                             <p className="text-lg font-semibold">Payment Info:</p>
                             <p>Status: {data.status ? data.status : "not paid"}</p>
-                            <button
+                            <LoadingButton
+                                loading={requestingRefund}
                                 className="bg-black text-white px-6 py-2 rounded-lg absolute my-8 cursor-pointer"
                                 onClick={processRefund}
                             >
                                 Refund
-                            </button>
+                            </LoadingButton>
                         </div>
                     </div>
-                    <button
-                        onClick={() => dispatch(sendMessageAction(data.user, data.cart[0].product, navigate))}
-                        className="bg-black text-white px-6 py-2 rounded-lg absolute my-8">
+                    <LoadingButton
+                        loading={sendingMessage}
+                        onClick={handleSendMessage}
+                        className="bg-black text-white px-6 py-2 rounded-lg absolute my-8 cursor-pointer">
                         Send Message
-                    </button>
+                    </LoadingButton>
                 </div>
             }
 
@@ -175,9 +193,11 @@ function ReviewForm({
     getOrderDetails
 }) {
     const userData = useSelector(state => state.user.user)
+    const [submitting, setSubmitting] = useState(false)
     async function addReview() {
         try {
             if (!rating) return toast.error("Give rating first")
+            setSubmitting(true)
             const res = await axios.post(
                 backend_url + "/api/product/add-product-review",
                 {
@@ -201,6 +221,8 @@ function ReviewForm({
 
         } catch (error) {
             console.log(error.response)
+        } finally {
+            setSubmitting(false)
         }
     }
     return (
@@ -263,10 +285,11 @@ function ReviewForm({
                         className="w-full border border-gray-300 p-1 focus:ouline-none"
                     ></textarea>
                 </div>
-                <button
+                <LoadingButton
+                    loading={submitting}
                     className="bg-black text-white py-2 px-8 rounded-lg cursor-pointer mt-1"
                     onClick={() => addReview(product)}
-                >Submit</button>
+                >Submit</LoadingButton>
             </div>
         </div>
     )

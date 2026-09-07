@@ -2,22 +2,23 @@ import { DataGrid } from '@mui/x-data-grid'
 import { IoEyeOutline } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
-import { deleteSellerAction, getAllSellersAction } from '../../redux/actions/shop';
+import { deleteSeller, getAllSellers } from '../../redux/thunks/shop';
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import OrderAnimation from '../../assets/OrderAnimation'
+import LoadingButton from '../loading/LoadingButton'
 
 
-function AdminAllSellers(params) {
+function AdminAllSellers() {
     const [isDelete, setIsDelete] = useState(false)
     const [sellerId, setSellerId] = useState(null)
     const dispatch = useDispatch()
     useEffect(() => {
-        dispatch(getAllSellersAction())
+        dispatch(getAllSellers())
     }, [dispatch])
     const sellers = useSelector(state => state.shop.allSellers)
-    const loading = useSelector(state => state.shop.loading)
+    const loading = useSelector(state => state.shop.allSellersLoading)
     const rows = sellers && sellers.map((item) => ({
         id: item._id,
         name: item.name,
@@ -95,12 +96,14 @@ export default AdminAllSellers
 
 function DeletePopup({ setIsDelete, sellerId }) {
     const dispatch = useDispatch()
-    // useEffect(()=>{console.log(sellerId)},[]
+    const [deleting, setDeleting] = useState(false)
     async function handleDelete() {
-        const result = await dispatch(deleteSellerAction(sellerId))
-        // console.log(result)
-        if(result.success){
+        try {
+            setDeleting(true)
+            await dispatch(deleteSeller(sellerId)).unwrap()
             setIsDelete(false)
+        } finally {
+            setDeleting(false)
         }
     }
     return (
@@ -118,7 +121,11 @@ function DeletePopup({ setIsDelete, sellerId }) {
                     >Do you want to delete this shop/seller?</p>
                     <div className='mt-4'>
                         <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={() => setIsDelete(false)}>cancel</button>
-                        <button className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer' onClick={handleDelete}>confirm</button>
+                        <LoadingButton
+                            loading={deleting}
+                            className='bg-black text-white px-6 py-2 m-2 rounded-md cursor-pointer'
+                            onClick={handleDelete}
+                        >confirm</LoadingButton>
                     </div>
                 </div>
 

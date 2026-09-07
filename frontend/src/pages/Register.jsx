@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import axios from 'axios'
 import { backend_url } from '../server'
 import { toast } from "react-toastify"
+import LoadingButton from "../components/loading/LoadingButton"
 
 function Register() {
 
@@ -11,6 +12,7 @@ function Register() {
     const [password, setPassword] = useState("")
     const [image, setImage] = useState(false)
     const [showPassword, setShowPassword] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
     const navigate = useNavigate()
 
     async function handleSubmit(e) {
@@ -21,6 +23,7 @@ function Register() {
         formData.append("password", password)
         formData.append("image", image)
         try {
+            setSubmitting(true)
             const {data} = await axios.post(backend_url+"/api/user/register", formData, {withCredentials: true})
             console.log(data)
             if(data.success){
@@ -35,12 +38,14 @@ function Register() {
                 toast.error(error.response.data.message)
             }
             console.log(error)
+        } finally {
+            setSubmitting(false)
         }
     }
 
     return (
         <div className="flex items-center min-h-screen">
-            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5">
+            <form className="flex flex-col items-center w-96 m-auto border border-gray-200 rounded-lg p-5" onSubmit={handleSubmit}>
                 <p className="text-2xl font-bold">Register as a new user</p>
                 <div className="w-full mt-7">
                     <p className="text-sm text-gray-900 mb-2">Full Name</p>
@@ -91,7 +96,11 @@ function Register() {
                         <input type="file" id="image" onChange={(e) => setImage(e.target.files[0])} hidden />
                         <label htmlFor="image" className="ml-4 border border-gray-300 rounded rounded-md text-sm text-gray-500 px-3 py-2 cursor-pointer">Upload a file</label>
                     </div>
-                    <button onClick={handleSubmit} className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer">Submit</button>
+                    <LoadingButton
+                        type="submit"
+                        loading={submitting}
+                        className="w-full h-8 bg-blue-600 text-sm text-white font-semibold rounded-md cursor-pointer"
+                    >Submit</LoadingButton>
                     <p className="text-sm mt-3">Already have an account? <span className="text-blue-600 cursor-pointer" onClick={()=>navigate("/login")}>Sign In</span></p>
                 </div>
             </form>

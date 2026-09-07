@@ -9,6 +9,8 @@ import { DataGrid } from '@mui/x-data-grid'
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import OrderAnimation from "../../assets/OrderAnimation";
+import LoadingButton from "../loading/LoadingButton";
+import ButtonSpinner from "../loading/ButtonSpinner";
 
 function CreateCoupon() {
     const [open, setOpen] = useState(false)
@@ -20,6 +22,8 @@ function CreateCoupon() {
     const [minAmount, setMinAmount] = useState("")
     const [maxAmount, setMaxAmount] = useState("")
     const [product, setProduct] = useState("")
+    const [submitting, setSubmitting] = useState(false)
+    const [deletingCouponId, setDeletingCouponId] = useState(null)
 
     async function handleSubmittion(e) {
         e.preventDefault()
@@ -32,30 +36,36 @@ function CreateCoupon() {
             product: product
         }
         try {
+            setSubmitting(true)
             const { data } = await axios.post(backend_url + "/api/coupon/create-coupon", newCoupon, { withCredentials: true })
             console.log(data)
         } catch (error) {
             console.log(error)
+        } finally {
+            setSubmitting(false)
         }
     }
 
     async function handleDeleteCoupon(id) {
         try {
+            setDeletingCouponId(id)
             const { data } = await axios.delete(backend_url + `/api/coupon/delete-coupon/${id}`, { withCredentials: true })
             if (data.success) {
                 setCoupons(coupons.filter((c) => c._id !== data.deletedCoupon._id))
             }
         } catch (error) {
             toast.error(error.response?.data?.message)
+        } finally {
+            setDeletingCouponId(null)
         }
     }
 
-    useEffect(() => { handleGetAllCoupons() }, [])
-    const [loading, setLoading] = useState(false)
-    async function handleGetAllCoupons() {
+    useEffect(() => { handleGetShopAllCoupons() }, [])
+    const [loading, setLoading] = useState(true)
+    async function handleGetShopAllCoupons() {
         try {
             setLoading(true)
-            const { data } = await axios.get(backend_url + "/api/coupon/all-coupons", { withCredentials: true })
+            const { data } = await axios.get(backend_url + "/api/coupon/shop-all-coupons", { withCredentials: true })
             console.log(data)
             if (data.success) {
                 setCoupons(data.data)
@@ -85,10 +95,14 @@ function CreateCoupon() {
             renderCell: (params) => {
                 return (<>
                     <div className="w-full h-full flex justify-end items-center pr-4">
-                        <button className="cursor-pointer" onClick={() => handleDeleteCoupon(params.row.id)}>
-                            <AiOutlineDelete
-                                size={22}
-                            />
+                        <button
+                            className="cursor-pointer disabled:opacity-60"
+                            onClick={() => handleDeleteCoupon(params.row.id)}
+                            disabled={deletingCouponId === params.row.id}
+                        >
+                            {deletingCouponId === params.row.id
+                                ? <ButtonSpinner size={20} />
+                                : <AiOutlineDelete size={22} />}
                         </button>
 
                     </div>
@@ -195,12 +209,13 @@ function CreateCoupon() {
                             </select>
                         </div>
                         <div >
-                            <button
+                            <LoadingButton
+                                loading={submitting}
                                 type="submit"
                                 className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm cursor-pointer"
                             >
                                 Create
-                            </button>
+                            </LoadingButton>
                         </div>
                     </form>
                 </div>

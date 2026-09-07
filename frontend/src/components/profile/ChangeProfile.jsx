@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react"
+import axios from "axios"
 import { IoCameraOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { backend_url } from "../../server";
 import { toast } from "react-toastify";
 import ProfileAnimation from '../../assets/ProfileAnimation'
+import LoadingButton from '../loading/LoadingButton'
 function ChangeProfile() {
     const userData = useSelector(state => state.user.user)
-    const loading = useSelector(state=> state.user.loading)
+    const loading = useSelector(state => state.user.userLoading)
 
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
@@ -14,6 +16,7 @@ function ChangeProfile() {
     const [password, setPassword] = useState("")
     const [image, setImage] = useState(null)
     const [previewImage, setPreviewImage] = useState("")
+    const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
         if (userData) {
@@ -35,6 +38,7 @@ function ChangeProfile() {
     async function handleSubmit(e) {
         try {
             e.preventDefault()
+            setSubmitting(true)
             const formData = new FormData()
             formData.append("name", name)
             formData.append("email", email)
@@ -48,6 +52,8 @@ function ChangeProfile() {
 
         } catch (error) {
             toast.error(error.response.data.message)
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -55,7 +61,7 @@ function ChangeProfile() {
         return <ProfileAnimation/>
     }
     return userData && (
-        <form onSubmit={handleSubmit} className="w-full ">
+        <form onSubmit={handleSubmit} className="w-full">
             <div className="relative w-36 h-36 mx-auto">
                 <img
                     src={previewImage || null}
@@ -117,10 +123,11 @@ function ChangeProfile() {
                 </div>
 
             </div>
-            <button
+            <LoadingButton
+                loading={submitting}
                 className="w-full border border-purple-500 text-purple-500 px-16 py-1 text-sm mt-2 rounded-sm cursor-pointer"
                 type="submit"
-            >Update</button>
+            >Update</LoadingButton>
         </form>
     )
 }

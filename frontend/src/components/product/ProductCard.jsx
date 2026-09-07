@@ -7,17 +7,17 @@ import ProductDetails from './ProductDetails'
 import { Link } from 'react-router-dom'
 import Ratings from '../ratings/Ratings'
 import { useDispatch, useSelector } from 'react-redux'
-import { isInWishlistAction, addToWishlistAction, removeFromWishlistAction } from '../../redux/actions/wishlist'
-import { addToCartAction } from '../../redux/actions/cart'
+import { isInWishlist, addToWishlist, removeFromWishlist } from '../../redux/slices/wishlist'
+import { addToCart } from '../../redux/slices/cart'
 import { backend_url } from '../../server'
 
 function Product({ item, isEvent}) {
     const [imageError, setImageError] = useState(false)
     const [showProductDetails, setShowProductDetails] = useState(false)
-    const userData = useSelector(state=>state.user.user)
     const dispatch = useDispatch()
     const wishlist = useSelector(state=> state.wishlist.wishlist)
     
+    const isWishlist = isInWishlist(item._id, wishlist)
 
     
     return item && (
@@ -38,7 +38,7 @@ function Product({ item, isEvent}) {
                         <div className='mt-2'>
                             {
                                 // isInWishlist(item)
-                                isInWishlistAction(wishlist, item._id)
+                                isWishlist
                                     ? <GoHeartFill
                                         color='red'
                                         className='mb-2'
@@ -46,7 +46,7 @@ function Product({ item, isEvent}) {
                                         onClick={(e)=>{
                                             e.preventDefault()
                                             e.stopPropagation()
-                                            dispatch(removeFromWishlistAction(item, userData))
+                                            dispatch(removeFromWishlist(item))
                                         }}
                                     />
                                     : <GoHeart
@@ -56,7 +56,7 @@ function Product({ item, isEvent}) {
                                             // addToWishlist(item)
                                             e.preventDefault()
                                             e.stopPropagation()
-                                            dispatch(addToWishlistAction(item, userData))
+                                            dispatch(addToWishlist(item))
                                         }}
                                     />
                             }
@@ -77,7 +77,7 @@ function Product({ item, isEvent}) {
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    dispatch(addToCartAction(item, userData))
+                                    dispatch(addToCart(item))
                                 }}
                             />
                         </div>
@@ -110,7 +110,7 @@ function Product({ item, isEvent}) {
                     </div>
                 </div>
             </Link>
-            {showProductDetails && <ProductDetails key={item._id} item={item} setShowProductDetails={setShowProductDetails} addToWishlist={addToWishlistAction}/>}
+            {showProductDetails && <ProductDetails key={item._id} item={item} setShowProductDetails={setShowProductDetails} addToWishlist={addToWishlist}/>}
         </div>
     )
 }

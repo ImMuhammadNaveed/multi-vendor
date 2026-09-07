@@ -4,17 +4,18 @@ import { AiOutlineEye } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
 import { backend_url } from "../../server";
-import { getShopProductsAction } from "../../redux/actions/product";
+import { getShopProducts } from "../../redux/thunks/product";
 import { useDispatch, useSelector } from "react-redux";
 import OrderAnimation from '../../assets/OrderAnimation'
 
 function AllProducts() {
-    const {shopProducts, loading} = useSelector(state=> state.product)
+    const shopProducts = useSelector(state => state.product.shopProducts)
+    const loading = useSelector(state => state.product.shopProductsLoading)
     const sellerData = useSelector(state=> state.shop.seller)
     const dispatch = useDispatch()
 
     useEffect(() => { 
-        dispatch(getShopProductsAction(sellerData._id))
+        dispatch(getShopProducts(sellerData._id))
     }, [sellerData])
 
 
@@ -44,7 +45,7 @@ function AllProducts() {
         sold: item.soldOut
     }))
     if (loading) {
-        <OrderAnimation/>
+        return <OrderAnimation/>
     }
     return (
         <>

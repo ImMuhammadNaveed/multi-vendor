@@ -2,30 +2,33 @@ import { AiOutlineMoneyCollect } from "react-icons/ai";
 import { RxBorderSplit } from "react-icons/rx";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { backend_url } from "../../server";
-import { getAllProductsAction } from "../../redux/actions/product";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllOrdersAction } from "../../redux/actions/order";
-import { getAllSellersAction } from "../../redux/actions/shop";
+import { getAllOrders } from "../../redux/thunks/order";
+import { getAllSellers } from "../../redux/thunks/shop";
+import AdminDashboardAnimation from "../../assets/AdminDashboardAnimation";
 
 function AdminDashboardContent() {
-    useEffect(()=>{
-        dispatch(getAllOrdersAction())
-    },[])
-    const orders = useSelector(state => state.order.allOrders)
-    useEffect(()=>{
-        dispatch(getAllSellersAction())
-    },[])
-    const sellers = useSelector(state=> state.shop.allSellers)
-    const topOrders = orders.slice(0, 3).reverse()
-
-    
-    const shopProducts = useSelector(state => state.product.shopProducts)
     const dispatch = useDispatch()
+    useEffect(()=>{
+        dispatch(getAllOrders())
+    },[dispatch])
+    const orders = useSelector(state => state.order.allOrders)
+    const allOrdersLoading = useSelector(state => state.order.allOrdersLoading)
+    useEffect(()=>{
+        dispatch(getAllSellers())
+    },[dispatch])
+    const sellers = useSelector(state => state.shop.allSellers)
+    const allSellersLoading = useSelector(state => state.shop.allSellersLoading)
+    const topOrders = orders?.slice(0, 3).reverse() || []
 
     const totalPrice = orders && orders.reduce((acc, item) => acc + item.totalPrice, 0)
     const serviceCharges = totalPrice && totalPrice * 0.1
     const availableBalance = totalPrice - serviceCharges
+
+    if (allOrdersLoading || allSellersLoading) {
+        return <AdminDashboardAnimation />
+    }
+
     return (
         <>
             <div className="w-full py-4 lg:px-8 px-2">
@@ -77,7 +80,6 @@ function AdminDashboardContent() {
 
 import { DataGrid } from '@mui/x-data-grid'
 import { GoArrowRight } from "react-icons/go";
-import { getShopProductsAction } from "../../redux/actions/product";
 function Orders({ topOrders }) {
     const rows = topOrders && topOrders.map((item) => ({
         id: item._id,

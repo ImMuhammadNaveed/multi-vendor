@@ -1,26 +1,20 @@
 import { useEffect } from "react"
-import axios from "axios"
 import { Link } from "react-router-dom"
 import { backend_url } from "../../server"
-import { getSellerAction } from '../../redux/actions/shop'
 import { useDispatch } from 'react-redux'
-import { sellerLogout } from "../../redux/slices/shop"
-import { socket } from "../../socket/Socket"
-import { toast } from "react-toastify"
+import { logoutSeller } from '../../redux/thunks/shop'
+import ButtonSpinner from '../loading/ButtonSpinner'
+import { useState } from 'react'
 
 function ShopSideBar({ shopData, shopProducts, owner, shopRating }) {
     const dispatch = useDispatch()
+    const [loggingOut, setLoggingOut] = useState(false)
     async function logout() {
         try {
-            const { data } = await axios.post(backend_url + "/api/shop/logout", {}, { withCredentials: true })
-            if (data.success) {
-                dispatch(sellerLogout())
-                socket.emit("logout", shopData?._id)
-                toast.success(data.message)
-                window.location.href = '/'
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message)
+            setLoggingOut(true)
+            await dispatch(logoutSeller()).unwrap()
+        } finally {
+            setLoggingOut(false)
         }
     }
     useEffect(()=>{console.log(shopData)},[])
@@ -63,7 +57,16 @@ function ShopSideBar({ shopData, shopProducts, owner, shopRating }) {
                         owner
                             ? <div className="flex flex-col gap-2 mt-6">
                                 <Link className="bg-black text-white text-center w-full py-2 rounded-md" to='/shop-dashboard/settings'>Edit Shop</Link>
-                                <button className="bg-black text-white w-full py-2 rounded-md cursor-pointer" onClick={logout}>Log Out</button>
+                                <button
+                                    className="bg-black text-white w-full py-2 rounded-md cursor-pointer disabled:opacity-60"
+                                    onClick={logout}
+                                    disabled={loggingOut}
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        {loggingOut && <ButtonSpinner size={14} />}
+                                        Log Out
+                                    </span>
+                                </button>
                             </div>
                             : ""
                     }

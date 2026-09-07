@@ -3,7 +3,7 @@ import { IoBagHandleOutline } from "react-icons/io5";
 import cart_pic from '../../static/cart-item.png'
 import { GoHeart } from 'react-icons/go'
 import { AiOutlineShoppingCart } from 'react-icons/ai'
-import { addToCartAction } from "../../redux/actions/cart";
+import { addToCart } from "../../redux/slices/cart";
 
 function Wishlist({ setOpenWishlist }) {
     // const data = [
@@ -60,7 +60,7 @@ import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { removeFromWishlistAction } from "../../redux/actions/wishlist";
+import { removeFromWishlist } from "../../redux/slices/wishlist";
 import { useDispatch } from "react-redux";
 import { backend_url } from "../../server";
 

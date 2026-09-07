@@ -5,8 +5,10 @@ import { RxCross1 } from "react-icons/rx";
 import { AiOutlineDelete } from "react-icons/ai";
 import axios from "axios";
 import { backend_url } from "../../server";
-import { getSellerAction } from '../../redux/actions/shop'
+import { getSeller } from '../../redux/thunks/shop'
 import { toast } from "react-toastify";
+import LoadingButton from "../loading/LoadingButton";
+import ButtonSpinner from "../loading/ButtonSpinner";
 
 function WithdrawMoney() {
     // const orders = useSelector(state => state.order.sellerOrders)
@@ -19,7 +21,7 @@ function WithdrawMoney() {
     const [openWithdraw, setOpenWithdraw] = useState(false)
     return (
         <>
-            <div className="flex flex-col justify-center items-center mx-auto">
+            <div className="flex flex-col justify-center items-center mx-auto my-auto">
                 <p className="text-xl font-[600] mb-4">Available Balance: ${seller.availableBalance}</p>
                 <button
                     className='bg-black text-white py-2 px-6 rounded-md text-lg font-semibold cursor-pointer'
@@ -36,16 +38,21 @@ function WithdrawForm({ setOpenWithdraw }) {
     const [addNewMethod, setAddNewMethod] = useState(false)
     const dispatch = useDispatch()
     const [amount, setAmount] = useState(0)
+    const [deletingMethod, setDeletingMethod] = useState(false)
+    const [creatingWithdraw, setCreatingWithdraw] = useState(false)
 
     async function handleDeleteWithdrawMethod() {
         try {
+            setDeletingMethod(true)
             const {data} = await axios.delete(backend_url+"/api/shop/delete-withdraw-method", {withCredentials: true})
             console.log(data)
             if(data.success){
-                dispatch(getSellerAction())
+                dispatch(getSeller())
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setDeletingMethod(false)
         }
     }
 
@@ -56,13 +63,16 @@ function WithdrawForm({ setOpenWithdraw }) {
             return
         }
         try {
+            setCreatingWithdraw(true)
             const {data} = await axios.post(backend_url+'/api/withdraw/create-withdraw', {amount: amount}, {withCredentials: true})
             if(data.success){
-                dispatch(getSellerAction())
+                dispatch(getSeller())
                 setOpenWithdraw(false)
             }
         } catch (error) {
             toast.error(error.response?.data?.message)
+        } finally {
+            setCreatingWithdraw(false)
         }
     }
     return (
@@ -95,11 +105,13 @@ function WithdrawForm({ setOpenWithdraw }) {
                                         <p>Bank Name: <span className="font-[700]">{seller.withdrawMethod.bankName}</span></p>
                                     </div>
                                     <div className="ml-20">
-                                        <AiOutlineDelete 
-                                        size={25} 
-                                        className="cursor-pointer" 
-                                        onClick={handleDeleteWithdrawMethod}
-                                        />
+                                        {deletingMethod
+                                            ? <ButtonSpinner size={22} />
+                                            : <AiOutlineDelete
+                                                size={25}
+                                                className="cursor-pointer"
+                                                onClick={handleDeleteWithdrawMethod}
+                                            />}
                                     </div>
                                 </div>
 
@@ -115,10 +127,11 @@ function WithdrawForm({ setOpenWithdraw }) {
                                         value={amount}
                                         onChange={(e)=>setAmount(e.target.value)}
                                     />
-                                    <button
+                                    <LoadingButton
+                                        loading={creatingWithdraw}
                                         type="submit"
                                         className='bg-black text-white py-1 px-4 rounded-md font-semibold cursor-pointer ml-2'
-                                    >Withdraw</button>
+                                    >Withdraw</LoadingButton>
                                 </form>
                             </div >
                         }
@@ -147,6 +160,7 @@ function AddNewForm({setAddNewMethod}) {
     const [bankAccountNumber, setBankAccountNumber] = useState("")
     const [bankHolderName, setBankHolderName] = useState("")
     const [bankAddress, setBankAddress] = useState("")
+    const [submitting, setSubmitting] = useState(false)
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -159,9 +173,10 @@ function AddNewForm({setAddNewMethod}) {
             bankAddress: bankAddress
         }
         try {
+            setSubmitting(true)
             const {data} = await axios.post(backend_url+"/api/shop/add-withdraw-method", {withdrawMethod: withdrawMethod}, {withCredentials: true})
             if(data.success){
-                dispatch(getSellerAction())
+                dispatch(getSeller())
                 setBankName("")
                 setBankCountry("")
                 setBankSwiftCode("")
@@ -173,6 +188,8 @@ function AddNewForm({setAddNewMethod}) {
             }
         } catch (error) {
             toast.error(error.response?.data?.message)
+        } finally {
+            setSubmitting(false)
         }
     }
     return (
@@ -248,12 +265,13 @@ function AddNewForm({setAddNewMethod}) {
                     </div>
                 </div>
                 <div className="flex justify-center">
-                    <button
+                    <LoadingButton
+                        loading={submitting}
                         type="submit"
                         className='bg-black text-white py-1 px-4 rounded-md font-semibold cursor-pointer mt-2'
                     >
                         Submit
-                    </button>
+                    </LoadingButton>
                 </div>
             </form>
         </>
