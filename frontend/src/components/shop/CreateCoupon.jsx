@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { categoriesData } from "../../static/data"
-import { MdAddCircleOutline } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
 import { AiOutlineDelete } from "react-icons/ai";
 import axios from 'axios'
@@ -11,9 +9,11 @@ import { toast } from "react-toastify";
 import OrderAnimation from "../../assets/OrderAnimation";
 import LoadingButton from "../loading/LoadingButton";
 import ButtonSpinner from "../loading/ButtonSpinner";
+import { useSelector } from "react-redux";
 
 function CreateCoupon() {
     const [open, setOpen] = useState(false)
+    const shopProducts = useSelector(state => state.product.shopProducts)
 
     const [coupons, setCoupons] = useState(null)
 
@@ -38,9 +38,13 @@ function CreateCoupon() {
         try {
             setSubmitting(true)
             const { data } = await axios.post(backend_url + "/api/coupon/create-coupon", newCoupon, { withCredentials: true })
-            console.log(data)
+            if(data.success){
+                setCoupons(prev=> [...prev, data.newCoupon])
+                toast.success("Coupon successfully created!")
+                setOpen(false)
+            }
         } catch (error) {
-            console.log(error)
+            toast.error(error.response?.data?.message)
         } finally {
             setSubmitting(false)
         }
@@ -66,13 +70,12 @@ function CreateCoupon() {
         try {
             setLoading(true)
             const { data } = await axios.get(backend_url + "/api/coupon/shop-all-coupons", { withCredentials: true })
-            console.log(data)
             if (data.success) {
                 setCoupons(data.data)
             }
         } catch (error) {
-            console.log(error)
-        } finally{
+            toast.error(error.response?.data?.message)
+        } finally {
             setLoading(false)
         }
     }
@@ -122,18 +125,18 @@ function CreateCoupon() {
                     </button>
                 </div>
                 {loading
-                ?<OrderAnimation/>
-                :<div style={{ width: '100%', height: 400 }}>
-                    <DataGrid
-                        className="text-right"
-                        columns={columns}
-                        rows={rows}
-                        pageSize={10}
-                        autoHeight
-                    />
-                </div>
+                    ? <OrderAnimation />
+                    : <div style={{ width: '100%', height: 400 }}>
+                        <DataGrid
+                            className="text-right"
+                            columns={columns}
+                            rows={rows}
+                            pageSize={10}
+                            autoHeight
+                        />
+                    </div>
                 }
-                
+
             </div>
 
             {
@@ -201,11 +204,17 @@ function CreateCoupon() {
                                 value={product}
                                 onChange={(e) => setProduct(e.target.value)}
                             >
-                                <option value="" disabled>
+                                <option value="Select a product" >
                                     Select a product
                                 </option>
-                                <option value="abc">abc</option>
-                                <option value="def">def</option>
+                                {shopProducts && shopProducts.map((p) =>
+                                    <option
+                                        value={p.name}
+                                        key={p._id}
+                                    >
+                                        {p.name}
+                                    </option>
+                                )}
                             </select>
                         </div>
                         <div >

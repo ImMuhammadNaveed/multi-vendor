@@ -240,7 +240,7 @@ function ShippingDetails({
                     <hr className="text-gray-300" />
                     <div className="flex justify-end">
 
-                        <p className="font-bold">{totalSubPrice + shippingPrice - discount}</p>
+                        <p className="font-bold">{(totalSubPrice + shippingPrice - discount).toFixed(1)}</p>
                     </div>
                     <div>
                         <input

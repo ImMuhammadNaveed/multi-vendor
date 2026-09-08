@@ -1,14 +1,18 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
 import { backend_url } from "../server"
 import VerificationAnimation from "../assets/VerificationAnimation"
+import { getUser } from "../redux/thunks/user"
+import { useDispatch } from "react-redux"
 
 function VerifyAccount() {
     const [searchParams] = useSearchParams()
     const token = searchParams.get("token")
     const [status, setStatus] = useState("loading")
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     useEffect(() => {
         let cancelled = false
@@ -22,7 +26,9 @@ function VerifyAccount() {
                 )
 
                 if (data.success) {
+                    dispatch(getUser())
                     if (!cancelled) setStatus("verified")
+                    navigate("/")
                     toast.success(data.message)
                 } else {
                     if (!cancelled) setStatus("failed")
@@ -46,8 +52,12 @@ function VerifyAccount() {
     }
 
     return status === "verified"
-        ? <h1>Account Verified</h1>
-        : <h1>Account Verification failed</h1>
+        ? <div className="h-50 flex items-center justify-center">
+            <p className="font-semibold text-lg">Account Verified</p>
+        </div>
+        : <div className="h-50 flex items-center justify-center">
+            <p className="font-semibold text-lg">Account verification failed</p>
+        </div>
 }
 
 export default VerifyAccount

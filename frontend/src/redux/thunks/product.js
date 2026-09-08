@@ -22,7 +22,10 @@ export const getShopProducts = createAsyncThunk(
     "product/getShopProducts",
     async (id, {rejectWithValue})=>{
         try {
+            // console.log("shop products trigger")
             const { data } = await axios.get(backend_url + `/api/product/all-products-of-shop/${id}`, { withCredentials: true })
+            console.log("shop id in shop products: ", id)
+
             if (!data.success) {
                 return rejectWithValue(data.message || "Failed to get shop products")
             }

@@ -16,7 +16,7 @@ const {
 
 
 productRouter.post("/create-product", shopLoginCheck, upload.array("images"), createProduct)
-productRouter.get("/all-products-of-shop/:id", shopLoginCheck, allProductsOfShop)
+productRouter.get("/all-products-of-shop/:id", allProductsOfShop)
 productRouter.get("/all-products", allProducts)
 productRouter.delete("/delete-product/:id", userLoginCheck, authorization(["Admin"]), deleteProduct)
 productRouter.post("/add-product-review", userLoginCheck, addReview)

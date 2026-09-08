@@ -14,9 +14,9 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
 
     return (shopProducts || loadingP) && (
         <>
-            <div className='w-full lg:mx-8'>
-                <div className='flex lg:flex-row flex-col-reverse items-center justify-between mb-8'>
-                    <div className='flex items-center gap-6'>
+            <div className='w-full lg:mx-8 h-full flex flex-col min-h-0'>
+                <div className='flex lg:flex-row flex-col-reverse items-center justify-between mb-8 shrink-0'>
+                    <div className='flex items-center gap-5'>
                         <p className={`text-lg font-semibold ${active === 1 ? "text-[crimson]" : "text-[#555]"} cursor-pointer`} onClick={() => setActive(1)}>Shop Products</p>
                         <p className={`text-lg font-semibold ${active === 2 ? "text-[crimson]" : "text-[#555]"} cursor-pointer`} onClick={() => setActive(2)}>Running Event</p>
                         <p className={`text-lg font-semibold ${active === 3 ? "text-[crimson]" : "text-[#555]"} cursor-pointer`} onClick={() => setActive(3)}>Shop Reviews</p>
@@ -32,50 +32,57 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
 
                     </div>
                 </div>
-                {
-                    active === 1 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
-                        {
-                            loadingP
-                                ? Array.from({ length: 6 }, (_, index) => (
-                                      <ProductCardAnimation key={index} />
-                                  ))
-                                : shopProducts.map((item) => (
-                                      <Product item={item} key={item._id} />
-                                  ))
-                        }
-                    </div>
-                }
-                {
-                    active === 2 && <div>
-                        {
-                            loadingE
-                                ? <div className='grid grid-cols-3 gap-7'>
-                                    {
-                                        Array.from({ length: 6 }, (_, index) => (
-                                            <ProductCardAnimation key={index} />
-                                        ))
-                                    }
-                                </div>
-                                : shopEvents.length !== 0
-                                    ? <div className='grid grid-cols-3 gap-7'>
+                <div className='flex-1 min-h-0 overflow-y-auto'>
+                    {
+                        active === 1 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
+                            {
+                                loadingP
+                                    ? Array.from({ length: 6 }, (_, index) => (
+                                        <ProductCardAnimation key={index} />
+                                    ))
+                                    : shopProducts.map((item) => (
+                                        <Product item={item} key={item._id} />
+                                    ))
+                            }
+                        </div>
+                    }
+                    {
+                        active === 2 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
+                            {
+                                loadingE
+                                    ? <div>
                                         {
-                                            shopEvents.map((item) => (
-                                                <Product item={item} key={item._id} />
+                                            Array.from({ length: 6 }, (_, index) => (
+                                                <ProductCardAnimation key={index} />
                                             ))
                                         }
                                     </div>
-                                    : <div className='flex justify-center items-center w-full'>
-                                        <p className='text-xl font-semibold'>We have currently no Events!</p>
-                                    </div>
-                        }
-                    </div>
-                }
-                {
-                    active === 3 && <div>
-                        <ShopReviews shopReviews={shopReviews} />
-                    </div>
-                }
+                                    : shopEvents && shopEvents.length !== 0
+                                        ? <div>
+                                            {
+                                                shopEvents.map((item) => (
+                                                    <Product item={item} key={item._id} />
+                                                ))
+                                            }
+                                        </div>
+                                        : <div className='flex justify-center items-center w-full'>
+                                            <p className='text-xl font-semibold'>We have currently no Events!</p>
+                                        </div>
+                            }
+                        </div>
+                    }
+                    {
+                        active === 3 && <div className='h-[360px] md:h-[360px] lg:h-auto'>
+                            {shopReviews.length > 0
+                                ? <ShopReviews shopReviews={shopReviews} />
+                                : <div className='flex justify-center items-center w-full'>
+                                    <p className='text-xl font-semibold'>This shop has currently no Reviews!</p>
+                                </div>
+                            }
 
+                        </div>
+                    }
+                </div>
             </div>
         </>
     )

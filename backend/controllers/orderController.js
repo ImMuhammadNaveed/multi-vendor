@@ -39,7 +39,7 @@ const createOrder = catchAsyncError(async (req, res) => {
                 cart: items,
                 shippingAddress,
                 user,
-                totalPrice: shopTotal,
+                totalPrice: shopTotal.toFixed(1),
                 paymentInfo
             };
             await orderModel.create(orderData)

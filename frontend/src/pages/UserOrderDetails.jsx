@@ -227,7 +227,7 @@ function ReviewForm({
     }
     return (
         <div className="w-full h-full bg-black/20 absolute flex justify-center items-center">
-            <div className="w-[50%] bg-white p-3 rounded-md z-50">
+            <div className="z-60 w-[50%] bg-white p-3 rounded-md z-50">
                 <div className="flex justify-end">
                     <RxCross1
                         className="cursor-pointer"

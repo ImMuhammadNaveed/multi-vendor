@@ -55,7 +55,7 @@ const register = catchAsyncError(async (req, res) => {
 const verifyEmail = catchAsyncError(async (req, res) => {
         const { token } = req.body
         const decoded = emailVerify(token)
-        const user = await userModel.findById(decoded.data)
+        const user = await userModel.findById(decoded)
         if (!user) {
             throw new ErrorHandler("Invalid user!", 400)
         }

@@ -27,9 +27,7 @@ function Register() {
             const {data} = await axios.post(backend_url+"/api/user/register", formData, {withCredentials: true})
             console.log(data)
             if(data.success){
-                dispatch(getUserAction())
-                setUserLogin(true)
-                navigate("/")
+                toast.success(data.message)
             }else{
                 toast.error(data.message)
             }

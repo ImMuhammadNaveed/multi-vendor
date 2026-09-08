@@ -14,11 +14,10 @@ const createCoupon = catchAsyncError(async (req, res) => {
     const shopId = req.shopId
     const shop = await shopModel.findById(shopId)
     const couponData = { ...req.body, shop }
-    couponData.shop = shop
 
-    const newCoupon = new couponModel(couponData)
-    await newCoupon.save()
-    return res.status(200).json({ success: true, message: "coupon successfully created!" })
+    let newCoupon = new couponModel(couponData)
+    newCoupon = await newCoupon.save()
+    return res.status(200).json({ success: true, newCoupon: newCoupon })
 })
 
 const shopAllCoupons = catchAsyncError(async (req, res) => {

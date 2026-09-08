@@ -6,6 +6,8 @@ import { backend_url } from "../../server";
 import { MdOutlineCancel } from "react-icons/md";
 import { toast } from "react-toastify";
 import LoadingButton from "../loading/LoadingButton";
+import { useDispatch } from "react-redux";
+import { getAllEvents } from "../../redux/thunks/event";
 
 
 function CreateEvent() {
@@ -22,6 +24,7 @@ function CreateEvent() {
     const [images, setImages] = useState([])
     const [previewImages, setPreviewImages] = useState([])
     const [submitting, setSubmitting] = useState(false)
+    const dispatch = useDispatch()
 
     function handleImages(e) {
         const files = Array.from(e.target.files)
@@ -49,6 +52,7 @@ function CreateEvent() {
             setSubmitting(true)
             const { data } = await axios.post(backend_url + "/api/event/create-event", form, { withCredentials: true })
             if(data.success){
+                dispatch(getAllEvents())
                 toast.success(data.message)
             }else{
                 toast.error(data.message)
@@ -160,7 +164,7 @@ function CreateEvent() {
                         />
                     </div>
                     <div className="mb-4">
-                        <p className="mb-1 text-sm font-semibold">Starting Date</p>
+                        <p className="mb-1 text-sm font-semibold">Starting Date <span className="text-red-500">*</span></p>
                         <input
                             type="date"
                             className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"
@@ -174,7 +178,7 @@ function CreateEvent() {
                         />
                     </div>
                     <div className="mb-4">
-                        <p className="mb-1 text-sm font-semibold">Ending Date</p>
+                        <p className="mb-1 text-sm font-semibold">Ending Date <span className="text-red-500">*</span></p>
                         <input
                             type="date"
                             className="border border-gray-200 rounded-sm w-full p-1 focus:outline-none text-sm"

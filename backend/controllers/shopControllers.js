@@ -15,7 +15,7 @@ const createShop = catchAsyncError(async (req, res) => {
         const { email } = req.body
         const newShop = await shopModel.findOne({ email: email })
         if (newShop) {
-            throw new ErrorHandler("user already exist!", 400)
+            throw new ErrorHandler("Shop already exist!", 400)
         }
         const salt = parseInt(process.env.SALT)
         const newPassword = bcrypt.hashSync(req.body.password, salt)
@@ -35,7 +35,7 @@ const createShop = catchAsyncError(async (req, res) => {
         const frontendURL = process.env.FRONTEND_URL
         const activationLink = `${frontendURL}/verify-shop?shopActivationToken=${shopActivationToken}`
         const senderEmail = process.env.EMAIL_SENDER
-        sendEmail(senderEmail, 'Shop Activation', `Your shop creatioon request received, please click on the link below to verify: \n ${activationLink}`)
+        sendEmail(req.body.email, 'Shop Activation', `Your shop creation request received, please click on the link below to verify: \n ${activationLink}`)
         res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
         if (req.file) {

@@ -63,7 +63,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { loadCart } from './redux/slices/cart'
 import { setCart } from './redux/slices/cart'
 
-import { getAllProducts } from './redux/thunks/product'
+import { getAllProducts, getShopProducts } from './redux/thunks/product'
 import { getAllEvents } from './redux/thunks/event'
 import { getSellerConversations, getOnlineSellers, addOnlineSellers, getSellerUnreadMessages } from './redux/thunks/shop'
 import { updateSellerConversation } from './redux/slices/shop'
@@ -119,10 +119,16 @@ function App() {
     dispatch(getSeller())
   }, [dispatch])
   
+  useEffect(() => {
+    if (!sellerData?._id) return
+
+    dispatch(getShopProducts(sellerData._id))
+}, [dispatch, sellerData?._id])
   
   useEffect(() => {
+    if(!userData) return
     dispatch(addOnlineUsers(userData._id))
-  }, [userData._id])
+  }, [userData&&userData._id])
   useEffect(() => {
     const cleanup = dispatch(getOnlineUsers())
     return cleanup

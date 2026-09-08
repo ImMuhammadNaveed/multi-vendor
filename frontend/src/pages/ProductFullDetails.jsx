@@ -32,9 +32,11 @@ function ProductFullDetails() {
     const isEvent = searchParams.get("isEvent")
     const events = useSelector(state=> state.event.allEvents)
     const allEventsLoading = useSelector(state => state.event.allEventsLoading)
+    const shopEvents = useSelector(state=> state.event.shopEvents)
     useEffect(() => {
         if (isEvent !== null) {
-            const data = events && events.find((i) => i._id === id)
+            const data = (events || []).find((i) => i._id === id)
+                || (shopEvents || []).find((i) => i._id === id)
             console.log("event details:", data)
             setData(data)
         } else {

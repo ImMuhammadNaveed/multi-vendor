@@ -52,6 +52,7 @@ function Shop() {
 
     // Fetch shop products
     useEffect(() => {
+        console.log("fetch shop products")
         dispatch(getShopProducts(shopId))
     }, [dispatch, shopId])
 
@@ -75,7 +76,7 @@ function Shop() {
     }
 
     return (
-        <div className="flex lg:flex-row flex-col bg-gray-100 py-7 px-4 h-full">
+        <div className="h-screen overflow-hidden flex lg:flex-row flex-col bg-gray-100 py-4 px-4">
             <ShopSideBar
                 shopData={shopData}
                 shopProducts={shopProducts}
