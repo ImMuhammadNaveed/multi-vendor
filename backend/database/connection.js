@@ -1,5 +1,7 @@
 const mongoose = require("mongoose")
 require("dotenv").config()
+const dns = require("dns")
+dns.setServers(['8.8.8.8', '8.8.4.4'])
 const database_url = process.env.DATABASE_URL
 
 function databaseConnection() {

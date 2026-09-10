@@ -32,7 +32,7 @@ function getUser(userId) {
     return users.find((user) => user.userId === userId)
 }
 
-app.get("/", (req, res) => { res.send("Hello world from socket!") })
+app.get("/", (req, res) => { res.send("Hello world from multi-vendor's socket!") })
 io.on("connection", (socket) => {
     socket.on("addUser", (userId) => {
         addUser(userId, socket.id)

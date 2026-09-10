@@ -94,7 +94,7 @@ import petcare from '../static/petcare.webp'
 import mobile from '../static/mobile.jpg'
 import music from '../static/music.png'
 import others from '../static/others.png'
-import phone2 from '../static/iPhone-14-pro-max-2.jpg'
+import phone2 from '../static/iPhone-14-Pro-Max-2.jpg'
 export const categoriesData = [
   {
     id: 1,
