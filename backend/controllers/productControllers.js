@@ -47,6 +47,7 @@ const allProductsOfShop = catchAsyncError(async (req, res) => {
 })
 
 const allProducts = catchAsyncError(async (req, res) => {
+    console.log("all products trigered")
         const allProducts = await productModel.find({})
         if (!allProducts || allProducts.length === 0) {
             throw new ErrorHandler("products not found!", 400)
