@@ -17,7 +17,7 @@ const { paymentRouter } = require("./routes/paymentRoutes")
 const errorHandler = require('./middlewares/error')
 
 const corsOption = {
-    origin: process.env.FRONTEND_URL,
+    origin: "https://multi-vendor-red-eight.vercel.app",
     credentials: true
 }
 app.use(cors(corsOption))

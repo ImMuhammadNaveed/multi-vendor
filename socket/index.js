@@ -7,7 +7,7 @@ const socketIO = require("socket.io")
 require("dotenv").config()
 const io = socketIO(server, {
     cors: {
-        origin: process.env.FRONTEND_URL,
+        origin: "https://multi-vendor-red-eight.vercel.app",
         credentials: true,
     }
 })
