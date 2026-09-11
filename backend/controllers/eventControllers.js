@@ -1,10 +1,10 @@
 const { eventModel } = require("../database/eventModel")
 const { shopModel } = require("../database/shopModel")
 const mongoose = require("mongoose")
-const fs = require("fs")
-const path = require("path")
 const catchAsyncError = require("../middlewares/catchAsyncErrors")
 const ErrorHandler = require("../utils/ErrorHandler")
+const { cloudinary } = require("../middlewares/cloudinary")
+const { uploadToCloudinary } = require("../utils/cloudinaryUpload")
 
 const createEvent = catchAsyncError(async (req, res) => {
     try {
@@ -15,9 +15,11 @@ const createEvent = catchAsyncError(async (req, res) => {
             throw new ErrorHandler("shop not found!", 400)
         }
         const images = req.files || []
-        const imagesNames = images.map((image) => image.filename)
+        const uploadedImages = await Promise.all(
+            images.map((image) => uploadToCloudinary(image, "multi-vendor/events"))
+        )
         const eventData = req.body
-        eventData.images = imagesNames
+        eventData.images = uploadedImages
         eventData.shop = shop
         console.log(eventData)
         const newEvent = new eventModel(eventData)
@@ -25,21 +27,20 @@ const createEvent = catchAsyncError(async (req, res) => {
         // event.save()
         return res.status(200).json({ success: true, message: "Event created!" })
     } catch (error) {
-        if (req.files) {
-            req.files.forEach(file => {
-                console.log(file)
-                const filepath = path.join(file.destination, file.filename)
-                fs.unlink(filepath, (err) =>
-                    console.log(err)
-                )
-            })
-        }
         throw error
     }
 })
 
 const allEvents = catchAsyncError(async (req, res) => {
-        const deletedEvents = await eventModel.deleteMany({ endingDate: { $lte: Date.now() } })
+        const expiredEvents = await eventModel.find({ endingDate: { $lte: Date.now() } })
+        await eventModel.deleteMany({ _id: { $in: expiredEvents.map((event) => event._id) } })
+        await Promise.all(
+            expiredEvents.flatMap((event) =>
+                event.images
+                    .filter((image) => image.public_id)
+                    .map((image) => cloudinary.uploader.destroy(image.public_id))
+            )
+        )
         const allEvents = await eventModel.find({})
         if (!allEvents || allEvents.length === 0) {
             throw new ErrorHandler("events not found!", 400)
@@ -59,12 +60,11 @@ const deleteEvent = catchAsyncError(async (req, res) => {
         if (!deletedEvent) {
             throw new ErrorHandler("event not found!", 400)
         }
-        deletedEvent.images.forEach(image => {
-            const imagePath = image ? path.join(__dirname, "..", `/uploads/${image}`) : ""
-            fs.unlink(imagePath, (err) =>
-                console.log(err)
-            )
-        });
+        await Promise.all(
+            deletedEvent.images
+                .filter((image) => image.public_id)
+                .map((image) => cloudinary.uploader.destroy(image.public_id))
+        )
         res.status(200).json({ success: true, message: "event successfully deleted!" })
 })
 

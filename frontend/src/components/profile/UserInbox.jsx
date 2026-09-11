@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
 import { backend_url } from "../../server"
+import { getImageUrl } from "../../utils/image"
 import { useDispatch, useSelector } from "react-redux"
 import ConversationAnimation from '../../assets/ConversationAnimation'
 import ConversationRowAnimation from '../../assets/ConversationRowAnimation'
@@ -93,7 +94,7 @@ function Conversation({ userData, conversation, online }) {
         >
             <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden">
                 <img
-                    src={`${backend_url}/uploads/${shop.avator}`}
+                    src={getImageUrl(shop.avator)}
                     alt=""
                     className="w-full h-full object-cover"
                 />

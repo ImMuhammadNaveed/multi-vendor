@@ -7,6 +7,7 @@ import { TfiGallery } from "react-icons/tfi";
 import { useNavigate, useParams } from "react-router-dom"
 import { format } from 'timeago.js'
 import { backend_url } from "../server";
+import { getImageUrl } from "../utils/image";
 import { updateUserConversation } from "../redux/slices/user";
 import { useDispatch, useSelector } from "react-redux";
 import { useAutoScroll } from "../hooks/useAutoScroll";
@@ -128,7 +129,7 @@ function UserConversation() {
                 {/* header - fixed */}
                 <div className="flex-none flex items-center justify-between bg-gray-300 py-2 px-3">
                     <div className="flex items-center">
-                        <img src={`${backend_url}/uploads/` + (shopData?.avator || "")}
+                        <img src={getImageUrl(shopData?.avator)}
                             alt=""
                             className="w-12 h-12 object-cover rounded-full" />
                         <div className="ml-2">
@@ -159,7 +160,7 @@ function UserConversation() {
                                                     {
                                                         message.sender === userData._id
                                                             ? ""
-                                                            : <img src={`${backend_url}/uploads/` + shopData.avator}
+                                                            : <img src={getImageUrl(shopData.avator)}
                                                                 alt=""
                                                                 className="w-9 h-9 object-cover rounded-full"
                                                             />
@@ -169,7 +170,7 @@ function UserConversation() {
                                                             {message.images?.map((image, index) => (
                                                                 <img
                                                                     key={index}
-                                                                    src={`${backend_url}/uploads/${image}`}
+                                                                    src={getImageUrl(image)}
                                                                     alt=""
                                                                     className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
                                                                     onClick={() => {
@@ -273,7 +274,7 @@ function PreviewImage({ image, setOpenImage }) {
                         onClick={() => setOpenImage(false)}
                     />
                     <img
-                        src={`${backend_url}/uploads/${image}`}
+                        src={getImageUrl(image)}
                         alt=""
                         className="w-120 h-120 object-contain"
                     />

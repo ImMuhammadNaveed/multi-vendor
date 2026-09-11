@@ -4,7 +4,7 @@ import { FaArrowRight } from "react-icons/fa6";
 import { addToCart } from '../../redux/slices/cart';
 import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
-import { backend_url } from '../../server';
+import { getImageUrl } from '../../utils/image';
 
 function EventCard({ event }) {
     const [timeLeft, setTimeLeft] = useState("")
@@ -35,7 +35,7 @@ function EventCard({ event }) {
         <>
             <div className="bg-white lg:flex items-start p-5 rounded-lg">
                 <div className="w-full lg:w-[50%] p-12">
-                    <img src={backend_url + `/uploads/${event.images[0]}`} alt="" />
+                    <img src={getImageUrl(event.images[0])} alt="" />
                 </div>
                 <div className="w-full lg:w-[50%]">
                     <p className='text-2xl font-bold mb-2'>{event.name}</p>

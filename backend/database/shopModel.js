@@ -26,7 +26,7 @@ const shopSchema = mongoose.Schema({
         default: "seller"
     },
     avator: {
-        type: String,
+        type: Object,
         required: true
     },
     zipCode: {

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { socket } from "../../socket/Socket"
 import { backend_url } from "../../server"
+import { getImageUrl } from "../../utils/image"
 import { getSellerUnreadMessages } from '../../redux/thunks/shop'
 import { useDispatch, useSelector } from "react-redux"
 import ConversationAnimation from '../../assets/ConversationAnimation'
@@ -120,7 +121,7 @@ function Conversation({ setOpenMessage, conversation, setSelectedConversation, s
         >
             <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden">
                 <img
-                    src={`${backend_url}/uploads/${user.avator}`}
+                    src={getImageUrl(user.avator)}
                     alt=""
                     className="w-full h-full object-cover"
                 />
@@ -243,7 +244,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                 {/* header*/}
                 <div className="flex-none flex items-center justify-between bg-gray-300 py-2 px-3">
                     <div className="flex items-center">
-                        <img src={`${backend_url}/uploads/` + selectedUser.avator}
+                        <img src={getImageUrl(selectedUser.avator)}
                             alt=""
                             className="w-12 h-12 object-cover rounded-full" />
                         <div className="ml-2">
@@ -276,7 +277,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                                             {
                                                 message.sender === sellerData._id
                                                     ? ""
-                                                    : <img src={`${backend_url}/uploads/` + selectedUser.avator}
+                                                    : <img src={getImageUrl(selectedUser.avator)}
                                                         alt=""
                                                         className="w-9 h-9 object-cover rounded-full"
                                                     />
@@ -290,7 +291,7 @@ function SellerInbox({ setOpenMessage, selectedConversation, selectedUser, selle
                                                                 setOpenImage(true)
                                                                 setImage(image)
                                                             }}
-                                                            src={`${backend_url}/uploads/${image}`}
+                                                            src={getImageUrl(image)}
                                                             alt=""
                                                             className="w-40 h-40 object-cover rounded mt-1 cursor-pointer"
                                                         />
@@ -393,7 +394,7 @@ function PreviewImage({ image, setOpenImage }) {
                         onClick={() => setOpenImage(false)}
                     />
                     <img
-                        src={`${backend_url}/uploads/${image}`}
+                        src={getImageUrl(image)}
                         alt=""
                         className="w-120 h-120 object-contain"
                     />

@@ -8,7 +8,7 @@ import { addToCart } from '../../redux/slices/cart'
 import { useDispatch, useSelector } from 'react-redux'
 import { addToWishlist, isInWishlist, removeFromWishlist } from "../../redux/slices/wishlist";
 import { sendMessage } from "../../redux/thunks/user";
-import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 import { useNavigate } from "react-router-dom";
 import LoadingButton from "../loading/LoadingButton";
 
@@ -45,13 +45,13 @@ function ProductDetails({ item, setShowProductDetails, addToWishlist }) {
                     <div className="flex lg:flex-row flex-col gap-4">
                         <div className="lg:w-[50%] w-full">
                             <img
-                                src={`${backend_url}/uploads/` + item?.images[0]}
+                                src={getImageUrl(item?.images[0])}
                                 alt=""
                                 className=""
                             />
                             <div className="flex items-center my-6">
                                 <Link to={`/shop/${item.shop._id}`} className="h-12 w-12 overflow-hidden rounded-full">
-                                    <img src={`${backend_url}/uploads/` + item.shop.avator} alt="" className="w-full h-full object-cover" />
+                                    <img src={getImageUrl(item.shop.avator)} alt="" className="w-full h-full object-cover" />
                                 </Link>
                                 <div className="ml-2">
                                     <Link to={`/shop/${item.shop._id}`} className="text-sm text-blue-500">{item.shop.name}</Link>

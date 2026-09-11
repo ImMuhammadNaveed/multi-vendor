@@ -9,7 +9,7 @@ import Cart from '../cart/Cart';
 
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { backend_url } from '../../server'
+import { getImageUrl } from '../../utils/image'
 
 function Header() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -71,7 +71,7 @@ function Header() {
                                         }}
                                     >
                                         <img
-                                            src={`${backend_url}/uploads/${product.images[0]}`}
+                                            src={getImageUrl(product.images[0])}
                                             alt=""
                                             className='w-10'
                                         />
@@ -140,7 +140,7 @@ function Header() {
                                         }}
                                     >
                                         <img
-                                            src={`${backend_url}/uploads/${product.images[0]}`}
+                                            src={getImageUrl(product.images[0])}
                                             alt=""
                                             className='w-10'
                                         />
@@ -171,7 +171,7 @@ function Header() {
                             <div className='w-20 h-20 flex justify-center items-center'>
                                 {uLoggedIn
                                     ? <img
-                                        src={`${backend_url}/uploads/` + userData?.avator}
+                                        src={getImageUrl(userData?.avator)}
                                         alt=""
                                         className="object-cover rounded-full w-full h-full"
                                     />

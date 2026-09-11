@@ -7,6 +7,7 @@ import { RxCross1 } from "react-icons/rx";
 import { AiOutlineStar } from "react-icons/ai";
 import { AiFillStar } from "react-icons/ai";
 import { backend_url } from "../server";
+import { getImageUrl } from "../utils/image";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../redux/thunks/user";
 import { toast } from "react-toastify";
@@ -107,7 +108,7 @@ function UserOrderDetails() {
                                     <div key={item._id} className="flex gap-2 justify-between items-center">
                                         <div className="flex items-center gap-2">
                                             <img
-                                                src={`${backend_url}/uploads/` + item.product.images[0]}
+                                                src={getImageUrl(item.product.images[0])}
                                                 alt=""
                                                 className="w-12 bg-white"
                                             />
@@ -238,7 +239,7 @@ function ReviewForm({
                 <p className="text-center text-2xl font-semibold">Give a Review</p>
                 <div className="flex items-center gap-2 my-6">
                     <img
-                        src={backend_url + `/uploads/${product.images[0]}`}
+                        src={getImageUrl(product.images[0])}
                         alt=""
                         className="w-10"
                     />

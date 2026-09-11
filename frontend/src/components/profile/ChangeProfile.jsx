@@ -3,6 +3,7 @@ import axios from "axios"
 import { IoCameraOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 import { toast } from "react-toastify";
 import ProfileAnimation from '../../assets/ProfileAnimation'
 import LoadingButton from '../loading/LoadingButton'
@@ -23,7 +24,7 @@ function ChangeProfile() {
             setName(userData.name || "")
             setEmail(userData.email || "")
             setPhoneNumber(userData.phoneNumber || "")
-            setPreviewImage(`${backend_url}/uploads/` + userData.avator)
+            setPreviewImage(getImageUrl(userData.avator))
         }
     }, [userData])
 

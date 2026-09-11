@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { backend_url } from "../server";
+import { getImageUrl } from "../utils/image";
 import { toast } from "react-toastify";
 import OrderDetailsAnimation from '../assets/OrderDetailsAnimation'
 import LoadingButton from '../components/loading/LoadingButton'
@@ -92,7 +93,7 @@ function ShopOrderDetails() {
                         data.cart.map((item) => (
                             <div key={item._id} className="flex items-center gap-2">
                                 <img
-                                    src={`${backend_url}/uploads/` + item.product.images[0]}
+                                    src={getImageUrl(item.product.images[0])}
                                     alt=""
                                     className="w-12 bg-white"
                                 />

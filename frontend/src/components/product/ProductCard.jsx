@@ -9,7 +9,7 @@ import Ratings from '../ratings/Ratings'
 import { useDispatch, useSelector } from 'react-redux'
 import { isInWishlist, addToWishlist, removeFromWishlist } from '../../redux/slices/wishlist'
 import { addToCart } from '../../redux/slices/cart'
-import { backend_url } from '../../server'
+import { getImageUrl } from '../../utils/image'
 
 function Product({ item, isEvent}) {
     const [imageError, setImageError] = useState(false)
@@ -27,7 +27,7 @@ function Product({ item, isEvent}) {
                     <div className='flex justify-center'>
                         {!imageError && item?.images?.[0]
                             ? <img
-                                src={`${backend_url}/uploads/` + item?.images[0]}
+                                src={getImageUrl(item?.images[0])}
                                 alt="prodcut-image"
                                 className='w-full h-50 object-contain'
                             />

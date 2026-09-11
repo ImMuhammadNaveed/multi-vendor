@@ -62,7 +62,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { removeFromWishlist } from "../../redux/slices/wishlist";
 import { useDispatch } from "react-redux";
-import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 
 function WishlistItem({ item }) {
     const dispatch = useDispatch()
@@ -76,7 +76,7 @@ function WishlistItem({ item }) {
                     onClick={() => dispatch(removeFromWishlistAction(item.product))}
                 />
                 <div>
-                    <img src={`${backend_url}/uploads/` + item.product.images[0]} className="lg:w-70 w-40 p-2 object-contain" alt="" />
+                    <img src={getImageUrl(item.product.images[0])} className="lg:w-70 w-40 p-2 object-contain" alt="" />
                 </div>
                 <div className="lg:w-100 w-full">
                     <p className="text-sm">{item.product.name}</p>

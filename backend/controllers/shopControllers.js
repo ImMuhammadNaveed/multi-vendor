@@ -1,12 +1,12 @@
 const { shopModel } = require("../database/shopModel")
 const bcrypt = require('bcrypt')
 const { emailSign, emailVerify, authSign } = require('../middlewares/auth')
-const fs = require('fs')
 const { sendEmail } = require("../middlewares/email")
-const path = require("path")
 const { default: mongoose } = require("mongoose")
 const catchAsyncError = require("../middlewares/catchAsyncErrors")
 const ErrorHandler = require("../utils/ErrorHandler")
+const { cloudinary } = require("../middlewares/cloudinary")
+const { uploadToCloudinary } = require("../utils/cloudinaryUpload")
 
 const createShop = catchAsyncError(async (req, res) => {
     try {
@@ -19,15 +19,14 @@ const createShop = catchAsyncError(async (req, res) => {
         }
         const salt = parseInt(process.env.SALT)
         const newPassword = bcrypt.hashSync(req.body.password, salt)
-        const fileName = req.file.filename
-        const filePath = path.join(fileName)
+        const avator = await uploadToCloudinary(req.file, "multi-vendor/shops")
         const seller = {
             name: req.body.name,
             email: req.body.email,
             password: newPassword,
             address: req.body.address,
             phoneNumber: req.body.phoneNumber,
-            avator: filePath,
+            avator: avator,
             zipCode: req.body.zipCode
         }
         // console.log(seller)
@@ -38,17 +37,6 @@ const createShop = catchAsyncError(async (req, res) => {
         sendEmail(req.body.email, 'Shop Activation', `Your shop creation request received, please click on the link below to verify: \n ${activationLink}`)
         res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
-        if (req.file) {
-            const fileName = req.file ? req.file.filename : ""
-            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (unlinkError) => {
-                if (unlinkError) {
-                    console.log(unlinkError)
-                } else {
-                    console.log("unused file deleted successfully")
-                }
-            })
-        }
         throw error
     }
 })
@@ -136,31 +124,17 @@ const updateSeller = catchAsyncError(async (req, res) => {
         seller.zipCode = zipCode
 
         if (req.file) {
-            // delete old image from record
-            const path = "uploads/" + seller.avator
-            fs.unlink(path, (err) => {
-                if (err) {
-                    console.log(err.message)
-                }
-            })
-            //save new image
-            seller.avator = req.file.filename
+            const avator = await uploadToCloudinary(req.file, "multi-vendor/shops")
+            const previousAvator = seller.avator
+            seller.avator = avator
+            await seller.save()
+            if (previousAvator?.public_id) {
+                await cloudinary.uploader.destroy(previousAvator.public_id)
+            }
         }
 
-        await seller.save()
         res.status(200).json({ success: true, message: "seller info successfully updated!" })
     } catch (error) {
-        if (req.file) {
-            const fileName = req.file ? req.file.filename : ""
-            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (unlinkError) => {
-                if (unlinkError) {
-                    console.log(unlinkError)
-                } else {
-                    console.log("unused file deleted successfully")
-                }
-            })
-        }
         throw error
     }
 })
@@ -186,13 +160,9 @@ const deleteSeller = catchAsyncError(async (req, res) => {
         if (!deletedShop) {
             throw new ErrorHandler("shop not found!", 400)
         }
-        // delete old image from record
-        const path = "uploads/" + deletedShop.avator
-        fs.unlink(path, (err) => {
-            if (err) {
-                console.log(err.message)
-            }
-        })
+        if (deletedShop.avator?.public_id) {
+            await cloudinary.uploader.destroy(deletedShop.avator.public_id)
+        }
         return res.status(200).json({ success: true, message: "shop successfully deleted!" })
 })
 

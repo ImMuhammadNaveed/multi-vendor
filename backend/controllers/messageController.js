@@ -1,37 +1,28 @@
 const { conversationModel } = require("../database/conversationModel")
 const { messageModel } = require("../database/messageModel")
 const mongoose = require("mongoose")
-const fs = require("fs")
-const path = require("path")
 const catchAsyncError = require("../middlewares/catchAsyncErrors")
 const ErrorHandler = require("../utils/ErrorHandler")
+const { uploadToCloudinary } = require("../utils/cloudinaryUpload")
 
 const createMessage = catchAsyncError(async (req, res) => {
     try {
         const { conversationId, sender, text } = req.body
-        let imageUrls = []
+        let uploadedImages = []
         if (req.files) {
-            req.files.map((file) => {
-                imageUrls.push(file.filename)
-            })
+            uploadedImages = await Promise.all(
+                req.files.map((file) => uploadToCloudinary(file, "multi-vendor/messages"))
+            )
         }
-        console.log("image urls: ", imageUrls)
+        console.log("image urls: ", uploadedImages)
         const newMessage = await messageModel.create({
             conversationId: conversationId,
             sender: sender,
             text: text,
-            images: imageUrls.length !== 0 ? imageUrls : undefined
+            images: uploadedImages.length !== 0 ? uploadedImages : undefined
         })
         return res.status(200).json({ success: true, message: newMessage })
     } catch (error) {
-        if (req.files) {
-            req.files.forEach(file => {
-                const filepath = path.join(file.destination, file.filename)
-                fs.unlink(filepath, (err) =>
-                    console.log(err)
-                )
-            });
-        }
         throw error
     }
 })

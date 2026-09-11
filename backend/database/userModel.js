@@ -18,7 +18,7 @@ const userSchema = mongoose.Schema({
         required: true
     },
     avator: {
-        type: String,
+        type: Object,
         required: true
     },
     isVerified: {

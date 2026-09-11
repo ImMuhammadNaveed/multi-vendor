@@ -2,11 +2,11 @@ const { userModel } = require("../database/userModel")
 const bcrypt = require("bcrypt")
 const { sendEmail } = require("../middlewares/email")
 const { authSign, emailSign, emailVerify } = require("../middlewares/auth")
-const path = require("path")
-const fs = require("fs")
 const { default: mongoose } = require("mongoose")
 const catchAsyncError = require("../middlewares/catchAsyncErrors")
 const ErrorHandler = require("../utils/ErrorHandler")
+const { cloudinary } = require("../middlewares/cloudinary")
+const { uploadToCloudinary } = require("../utils/cloudinaryUpload")
 
 const register = catchAsyncError(async (req, res) => {
     try {
@@ -21,14 +21,13 @@ const register = catchAsyncError(async (req, res) => {
         }
         const salt = parseInt(process.env.SALT)
         const hashedPassword = bcrypt.hashSync(password, salt)
-        const fileName = req.file.filename
-        const filePath = path.join(fileName)
+        const avator = await uploadToCloudinary(req.file, "multi-vendor/users")
         const userData = {
             name: name,
             email: email,
             password: hashedPassword,
             role: "User",
-            avator: filePath
+            avator: avator
         }
         const newUser = new userModel(userData)
         await newUser.save()
@@ -37,17 +36,6 @@ const register = catchAsyncError(async (req, res) => {
         sendEmail(userData.email, "Account verification", `Your account created please click on the link below to verify: \n ${frontend_url}/verify-account?token=${emailToken}`)
         res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
-        if (req.file) {
-            const fileName = req.file ? req.file.filename : ""
-            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (unlinkError) => {
-                if (unlinkError) {
-                    console.log(unlinkError)
-                } else {
-                    console.log("unused file deleted successfully")
-                }
-            })
-        }
         throw error
     }
 })
@@ -125,31 +113,17 @@ const updateUser = catchAsyncError(async (req, res) => {
         user.phoneNumber = phoneNumber
 
         if (req.file) {
-            // delete old image from record
-            const path = "uploads/" + user.avator
-            fs.unlink(path, (err) => {
-                if (err) {
-                    console.log(err.message)
-                }
-            })
-            //save new image
-            user.avator = req.file.filename
+            const avator = await uploadToCloudinary(req.file, "multi-vendor/users")
+            const previousAvator = user.avator
+            user.avator = avator
+            await user.save()
+            if (previousAvator?.public_id) {
+                await cloudinary.uploader.destroy(previousAvator.public_id)
+            }
         }
 
-        await user.save()
         res.status(200).json({ success: true, message: "user info successfully updated!" })
     } catch (error) {
-        if (req.file) {
-            const fileName = req.file ? req.file.filename : ""
-            const filePath = fileName ? path.join(__dirname, "..", `/uploads/${fileName}`) : ""
-            fs.unlink(filePath, (unlinkError) => {
-                if (unlinkError) {
-                    console.log(unlinkError)
-                } else {
-                    console.log("unused file deleted successfully")
-                }
-            })
-        }
         throw error
     }
 })
@@ -224,13 +198,9 @@ const deleteUser = catchAsyncError(async (req, res) => {
         if (!deletedUser) {
             throw new ErrorHandler("user not found!", 400)
         }
-        // delete old image from record
-        const path = "uploads/" + deletedUser.avator
-        fs.unlink(path, (err) => {
-            if (err) {
-                console.log(err.message)
-            }
-        })
+        if (deletedUser.avator?.public_id) {
+            await cloudinary.uploader.destroy(deletedUser.avator.public_id)
+        }
         return res.status(200).json({ success: true, message: "user successfully deleted!" })
 })
 

@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import Cart from "../cart/Cart"
 import Wishlist from "../wishlist/Wishlist"
 import { useSelector } from "react-redux"
-import { backend_url } from '../../server'
+import { getImageUrl } from '../../utils/image'
 
 function Navbar({cart, openCart, setOpenCart, wishlist, openWishlist, setOpenWishlist, uLoggedIn, userData}) {
     const [showCategory, setShowCategory] = useState(false)
@@ -79,7 +79,7 @@ function Navbar({cart, openCart, setOpenCart, wishlist, openWishlist, setOpenWis
                     <div className="relative inline-block cursor-pointer" onClick={() => navigate('/profile')}>
                         {uLoggedIn
                             ? <img
-                                src={`${backend_url}/uploads/` + userData?.avator}
+                                src={getImageUrl(userData?.avator)}
                                 alt=""
                                 className="w-10 h-10 object-cover rounded-full"
                             />

@@ -6,7 +6,7 @@ import { MdOutlineLocalOffer } from "react-icons/md";
 import { FiShoppingBag } from "react-icons/fi";
 import { FiPackage } from "react-icons/fi";
 import { BiMessageSquareDetail } from "react-icons/bi";
-import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 import { useSelector } from "react-redux";
 
 function Header() {
@@ -44,7 +44,7 @@ function Header() {
                         <Link to={`/shop/${sellerData?._id}`}>
                             {shopData &&
                                 <img
-                                    src={backend_url + "/uploads/" + sellerData.avator}
+                                    src={getImageUrl(sellerData.avator)}
                                     alt=""
                                     className="w-10 h-10 object-cover rounded-full"
                                 />

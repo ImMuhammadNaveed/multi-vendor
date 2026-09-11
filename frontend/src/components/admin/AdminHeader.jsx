@@ -6,7 +6,7 @@ import { MdOutlineLocalOffer } from "react-icons/md";
 import { FiShoppingBag } from "react-icons/fi";
 import { FiPackage } from "react-icons/fi";
 import { BiMessageSquareDetail } from "react-icons/bi";
-import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 import { useSelector } from "react-redux";
 
 function AdminHeader() {
@@ -39,7 +39,7 @@ function AdminHeader() {
                         <Link to={`/profile`}>
                             {userData &&
                                 <img
-                                    src={backend_url + "/uploads/" + userData.avator}
+                                    src={getImageUrl(userData.avator)}
                                     alt=""
                                     className="w-10 h-10 object-cover rounded-full"
                                 />

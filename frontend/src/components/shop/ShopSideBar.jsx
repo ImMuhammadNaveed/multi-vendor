@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
-import { backend_url } from "../../server"
+import { getImageUrl } from "../../utils/image"
 import { useDispatch } from 'react-redux'
 import { logoutSeller } from '../../redux/thunks/shop'
 import ButtonSpinner from '../loading/ButtonSpinner'
@@ -23,7 +23,7 @@ function ShopSideBar({ shopData, shopProducts, owner, shopRating }) {
             <div className="h-full lg:w-90 w-full bg-white px-4 lg:ml-10 ml-0 rounded-md py-4 flex flex-col justify-between">
                 <div className="flex flex-col justify-center items-center mx-auto w-full">
                     <img
-                        src={backend_url + '/uploads/' + shopData.avator}
+                        src={getImageUrl(shopData.avator)}
                         alt=""
                         className="w-25 h-25 rounded-full object-cover"
                     />

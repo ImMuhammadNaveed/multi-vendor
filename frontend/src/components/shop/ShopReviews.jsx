@@ -1,4 +1,4 @@
-import { backend_url } from "../../server"
+import { getImageUrl } from "../../utils/image"
 import Ratings from "../ratings/Ratings"
 
 function ShopReviews({ shopReviews }) {
@@ -9,7 +9,7 @@ function ShopReviews({ shopReviews }) {
                     <div className="flex items-center gap-2 mb-2">
                         <img
                             className="w-15 h-15 object-cover rounded-full"
-                            src={backend_url + "/uploads/" + review.user.avator}
+                            src={getImageUrl(review.user.avator)}
                             alt="" 
                         />
                         <div className="">

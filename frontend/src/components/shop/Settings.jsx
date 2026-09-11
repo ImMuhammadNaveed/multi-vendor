@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { IoCameraOutline } from "react-icons/io5";
 import axios from "axios";
 import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import LoadingButton from "../loading/LoadingButton";
@@ -26,7 +27,7 @@ function Settings() {
             setAddress(sellerData.address)
             setPhoneNumber(sellerData.phoneNumber || "")
             setZipCode(sellerData.zipCode || "")
-            setPreviewImage(`${backend_url}/uploads/` + sellerData.avator)
+            setPreviewImage(getImageUrl(sellerData.avator))
         }
     }, [sellerData])
 

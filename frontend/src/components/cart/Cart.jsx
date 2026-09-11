@@ -56,7 +56,7 @@ import { FaMinus } from "react-icons/fa6";
 import { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
 import { removeFromCart, increaseQuantity, decreaseQuantity } from "../../redux/slices/cart";
-import { backend_url } from "../../server";
+import { getImageUrl } from "../../utils/image";
 
 function CartItem({ item }) {
     const [quantity, setQuantity] = useState(1)
@@ -78,7 +78,7 @@ function CartItem({ item }) {
                 </div>
                 <div className="w-16">
                     <img
-                        src={`${backend_url}/uploads/` + item.product.images[0]}
+                        src={getImageUrl(item.product.images[0])}
                         className="lg:w-70 w-50 p-2 object-contain"
                         alt="" />
                 </div>

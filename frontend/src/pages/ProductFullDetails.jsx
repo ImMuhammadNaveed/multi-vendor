@@ -9,7 +9,7 @@ import { addToWishlist, isInWishlist, removeFromWishlist } from "../redux/slices
 import { sendMessage } from "../redux/thunks/user";
 import { addToCart } from "../redux/slices/cart";
 import { useDispatch, useSelector } from "react-redux";
-import { backend_url } from "../server";
+import { getImageUrl } from "../utils/image";
 import ProductDetailsAnimation from "../assets/ProductDetailsAnimation";
 import ProductCardAnimation from "../assets/ProductCardAnimation";
 import LoadingButton from "../components/loading/LoadingButton";
@@ -84,7 +84,7 @@ function ProductFullDetails() {
                 <div className="w-full lg:w-[50%]">
                     <div className="flex justify-center lg:justify-start">
                         <img
-                        src={`${backend_url}/uploads/` + data?.images[activeImage]}
+                        src={getImageUrl(data?.images[activeImage])}
                         alt=""
                         className="w-80 h-80 object-contain"
                     />
@@ -94,7 +94,7 @@ function ProductFullDetails() {
                             <img
                                 key={index}
                                 onClick={() => setActiveImage(index)}
-                                src={`${backend_url}/uploads/` + item}
+                                src={getImageUrl(item)}
                                 alt=""
                                 className={`w-40 p-4 cursor-pointer ${activeImage === index ? "border border-[#E5E7EB]" : ""}`}
                             />
@@ -158,7 +158,7 @@ function ProductFullDetails() {
                     <div className="flex items-center my-10">
                         <div className="flex items-center">
                             <Link to={`/shop/${data.shop._id}`} className="w-12 h-12 rounded-full overflow-hidden">
-                                <img src={`${backend_url}/uploads/` + data.shop.avator} alt="" className="w-full h-full object-cover" />
+                                <img src={getImageUrl(data.shop.avator)} alt="" className="w-full h-full object-cover" />
                             </Link>
                             <div className="ml-2">
                                 <Link to={`/shop/${data.shop._id}`} className="text-sm text-blue-500">{data.shop.name}</Link>
@@ -215,7 +215,7 @@ function Details({ data, shopRating, shopProducts, totalNumberOfReviews}) {
                                         data.reviews.map((rev) => (
                                             <div className="flex items-center">
                                                 <img
-                                                    src={`${backend_url}/uploads/` + rev.user.avator}
+                                                    src={getImageUrl(rev.user.avator)}
                                                     alt=""
                                                     className="w-14 h-14 object-cover rounded-full"
                                                 />
@@ -240,7 +240,7 @@ function Details({ data, shopRating, shopProducts, totalNumberOfReviews}) {
                                 <div className="lg:w-[50%] w-full">
                                     <div className="flex items-center mb-4">
                                         <Link to={`/shop/${data.shop._id}`} className="w-15 h-15 rounded-full overflow-hidden">
-                                            <img src={`${backend_url}/uploads/` + data.shop.avator} alt="" className="w-full h-full object-cover" />
+                                            <img src={getImageUrl(data.shop.avator)} alt="" className="w-full h-full object-cover" />
                                         </Link>
                                         <div className="ml-2">
                                             <Link to={`/shop/${data.shop._id}`} className="text-sm text-blue-500">{data.shop.name}</Link>
