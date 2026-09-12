@@ -3,6 +3,9 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
 
+const { databaseConnection } = require("./database/connection");
+const { connectToCloudinary } = require("./middlewares/cloudinary")
+
 const { userRouter } = require("./routes/userRoutes");
 const { shopRouter } = require("./routes/shopRoutes");
 const { productRouter } = require("./routes/productRoutes");
@@ -47,6 +50,9 @@ app.use("/api/payment", paymentRouter);
 app.get("/", (req, res) => {
     res.send("multi-vender is running");
 });
+
+databaseConnection();
+connectToCloudinary()
 
 app.use(errorHandler);
 
