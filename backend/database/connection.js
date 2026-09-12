@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
-const dns = require("dns");
+// const dns = require("dns");
 
 console.log("🔥 connection.js loaded");
 
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
+// dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const database_url = process.env.DATABASE_URL;
 
