@@ -51,8 +51,10 @@ app.get("/", (req, res) => {
     res.send("multi-vender is running");
 });
 
+console.log("🔥 app.js loaded");
 databaseConnection();
-connectToCloudinary()
+console.log("🔥 databaseConnection invoked");
+connectToCloudinary();
 
 app.use(errorHandler);
 
