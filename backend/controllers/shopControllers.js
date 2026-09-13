@@ -13,7 +13,9 @@ const createShop = catchAsyncError(async (req, res) => {
         // console.log("this is shop create controller")
         // console.log(req.body)
         const { email } = req.body
+        console.log(req.body)
         const newShop = await shopModel.findOne({ email: email })
+        console.log(newShop)
         if (newShop) {
             throw new ErrorHandler("Shop already exist!", 400)
         }
