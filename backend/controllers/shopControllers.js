@@ -144,7 +144,7 @@ const updateSeller = catchAsyncError(async (req, res) => {
 })
 
 const logout = catchAsyncError(async (req, res) => {
-        res.clearCookie("shopToken")
+        res.clearCookie("shopToken", {httpOnly: true, sameSite: "none", secure: true})
         res.status(200).json({ success: true, message: "shop successfully logged out!" })
 })
 
