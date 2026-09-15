@@ -121,7 +121,7 @@ const updateUser = catchAsyncError(async (req, res) => {
                 await cloudinary.uploader.destroy(previousAvator.public_id)
             }
         }
-
+        await user.save()
         res.status(200).json({ success: true, message: "user info successfully updated!" })
     } catch (error) {
         throw error
@@ -178,7 +178,7 @@ const changePassword = catchAsyncError(async (req, res) => {
 })
 
 const logout = catchAsyncError(async (req, res) => {
-        res.clearCookie("uToken")
+        res.clearCookie("uToken", {httpOnly: true, sameSite: "none", secure: true})
         res.status(200).json({ success: true, message: "user successfully logged out!" })
 })
 
