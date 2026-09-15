@@ -135,6 +135,7 @@ const updateSeller = catchAsyncError(async (req, res) => {
                 await cloudinary.uploader.destroy(previousAvator.public_id)
             }
         }
+        await seller.save()
 
         res.status(200).json({ success: true, message: "seller info successfully updated!" })
     } catch (error) {
