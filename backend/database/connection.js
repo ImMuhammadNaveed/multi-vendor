@@ -1,23 +1,39 @@
 const mongoose = require("mongoose");
-// const dns = require("dns");
 
 console.log("🔥 connection.js loaded");
 
-// dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
 const database_url = process.env.DATABASE_URL;
 
-function databaseConnection() {
-    console.log("🔥 databaseConnection() called");
-    console.log("DATABASE_URL exists:", !!database_url);
+// Cache the connection across serverless invocations (warm starts reuse it)
+let cached = global._mongooseConnection;
+if (!cached) {
+    cached = global._mongooseConnection = { conn: null, promise: null };
+}
 
-    mongoose.connect(database_url)
-        .then(() => {
+async function databaseConnection() {
+    if (cached.conn) {
+        // Already connected (warm instance) — reuse it, don't reconnect
+        return cached.conn;
+    }
+
+    if (!cached.promise) {
+        console.log("🔥 databaseConnection() called — connecting");
+        console.log("DATABASE_URL exists:", !!database_url);
+
+        cached.promise = mongoose.connect(database_url, {
+            bufferCommands: false, // fail fast instead of hanging 10s
+        }).then((mongooseInstance) => {
             console.log("🔥 DATABASE CONNECTED");
-        })
-        .catch((error) => {
+            return mongooseInstance;
+        }).catch((error) => {
             console.error("🔥 DATABASE ERROR:", error);
+            cached.promise = null; // allow retry on next request
+            throw error;
         });
+    }
+
+    cached.conn = await cached.promise;
+    return cached.conn;
 }
 
 module.exports = {

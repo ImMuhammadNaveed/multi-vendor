@@ -27,13 +27,21 @@ const corsOption = {
 };
 
 app.use(cors(corsOption));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 // Local uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// NEW: block every request until DB is connected (fast on warm instances)
+app.use(async (req, res, next) => {
+    try {
+        await databaseConnection();
+        next();
+    } catch (error) {
+        res.status(503).json({ success: false, message: "Database connection failed" });
+    }
+});
 
 // API endpoints
 app.use("/api/user", userRouter);
@@ -52,8 +60,6 @@ app.get("/", (req, res) => {
 });
 
 console.log("🔥 app.js loaded");
-databaseConnection();
-console.log("🔥 databaseConnection invoked");
 connectToCloudinary();
 
 app.use(errorHandler);
