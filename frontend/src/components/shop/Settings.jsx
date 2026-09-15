@@ -54,7 +54,7 @@ function Settings() {
             if(data.success){
                 toast.success(data.message)
             }else{
-                toast.error(data.message)
+                toast.error("Shop updation could not succeed!")
             }
         } catch (error) {
             console.log(error.response?.data?.message)
