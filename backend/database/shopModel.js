@@ -38,7 +38,8 @@ const shopSchema = mongoose.Schema({
         default: Date.now()
     },
     description: {
-        type: String
+        type: String,
+        default: ""
     },
     resetPasswordToken: {
         type: String

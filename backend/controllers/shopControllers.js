@@ -111,9 +111,10 @@ const getSeller = catchAsyncError(async (req, res) => {
 
 const updateSeller = catchAsyncError(async (req, res) => {
     try {
-        // console.log(req.body)
+        console.log(req.body)
         const { name, description, address, phoneNumber, zipCode } = req.body
         const seller = await shopModel.findById(req.shopId)
+        console.log(seller)
         if (!seller) {
             throw new ErrorHandler("seller not found!", 400)
         }

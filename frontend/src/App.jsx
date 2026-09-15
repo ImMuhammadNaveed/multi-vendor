@@ -105,7 +105,7 @@ function App() {
   
   useEffect(() => {
     dispatch(addOnlineSellers(sellerData._id))
-  }, [sellerData._id])
+  }, [sellerData?._id])
   
   useEffect(() => {
     const cleanup = dispatch(getOnlineSellers())
@@ -122,13 +122,13 @@ function App() {
   useEffect(() => {
     if (!sellerData?._id) return
 
-    dispatch(getShopProducts(sellerData._id))
+    dispatch(getShopProducts(sellerData?._id))
 }, [dispatch, sellerData?._id])
   
   useEffect(() => {
     if(!userData) return
-    dispatch(addOnlineUsers(userData._id))
-  }, [userData&&userData._id])
+    dispatch(addOnlineUsers(userData?._id))
+  }, [userData?._id])
   useEffect(() => {
     const cleanup = dispatch(getOnlineUsers())
     return cleanup
