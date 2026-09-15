@@ -25,7 +25,7 @@ function Login() {
             const {data} = await axios.post(backend_url+"/api/user/login", {email, password}, {withCredentials: true})
             console.log(data)
             if(data.success){
-                dispatch(getUser())
+                await dispatch(getUser()).unwrap()
                 dispatch(loadWishlist(data.userData))
                 navigate(from)
             }else{

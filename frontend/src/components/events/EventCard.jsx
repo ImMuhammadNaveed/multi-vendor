@@ -39,7 +39,7 @@ function EventCard({ event }) {
                 </div>
                 <div className="w-full lg:w-[50%]">
                     <p className='text-2xl font-bold mb-2'>{event.name}</p>
-                    <p>{event.description}</p>
+                    <p className='break-words'>{event.description}</p>
                     <div className='flex justify-between items-center my-3'>
                         <div className='flex'>
                             <p className='text-red-500 text-xl line-through font-semibold mr-4'>$ {event.originalPrice}</p>

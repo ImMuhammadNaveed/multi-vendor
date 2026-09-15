@@ -65,7 +65,7 @@ const deleteEvent = catchAsyncError(async (req, res) => {
                 .filter((image) => image.public_id)
                 .map((image) => cloudinary.uploader.destroy(image.public_id))
         )
-        res.status(200).json({ success: true, message: "event successfully deleted!" })
+        return res.status(200).json({ success: true, message: "event successfully deleted!" })
 })
 
 

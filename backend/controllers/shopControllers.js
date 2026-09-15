@@ -37,7 +37,7 @@ const createShop = catchAsyncError(async (req, res) => {
         const activationLink = `${frontendURL}/verify-shop?shopActivationToken=${shopActivationToken}`
         const senderEmail = process.env.EMAIL_SENDER
         sendEmail(req.body.email, 'Shop Activation', `Your shop creation request received, please click on the link below to verify: \n ${activationLink}`)
-        res.status(200).json({ success: true, message: "email sent on account" })
+        return res.status(200).json({ success: true, message: "email sent on account" })
     } catch (error) {
         throw error
     }
@@ -68,7 +68,7 @@ const activateShop = catchAsyncError(async (req, res) => {
         const savedShop = await newShop.save()
         const shopToken = authSign(savedShop._id)
         res.cookie("shopToken", shopToken, {httpOnly: true, sameSite: "none", secure: true})
-        res.status(200).json({ success: true, message: "Shop activated!" })
+        return res.status(200).json({ success: true, message: "Shop activated!" })
         // console.log(seller)
 })
 
@@ -87,7 +87,7 @@ const loginShop = catchAsyncError(async (req, res) => {
         }
         const shopToken = authSign(shop._id)
         res.cookie("shopToken", shopToken, {httpOnly: true, sameSite: "none", secure: true})
-        res.status(200).json({ success: true, message: "Shop logged in!" })
+        return res.status(200).json({ success: true, message: "Shop logged in!" })
 })
 
 const info = catchAsyncError(async (req, res) => {
@@ -98,7 +98,7 @@ const info = catchAsyncError(async (req, res) => {
         if(!shop){
             throw new ErrorHandler("Shop does not exist!", 400)
         }
-        res.status(200).json({ success: true, shopData: shop })
+        return res.status(200).json({ success: true, shopData: shop })
 })
 
 const getSeller = catchAsyncError(async (req, res) => {
@@ -106,7 +106,7 @@ const getSeller = catchAsyncError(async (req, res) => {
         // console.log(shopId)
         const shop = await shopModel.findById(shopId).select("-password")
         // console.log('this is shop info :',shop)
-        res.status(200).json({ success: true, shopData: shop })
+        return res.status(200).json({ success: true, shopData: shop })
 })
 
 const updateSeller = catchAsyncError(async (req, res) => {
@@ -137,7 +137,7 @@ const updateSeller = catchAsyncError(async (req, res) => {
         }
         await seller.save()
 
-        res.status(200).json({ success: true, message: "seller info successfully updated!" })
+        return res.status(200).json({ success: true, message: "seller info successfully updated!" })
     } catch (error) {
         throw error
     }
@@ -145,7 +145,7 @@ const updateSeller = catchAsyncError(async (req, res) => {
 
 const logout = catchAsyncError(async (req, res) => {
         res.clearCookie("shopToken", {httpOnly: true, sameSite: "none", secure: true})
-        res.status(200).json({ success: true, message: "shop successfully logged out!" })
+        return res.status(200).json({ success: true, message: "shop successfully logged out!" })
 })
 
 const getAllSellers = catchAsyncError(async (req, res) => {

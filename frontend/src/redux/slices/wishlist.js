@@ -17,6 +17,10 @@ export const loadWishlist = () => (dispatch, getState) => {
 
 export const addToWishlist = (product) => (dispatch, getState) => {
     const userData = getState().user.user
+    if (!getState().user.userLogin) {
+        toast.error("user not logged in")
+        return
+    }
     const currentWishlist = getState().wishlist.wishlist
     const isProductExists = currentWishlist.find((item) => item.product._id === product._id)
     let updatedWishList

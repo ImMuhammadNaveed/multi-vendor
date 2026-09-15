@@ -53,7 +53,7 @@ function AdminDashboardContent() {
                         <p className="font-semibold text-xl ml-4 my-2">{sellers && sellers.length}</p>
                         <Link
                             className="text-sm text-cyan-800"
-                            to='/shop-dashboard/all-sellers'
+                            to='/admin-dashboard/all-sellers'
                         >View Sellers</Link>
                     </div>
                     <div className="bg-white w-70 p-4 border border-gray-200">
@@ -66,7 +66,7 @@ function AdminDashboardContent() {
                         <p className="font-semibold text-xl ml-4 my-2">{orders && orders.length}</p>
                         <Link
                             className="text-sm text-cyan-800 cursor-pointer"
-                            to='/shop-dashboard/all-products'
+                            to='/admin-dashboard/all-orders'
                         >View Orders</Link>
                     </div>
                 </div>

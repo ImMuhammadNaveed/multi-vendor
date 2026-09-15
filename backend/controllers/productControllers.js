@@ -63,7 +63,7 @@ const deleteProduct = catchAsyncError(async (req, res) => {
             )
         )
     }
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message: "product successfully deleted!"
     })
@@ -108,7 +108,7 @@ const addReview = catchAsyncError(async (req, res) => {
     })
     product.ratings = avg / product.reviews.length
     await product.save()
-    res.status(200).json({ success: true, message: "review added successfully" })
+    return res.status(200).json({ success: true, message: "review added successfully" })
 })
 
 

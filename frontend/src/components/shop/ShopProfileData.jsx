@@ -47,10 +47,10 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
                         </div>
                     }
                     {
-                        active === 2 && <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
+                        active === 2 && <div >
                             {
                                 loadingE
-                                    ? <div>
+                                    ? <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
                                         {
                                             Array.from({ length: 6 }, (_, index) => (
                                                 <ProductCardAnimation key={index} />
@@ -58,7 +58,7 @@ function ShopProfileData({ shopProducts, owner, shopEvents }) {
                                         }
                                     </div>
                                     : shopEvents && shopEvents.length !== 0
-                                        ? <div>
+                                        ? <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-7'>
                                             {
                                                 shopEvents.map((item) => (
                                                     <Product item={item} key={item._id} />

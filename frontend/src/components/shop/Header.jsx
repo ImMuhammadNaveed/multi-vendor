@@ -42,7 +42,7 @@ function Header() {
                             </Link>
                         </div>
                         <Link to={`/shop/${sellerData?._id}`}>
-                            {shopData &&
+                            {sellerData &&
                                 <img
                                     src={getImageUrl(sellerData.avator)}
                                     alt=""
