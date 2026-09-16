@@ -73,7 +73,7 @@ function WishlistItem({ item }) {
                 <RxCross1
                     // size={30}
                     className="cursor-pointer text-2xl lg:text-4xl"
-                    onClick={() => dispatch(removeFromWishlistAction(item.product))}
+                    onClick={() => dispatch(removeFromWishlist(item.product))}
                 />
                 <div>
                     <img src={getImageUrl(item.product.images[0])} className="lg:w-70 w-40 p-2 object-contain" alt="" />
@@ -85,7 +85,7 @@ function WishlistItem({ item }) {
                 <AiOutlineShoppingCart
                     // size={50}
                     className="cursor-pointer text-2xl lg:text-4xl"
-                    onClick={()=>dispatch(addToCartAction(item.product, userData))}
+                    onClick={()=>dispatch(addToCart(item.product))}
                 />
             </div>
             <hr className="text-[#E5E7EB]" />

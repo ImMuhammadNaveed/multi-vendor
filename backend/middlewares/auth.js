@@ -38,6 +38,7 @@ function shopLoginCheck(req, res, next) {
 function userLoginCheck(req, res, next) {
     try {
         const uToken = req.cookies.uToken
+        console.log(uToken)
         if (!uToken) {
             return res.status(400).json({ success: false, message: "user token not found!" })
         }

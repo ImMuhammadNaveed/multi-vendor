@@ -48,9 +48,9 @@ function UserOrderDetails() {
     async function processRefund() {
         try {
             setRequestingRefund(true)
-            const { data } = await axios.post(backend_url + `/api/order/process-refund/${id}`, { withCredentials: true })
+            const { data } = await axios.post(backend_url + `/api/order/process-refund/${id}`, {}, { withCredentials: true })
             if (data.success) {
-                toast.error(data.message)
+                toast.success(data.message)
             } else {
                 toast.error(data.message)
             }
@@ -64,13 +64,13 @@ function UserOrderDetails() {
     async function handleSendMessage() {
         try {
             setSendingMessage(true)
-            await dispatch(sendMessage({userData: data.user, data: data.cart[0].product, navigate: navigate}))
+            await dispatch(sendMessage({ userData: data.user, data: data.cart[0].product, navigate: navigate }))
         } finally {
             setSendingMessage(false)
         }
     }
 
-    return(
+    return (
         <>
             {openReview && (
                 <ReviewForm
@@ -87,7 +87,7 @@ function UserOrderDetails() {
             <Header />
             {loading
                 ? <OrderDetailsAnimation />
-                : data&&<div className="w-[90%] mx-auto my-8">
+                : data && <div className="w-[90%] mx-auto my-8">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <IoBag
@@ -152,14 +152,16 @@ function UserOrderDetails() {
                         </div>
                         <div>
                             <p className="text-lg font-semibold">Payment Info:</p>
-                            <p>Status: {data.status ? data.status : "not paid"}</p>
-                            <LoadingButton
+                            <p>Status:{" "}
+                                {data?.paymentInfo?.status ? data?.paymentInfo?.status : "Not Paid"}</p>
+                            {data?.status === "Delivered" && (<LoadingButton
                                 loading={requestingRefund}
                                 className="bg-black text-white px-6 py-2 rounded-lg absolute my-8 cursor-pointer"
                                 onClick={processRefund}
                             >
                                 Refund
-                            </LoadingButton>
+                            </LoadingButton>)}
+
                         </div>
                     </div>
                     <LoadingButton
